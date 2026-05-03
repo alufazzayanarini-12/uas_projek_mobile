@@ -1,5 +1,9 @@
 import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'dart:io';
 import '../models/account.dart';
 import '../models/transaction_model.dart';
 import '../models/goal.dart';
@@ -17,6 +21,21 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB(String filePath) async {
+    if (kIsWeb) {
+      databaseFactory = databaseFactoryFfiWeb;
+      return await openDatabase(
+        filePath,
+        version: 2,
+        onCreate: _createDB,
+        onUpgrade: _upgradeDB,
+      );
+    }
+
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+    }
+
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
