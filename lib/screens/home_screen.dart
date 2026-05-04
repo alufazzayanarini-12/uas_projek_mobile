@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/account_provider.dart';
+import '../providers/settings_provider.dart';
 import 'add_account_screen.dart';
 import 'account_detail_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,21 +28,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tabunganku'),
+        title: const Text('Tabunganku', style: TextStyle(fontWeight: FontWeight.bold)),
+        elevation: 0,
+        backgroundColor: const Color(0xFF00B4D8),
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // TODO: Navigate to settings
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
             },
           )
         ],
       ),
-      body: Consumer<AccountProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
+      body: Consumer2<AccountProvider, SettingsProvider>(
+        builder: (context, accountProvider, settingsProvider, child) {
+          if (accountProvider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
+
+          final balanceText = settingsProvider.isBalanceHidden 
+              ? 'Rp *********' 
+              : NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(accountProvider.totalBalance);
 
           return CustomScrollView(
             slivers: [
@@ -67,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(provider.totalBalance),
+                        balanceText,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 32,
@@ -93,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               // Accounts List
-              provider.accounts.isEmpty
+              accountProvider.accounts.isEmpty
                   ? SliverToBoxAdapter(
                       child: Center(
                         child: Padding(
@@ -111,17 +120,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   : SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final account = provider.accounts[index];
+                          final account = accountProvider.accounts[index];
+                          final accountBalanceText = settingsProvider.isBalanceHidden 
+                              ? 'Rp *****' 
+                              : NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(account.balance);
+                              
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 2,
                             child: ListTile(
                               contentPadding: const EdgeInsets.all(16),
                               leading: CircleAvatar(
-                                backgroundColor: Color(account.colorValue),
-                                child: Icon(IconData(account.iconCodePoint, fontFamily: 'MaterialIcons'), color: Colors.white),
+                                backgroundColor: Color(account.colorValue).withOpacity(0.1),
+                                child: Icon(IconData(account.iconCodePoint, fontFamily: 'MaterialIcons'), color: Color(account.colorValue)),
                               ),
                               title: Text(account.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                              subtitle: Text(NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(account.balance)),
+                              subtitle: Text(accountBalanceText),
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () {
                                 Navigator.push(
@@ -134,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         },
-                        childCount: provider.accounts.length,
+                        childCount: accountProvider.accounts.length,
                       ),
                     ),
             ],
@@ -142,13 +157,14 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF00B4D8),
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddAccountScreen()),
           );
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

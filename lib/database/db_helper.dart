@@ -7,6 +7,7 @@ import 'dart:io';
 import '../models/account.dart';
 import '../models/transaction_model.dart';
 import '../models/goal.dart';
+import '../models/category_model.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -25,7 +26,7 @@ class DatabaseHelper {
       databaseFactory = databaseFactoryFfiWeb;
       return await openDatabase(
         filePath,
-        version: 2,
+        version: 5,
         onCreate: _createDB,
         onUpgrade: _upgradeDB,
       );
@@ -41,7 +42,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -62,6 +63,54 @@ class DatabaseHelper {
         deadline $textType
       )
       ''');
+    }
+
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE goals ADD COLUMN color INTEGER DEFAULT 4278190080'); // 0xFF000000 dummy
+      await db.execute('ALTER TABLE goals ADD COLUMN icon INTEGER DEFAULT 58162');
+      await db.execute('ALTER TABLE goals ADD COLUMN status TEXT DEFAULT "active"');
+      await db.execute('ALTER TABLE goals ADD COLUMN image_path TEXT');
+      await db.execute('ALTER TABLE goals ADD COLUMN auto_debit_amount REAL');
+      await db.execute('ALTER TABLE goals ADD COLUMN auto_debit_date INTEGER');
+    }
+
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE transactions ADD COLUMN goal_id INTEGER');
+    }
+
+    if (oldVersion < 5) {
+      await _createCategoryTable(db);
+      await _seedDefaultCategories(db);
+    }
+  }
+
+  Future<void> _createCategoryTable(Database db) async {
+    const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const textType = 'TEXT NOT NULL';
+    const intType = 'INTEGER NOT NULL';
+    
+    await db.execute('''
+    CREATE TABLE categories (
+      id $idType,
+      name $textType,
+      icon_code $intType,
+      color_value $intType,
+      order_index $intType
+    )
+    ''');
+  }
+
+  Future<void> _seedDefaultCategories(Database db) async {
+    final List<Map<String, dynamic>> defaults = [
+      {'name': 'Gadget', 'icon_code': 0xe1b1, 'color_value': 0xFF2196F3, 'order_index': 0}, // computer
+      {'name': 'Kendaraan', 'icon_code': 0xe1d1, 'color_value': 0xFFF44336, 'order_index': 1}, // car
+      {'name': 'Liburan', 'icon_code': 0xe04d, 'color_value': 0xFF4CAF50, 'order_index': 2}, // flight
+      {'name': 'Pendidikan', 'icon_code': 0xe54d, 'color_value': 0xFF9C27B0, 'order_index': 3}, // school
+      {'name': 'Dana Darurat', 'icon_code': 0xe30a, 'color_value': 0xFFFF9800, 'order_index': 4}, // health
+    ];
+    
+    for (var cat in defaults) {
+      await db.insert('categories', cat);
     }
   }
 
@@ -86,13 +135,15 @@ CREATE TABLE accounts (
 CREATE TABLE transactions (
   id $idType,
   account_id $intType,
+  goal_id $intType,
   type $textType,
   amount $realType,
   description $textType,
   date $textType,
-      FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE
-    )
-    ''');
+  FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE,
+  FOREIGN KEY (goal_id) REFERENCES goals (id) ON DELETE SET NULL
+)
+''');
 
     await db.execute('''
     CREATE TABLE goals (
@@ -100,9 +151,18 @@ CREATE TABLE transactions (
       name $textType,
       target_amount $realType,
       current_amount $realType,
-      deadline $textType
+      deadline $textType,
+      color $intType,
+      icon $intType,
+      status $textType,
+      image_path TEXT,
+      auto_debit_amount REAL,
+      auto_debit_date INTEGER
     )
     ''');
+
+    await _createCategoryTable(db);
+    await _seedDefaultCategories(db);
   }
 
   // Account Operations
@@ -208,13 +268,50 @@ CREATE TABLE transactions (
     );
   }
 
-  Future<int> deleteGoal(int id) async {
+  // Category Operations
+  Future<CategoryModel> createCategory(CategoryModel category) async {
+    final db = await instance.database;
+    final id = await db.insert('categories', category.toMap());
+    return category.copyWith(id: id);
+  }
+
+  Future<List<CategoryModel>> readAllCategories() async {
+    final db = await instance.database;
+    final result = await db.query('categories', orderBy: 'order_index ASC');
+    return result.map((json) => CategoryModel.fromMap(json)).toList();
+  }
+
+  Future<int> updateCategory(CategoryModel category) async {
+    final db = await instance.database;
+    return db.update(
+      'categories',
+      category.toMap(),
+      where: 'id = ?',
+      whereArgs: [category.id],
+    );
+  }
+
+  Future<int> deleteCategory(int id) async {
     final db = await instance.database;
     return await db.delete(
-      'goals',
+      'categories',
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<void> updateCategoryOrder(List<CategoryModel> categories) async {
+    final db = await instance.database;
+    await db.transaction((txn) async {
+      for (int i = 0; i < categories.length; i++) {
+        await txn.update(
+          'categories',
+          {'order_index': i},
+          where: 'id = ?',
+          whereArgs: [categories[i].id],
+        );
+      }
+    });
   }
 
   Future close() async {
