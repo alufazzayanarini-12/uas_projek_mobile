@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import 'pin_screen.dart';
+import 'category_management_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -55,7 +56,7 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.category_outlined,
                 color: Colors.orange,
                 onTap: () {
-                  // TODO: Category Management
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CategoryManagementScreen()));
                 },
               ),
               _buildSettingCard(

@@ -45,7 +45,10 @@ class AccountProvider with ChangeNotifier {
   }
 
   Future<List<TransactionModel>> getTransactionsForAccount(int accountId) async {
-    return await DatabaseHelper.instance.readTransactionsByAccount(accountId);
+    final allTransactions = await DatabaseHelper.instance.readAllTransactions();
+    return allTransactions.where((t) => 
+      t.accountId == accountId || t.targetAccountId == accountId
+    ).toList();
   }
 
   Future<List<TransactionModel>> getAllTransactions() async {

@@ -91,23 +91,35 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
                   separatorBuilder: (context, index) => const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final tx = transactions[index];
-                    final isDeposit = tx.type == 'deposit';
+                    final isIncoming = tx.type == 'deposit' || (tx.type == 'transfer' && tx.targetAccountId == widget.account.id);
                     
+                    String title = tx.description;
+                    if (tx.type == 'transfer') {
+                      final provider = Provider.of<AccountProvider>(context, listen: false);
+                      if (tx.accountId == widget.account.id) {
+                        final recipient = provider.accounts.firstWhere((a) => a.id == tx.targetAccountId, orElse: () => widget.account);
+                        title = 'Transfer ke ${recipient.name}';
+                      } else {
+                        final sender = provider.accounts.firstWhere((a) => a.id == tx.accountId, orElse: () => widget.account);
+                        title = 'Terima dari ${sender.name}';
+                      }
+                    }
+
                     return ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                       leading: CircleAvatar(
-                        backgroundColor: isDeposit ? Colors.green[100] : Colors.red[100],
+                        backgroundColor: isIncoming ? Colors.green[100] : Colors.red[100],
                         child: Icon(
-                          isDeposit ? Icons.arrow_downward : Icons.arrow_upward,
-                          color: isDeposit ? Colors.green : Colors.red,
+                          isIncoming ? Icons.trending_up : Icons.trending_down,
+                          color: isIncoming ? Colors.green : Colors.red,
                         ),
                       ),
-                      title: Text(tx.description, style: const TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: Text(DateFormat('dd MMM yyyy, HH:mm').format(tx.date)),
+                      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text('${tx.description} • ${DateFormat('dd MMM, HH:mm').format(tx.date)}'),
                       trailing: Text(
-                        '${isDeposit ? '+' : '-'} ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(tx.amount)}',
+                        '${isIncoming ? '+' : '-'} ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(tx.amount)}',
                         style: TextStyle(
-                          color: isDeposit ? Colors.green : Colors.red,
+                          color: isIncoming ? Colors.green : Colors.red,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),

@@ -2,6 +2,8 @@ class TransactionModel {
   final int? id;
   final int accountId;
   final int? goalId;
+  final int? categoryId;
+  final int? targetAccountId; // For transfers
   final String type; // 'deposit', 'withdrawal', 'transfer'
   final double amount;
   final String description;
@@ -11,6 +13,8 @@ class TransactionModel {
     this.id,
     required this.accountId,
     this.goalId,
+    this.categoryId,
+    this.targetAccountId,
     required this.type,
     required this.amount,
     required this.description,
@@ -22,6 +26,8 @@ class TransactionModel {
       'id': id,
       'account_id': accountId,
       'goal_id': goalId,
+      'category_id': categoryId,
+      'target_account_id': targetAccountId,
       'type': type,
       'amount': amount,
       'description': description,
@@ -34,6 +40,8 @@ class TransactionModel {
       id: map['id'],
       accountId: map['account_id'],
       goalId: map['goal_id'],
+      categoryId: map['category_id'],
+      targetAccountId: map['target_account_id'],
       type: map['type'],
       amount: map['amount'],
       description: map['description'],
