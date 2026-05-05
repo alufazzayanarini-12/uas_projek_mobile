@@ -8,7 +8,6 @@ import '../models/account.dart';
 import '../models/transaction_model.dart';
 import '../models/goal.dart';
 import '../models/category_model.dart';
-import '../models/debt_model.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -27,7 +26,7 @@ class DatabaseHelper {
       databaseFactory = databaseFactoryFfiWeb;
       return await openDatabase(
         filePath,
-        version: 9,
+        version: 8,
         onCreate: _createDB,
         onUpgrade: _upgradeDB,
       );
@@ -43,7 +42,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 9,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -104,20 +103,6 @@ class DatabaseHelper {
     
     if (oldVersion < 8) {
       await db.execute('ALTER TABLE transactions ADD COLUMN target_account_id INTEGER');
-    }
-
-    if (oldVersion < 9) {
-      await db.execute('''
-      CREATE TABLE debts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        person_name TEXT NOT NULL,
-        total_amount REAL NOT NULL,
-        remaining_amount REAL NOT NULL,
-        due_date TEXT NOT NULL,
-        type TEXT NOT NULL,
-        status TEXT NOT NULL
-      )
-      ''');
     }
   }
 

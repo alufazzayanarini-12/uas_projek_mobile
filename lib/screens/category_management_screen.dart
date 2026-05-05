@@ -3,11 +3,6 @@ import 'package:provider/provider.dart';
 import '../models/category_model.dart';
 import '../providers/category_provider.dart';
 import 'category_history_screen.dart';
-import 'specialized/emergency_fund_screen.dart';
-import 'specialized/debt_management_screen.dart';
-import 'specialized/daily_income_screen.dart';
-import 'specialized/education_planning_screen.dart';
-import 'specialized/pocket_money_screen.dart';
 
 class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({super.key});
@@ -225,23 +220,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 case 'archive': provider.toggleArchive(category); break;
                 case 'delete': _confirmDelete(category, provider); break;
                 case 'history': 
-                  Widget targetScreen;
-                  final name = category.name.toLowerCase();
-                  if (name.contains('darurat')) {
-                    targetScreen = EmergencyFundScreen(category: category);
-                  } else if (name.contains('hutang')) {
-                    targetScreen = DebtManagementScreen(category: category);
-                  } else if (name.contains('hasil') || name.contains('harian')) {
-                    targetScreen = DailyIncomeScreen(category: category);
-                  } else if (name.contains('didik') || name.contains('sekolah')) {
-                    targetScreen = EducationPlanningScreen(category: category);
-                  } else if (name.contains('bulan') || name.contains('jajan')) {
-                    targetScreen = PocketMoneyScreen(category: category);
-                  } else {
-                    targetScreen = CategoryHistoryScreen(category: category);
-                  }
                   Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => targetScreen,
+                    builder: (context) => CategoryHistoryScreen(category: category),
                   ));
                   break;
               }

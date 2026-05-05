@@ -5,7 +5,6 @@ import 'package:fl_chart/fl_chart.dart';
 import '../models/category_model.dart';
 import '../models/transaction_model.dart';
 import '../providers/category_provider.dart';
-import 'package:uasnw_projek/providers/account_provider.dart';
 
 class CategoryHistoryScreen extends StatefulWidget {
   final CategoryModel category;
@@ -356,20 +355,14 @@ class _CategoryHistoryScreenState extends State<CategoryHistoryScreen> {
                       size: 20,
                     ),
                   ),
-                  title: Builder(builder: (context) {
-                    String title = t.description;
-                    if (t.type == 'transfer') {
-                      final provider = Provider.of<AccountProvider>(context, listen: false);
-                      final sender = provider.accounts.firstWhere((a) => a.id == t.accountId, orElse: () => provider.accounts.first);
-                      final recipient = provider.accounts.firstWhere((a) => a.id == t.targetAccountId, orElse: () => provider.accounts.first);
-                      title = '${sender.name} ➔ ${recipient.name}';
-                    }
-                    return Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16));
-                  }),
+                  title: Text(
+                    t.description, 
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)
+                  ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      '${t.description} • ${DateFormat('HH:mm').format(t.date)}',
+                      DateFormat('HH:mm').format(t.date),
                       style: TextStyle(color: Colors.grey[500], fontSize: 13),
                     ),
                   ),
