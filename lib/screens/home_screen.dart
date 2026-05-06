@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/account_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/settings_provider.dart';
 import '../models/account.dart';
 import '../models/transaction_model.dart';
 import 'add_account_screen.dart';
@@ -10,6 +11,7 @@ import 'account_detail_screen.dart';
 import 'category_management_screen.dart';
 import 'add_goal_screen.dart';
 import 'add_transaction_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: Colors.black87, size: 28),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CategoryManagementScreen())),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen())),
           ),
           const SizedBox(width: 8),
         ],
@@ -63,23 +65,30 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                // Total Balance Card
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Colors.black, Color(0xFF333333)]),
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20)],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Total Saldo Tersedia', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                      const SizedBox(height: 12),
-                      Text(fmt.format(totalBalance), style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900)),
-                    ],
-                  ),
-                ),
+              // Total Balance Card
+              Consumer<SettingsProvider>(
+                builder: (context, settings, _) {
+                  return Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Colors.black, Color(0xFF333333)]),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20)],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Total Saldo Tersedia', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                        const SizedBox(height: 12),
+                        Text(
+                          settings.isBalanceHidden ? '*******' : fmt.format(totalBalance),
+                          style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
                 const SizedBox(height: 35),
                 const Text('Daftar Rekening', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
                 const SizedBox(height: 16),
@@ -154,7 +163,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(account.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
-                      Text(fmt.format(account.balance), style: TextStyle(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w600)),
+                      Consumer<SettingsProvider>(
+                        builder: (context, settings, _) {
+                          return Text(
+                            settings.isBalanceHidden ? '*******' : fmt.format(account.balance),
+                            style: TextStyle(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w600),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),

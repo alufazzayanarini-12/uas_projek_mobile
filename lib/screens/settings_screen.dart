@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
-import 'pin_screen.dart';
 import 'category_management_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -10,88 +9,102 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Pengaturan', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Pengaturan', style: TextStyle(fontWeight: FontWeight.w900)),
+        centerTitle: true,
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
       body: Consumer<SettingsProvider>(
-        builder: (context, settings, _) {
+        builder: (context, settings, child) {
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             children: [
-              _buildSectionHeader('Keamanan & Privasi'),
-              _buildSettingCard(
-                title: 'Kunci Aplikasi (PIN)',
-                subtitle: settings.isPinEnabled ? 'PIN Aktif' : 'Atur PIN sekarang',
-                icon: Icons.lock_outline,
-                color: Colors.blue,
-                trailing: Switch(
-                  value: settings.isPinEnabled,
-                  onChanged: (val) {
-                    if (val) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const PinScreen(isSetup: true)));
-                    } else {
-                      // Logic to disable PIN could be added here
-                    }
-                  },
-                ),
-              ),
-              _buildSettingCard(
-                title: 'Mode Privasi',
-                subtitle: 'Sembunyikan saldo di beranda',
+              const SizedBox(height: 10),
+              
+              // ── SEKSI PRIVASI & TAMPILAN ──
+              _buildSectionTitle('Privasi & Tampilan'),
+              _buildSettingTile(
                 icon: Icons.visibility_off_outlined,
-                color: Colors.purple,
+                title: 'Mode Privasi',
+                subtitle: 'Sembunyikan saldo di halaman utama',
                 trailing: Switch(
                   value: settings.isBalanceHidden,
                   onChanged: (val) => settings.toggleBalanceVisibility(),
+                  activeColor: Colors.black,
                 ),
               ),
-              const SizedBox(height: 24),
-              _buildSectionHeader('Data & Laporan'),
-              _buildSettingCard(
-                title: 'Manajemen Kategori',
-                subtitle: 'Atur kategori tabungan kamu',
+              
+              const SizedBox(height: 25),
+              
+              // ── SEKSI KEAMANAN ──
+              _buildSectionTitle('Keamanan'),
+              _buildSettingTile(
+                icon: Icons.lock_outline,
+                title: 'Kunci Aplikasi (PIN)',
+                subtitle: 'Gunakan PIN saat membuka aplikasi',
+                trailing: Switch(
+                  value: settings.isPinEnabled,
+                  onChanged: (val) {
+                    // Logika pengaturan PIN bisa ditambahkan di sini
+                  },
+                  activeColor: Colors.black,
+                ),
+              ),
+              _buildSettingTile(
+                icon: Icons.fingerprint,
+                title: 'Biometrik',
+                subtitle: 'Sidik jari atau Face ID',
+                trailing: Switch(
+                  value: settings.isBiometricEnabled,
+                  onChanged: (val) => settings.toggleBiometric(val),
+                  activeColor: Colors.black,
+                ),
+              ),
+              
+              const SizedBox(height: 25),
+              
+              // ── SEKSI DATA & KATEGORI ──
+              _buildSectionTitle('Data & Kategori'),
+              _buildSettingTile(
                 icon: Icons.category_outlined,
-                color: Colors.orange,
+                title: 'Manajemen Kategori',
+                subtitle: 'Edit atau tambah kategori tabungan',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CategoryManagementScreen())),
+              ),
+              _buildSettingTile(
+                icon: Icons.picture_as_pdf_outlined,
+                title: 'Ekspor Laporan',
+                subtitle: 'Unduh riwayat dalam format PDF/Excel',
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CategoryManagementScreen()));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fitur Ekspor akan segera hadir!')));
                 },
               ),
-              _buildSettingCard(
-                title: 'Ekspor Riwayat',
-                subtitle: 'Unduh laporan PDF / Excel',
-                icon: Icons.file_download_outlined,
-                color: Colors.green,
-                onTap: () {
-                  // TODO: Export Data
-                },
-              ),
-              const SizedBox(height: 24),
-              _buildSectionHeader('Lainnya'),
-              _buildSettingCard(
-                title: 'Notifikasi Pengingat',
-                subtitle: 'Atur jadwal menabung harian',
-                icon: Icons.notifications_active_outlined,
-                color: Colors.redAccent,
-                onTap: () {
-                  // TODO: Notifications
-                },
-              ),
-              _buildSettingCard(
-                title: 'Cadangkan ke Cloud',
-                subtitle: 'Backup data ke Google Drive',
+              
+              const SizedBox(height: 25),
+              
+              // ── SEKSI LAINNYA ──
+              _buildSectionTitle('Lainnya'),
+              _buildSettingTile(
                 icon: Icons.cloud_upload_outlined,
-                color: Colors.lightBlue,
-                onTap: () {
-                  // TODO: Backup Cloud
-                },
+                title: 'Cadangkan Data (Cloud)',
+                subtitle: 'Hubungkan ke Google Drive',
+                onTap: () {},
               ),
+              _buildSettingTile(
+                icon: Icons.notifications_none_outlined,
+                title: 'Pengingat Menabung',
+                subtitle: 'Atur jadwal notifikasi harian/bulanan',
+                onTap: () {},
+              ),
+              
               const SizedBox(height: 40),
               const Center(
                 child: Text('Versi 1.0.0', style: TextStyle(color: Colors.grey, fontSize: 12)),
               ),
+              const SizedBox(height: 20),
             ],
           );
         },
@@ -99,44 +112,39 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 12),
+      padding: const EdgeInsets.only(bottom: 12, left: 4),
       child: Text(
-        title,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+        title.toUpperCase(),
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.grey, letterSpacing: 1.2),
       ),
     );
   }
 
-  Widget _buildSettingCard({
+  Widget _buildSettingTile({
+    required IconData icon,
     required String title,
     required String subtitle,
-    required IconData icon,
-    required Color color,
     Widget? trailing,
     VoidCallback? onTap,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-          child: Icon(icon, color: color),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, color: Colors.black87),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        trailing: trailing ?? const Icon(Icons.chevron_right, color: Colors.grey),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+        trailing: trailing ?? const Icon(Icons.chevron_right, size: 18),
       ),
     );
   }

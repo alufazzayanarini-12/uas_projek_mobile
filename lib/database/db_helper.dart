@@ -42,7 +42,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 9,
+      version: 10,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -108,18 +108,34 @@ class DatabaseHelper {
     if (oldVersion < 9) {
       await db.execute("ALTER TABLE goals ADD COLUMN category TEXT DEFAULT 'Lainnya'");
     }
+
+    if (oldVersion < 10) {
+      await db.execute('''
+        CREATE TABLE debts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          contact_name TEXT NOT NULL,
+          amount REAL NOT NULL,
+          remaining_amount REAL NOT NULL,
+          due_date TEXT,
+          type TEXT NOT NULL, -- 'debt' (hutang) or 'credit' (piutang)
+          status TEXT NOT NULL -- 'active' or 'paid'
+        )
+      ''');
+    }
   }
 
   Future<void> _seedDefaultCategories(Database db) async {
-    final List<Map<String, dynamic>> defaults = [
-      {'name': 'Gadget', 'icon_code_point': 58167, 'color_value': 4280391411, 'order_index': 0}, // computer
-      {'name': 'Kendaraan', 'icon_code_point': 58162, 'color_value': 4294918656, 'order_index': 1}, // directions_car
-      {'name': 'Liburan', 'icon_code_point': 58156, 'color_value': 4280361249, 'order_index': 2}, // airplanemode_active
-      {'name': 'Pendidikan', 'icon_code_point': 58169, 'color_value': 4288534784, 'order_index': 3}, // school
-      {'name': 'Dana Darurat', 'icon_code_point': 58161, 'color_value': 4294901760, 'order_index': 4}, // warning
+    final List<Map<String, dynamic>> defaultCategories = [
+      {'name': 'Hutang', 'icon_code_point': 0xf0289, 'color_value': 0xFFF44336, 'order_index': 0},
+      {'name': 'Tabungan Saya', 'icon_code_point': 0xe54e, 'color_value': 0xFFE91E63, 'order_index': 1},
+      {'name': 'Pendidikan', 'icon_code_point': 0xe5bc, 'color_value': 0xFF2196F3, 'order_index': 2},
+      {'name': 'Uang Bulanan', 'icon_code_point': 0xe040, 'color_value': 0xFF4CAF50, 'order_index': 3},
+      {'name': 'Dana Darurat', 'icon_code_point': 0xe30d, 'color_value': 0xFFFF9800, 'order_index': 4},
+      {'name': 'Uang Saku', 'icon_code_point': 0xe541, 'color_value': 0xFF9C27B0, 'order_index': 5},
+      {'name': 'Lainnya', 'icon_code_point': 0xe1b1, 'color_value': 0xFF607D8B, 'order_index': 6},
     ];
 
-    for (var cat in defaults) {
+    for (var cat in defaultCategories) {
       await db.insert('categories', cat);
     }
   }
@@ -190,6 +206,17 @@ CREATE TABLE transactions (
     ''');
 
     await _seedDefaultCategories(db);
+    await db.execute('''
+    CREATE TABLE debts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      contact_name TEXT NOT NULL,
+      amount REAL NOT NULL,
+      remaining_amount REAL NOT NULL,
+      due_date TEXT,
+      type TEXT NOT NULL,
+      status TEXT NOT NULL
+    )
+    ''');
   }
 
   // Account Operations

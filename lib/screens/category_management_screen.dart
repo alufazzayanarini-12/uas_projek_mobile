@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/category_provider.dart';
 import '../models/category_model.dart';
+import 'category_detail_screen.dart';
 
 class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({super.key});
@@ -21,56 +22,110 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     });
   }
 
-  // ── DIALOG EDIT / TAMBAH KATEGORI ──
+  // ── PEMILIH IKON ──
+  final List<IconData> _availableIcons = [
+    Icons.shopping_bag, Icons.directions_car, Icons.flight, Icons.school,
+    Icons.shield, Icons.home, Icons.health_and_safety, Icons.category,
+    Icons.smartphone, Icons.computer, Icons.favorite, Icons.savings,
+    Icons.fastfood, Icons.celebration, Icons.fitness_center, Icons.work
+  ];
+
+  // ── PEMILIH WARNA ──
+  final List<Color> _availableColors = [
+    Colors.blue, Colors.red, Colors.green, Colors.orange, Colors.purple,
+    Colors.teal, Colors.pink, Colors.amber, Colors.cyan, Colors.indigo,
+    Colors.brown, Colors.blueGrey, Colors.deepOrange, Colors.deepPurple
+  ];
+
   void _showCategoryDialog({CategoryModel? category}) {
     final nameController = TextEditingController(text: category?.name ?? '');
-    int selectedIcon = category?.iconCodePoint ?? 0xe1b1; // Icons.category
-    int selectedColor = category?.colorValue ?? 0xFF2196F3; // Default Blue
+    int selectedIconCode = category?.iconCodePoint ?? Icons.category.codePoint;
+    int selectedColorValue = category?.colorValue ?? Colors.blue.value;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(category == null ? 'Kategori Baru' : 'Ubah Kategori', 
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'Nama Kategori',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixIcon: Icon(IconData(selectedIcon, fontFamily: 'MaterialIcons'), color: Color(selectedColor)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text(category == null ? 'Kategori Baru' : 'Ubah Kategori', style: const TextStyle(fontWeight: FontWeight.bold)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Nama Kategori',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                    prefixIcon: Icon(IconData(selectedIconCode, fontFamily: 'MaterialIcons'), color: Color(selectedColorValue)),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              const Align(alignment: Alignment.centerLeft, child: Text('Pilih Warna Tema:', style: TextStyle(fontSize: 12, color: Colors.grey))),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _colorOption(setDialogState, Colors.blue.value, selectedColor, (val) => selectedColor = val),
-                  _colorOption(setDialogState, Colors.red.value, selectedColor, (val) => selectedColor = val),
-                  _colorOption(setDialogState, Colors.green.value, selectedColor, (val) => selectedColor = val),
-                  _colorOption(setDialogState, Colors.orange.value, selectedColor, (val) => selectedColor = val),
-                  _colorOption(setDialogState, Colors.purple.value, selectedColor, (val) => selectedColor = val),
-                ],
-              ),
-            ],
+                const SizedBox(height: 25),
+                const Align(alignment: Alignment.centerLeft, child: Text('Pilih Ikon', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 120,
+                  width: double.maxFinite,
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 8, crossAxisSpacing: 8),
+                    itemCount: _availableIcons.length,
+                    itemBuilder: (context, index) {
+                      final icon = _availableIcons[index];
+                      final isSelected = selectedIconCode == icon.codePoint;
+                      return GestureDetector(
+                        onTap: () => setDialogState(() => selectedIconCode = icon.codePoint),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isSelected ? Color(selectedColorValue).withOpacity(0.1) : Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                            border: isSelected ? Border.all(color: Color(selectedColorValue), width: 2) : null,
+                          ),
+                          child: Icon(icon, color: isSelected ? Color(selectedColorValue) : Colors.grey[600]),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 25),
+                const Align(alignment: Alignment.centerLeft, child: Text('Pilih Warna', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 45,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _availableColors.length,
+                    itemBuilder: (context, index) {
+                      final color = _availableColors[index];
+                      final isSelected = selectedColorValue == color.value;
+                      return GestureDetector(
+                        onTap: () => setDialogState(() => selectedColorValue = color.value),
+                        child: Container(
+                          width: 40,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: isSelected ? Border.all(color: Colors.black, width: 3) : null,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal', style: TextStyle(color: Colors.grey))),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
               onPressed: () {
                 if (nameController.text.isNotEmpty) {
                   final newCat = CategoryModel(
                     id: category?.id,
                     name: nameController.text,
-                    iconCodePoint: selectedIcon,
-                    colorValue: selectedColor,
+                    iconCodePoint: selectedIconCode,
+                    colorValue: selectedColorValue,
                   );
                   if (category == null) {
                     Provider.of<CategoryProvider>(context, listen: false).addCategory(newCat);
@@ -88,27 +143,12 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     );
   }
 
-  Widget _colorOption(Function setDialogState, int color, int current, Function(int) onSelect) {
-    return GestureDetector(
-      onTap: () => setDialogState(() => onSelect(color)),
-      child: Container(
-        width: 35,
-        height: 35,
-        decoration: BoxDecoration(
-          color: Color(color),
-          shape: BoxShape.circle,
-          border: current == color ? Border.all(color: Colors.black, width: 2) : null,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Manajemen Kategori', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22)),
+        title: const Text('Urutkan & Kelola', style: TextStyle(fontWeight: FontWeight.w900)),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.white,
@@ -120,20 +160,24 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       ),
       body: Consumer<CategoryProvider>(
         builder: (context, provider, _) {
-          if (provider.categories.isEmpty) {
+          final categories = provider.categories;
+
+          if (categories.isEmpty) {
             return const Center(child: Text('Belum ada kategori.', style: TextStyle(color: Colors.grey)));
           }
 
-          return ListView.builder(
+          // ── REORDERABLE LIST VIEW (DRAG & DROP) ──
+          return ReorderableListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            itemCount: provider.categories.length,
+            itemCount: categories.length,
+            onReorder: (oldIdx, newIdx) => provider.reorderCategories(oldIdx, newIdx),
             itemBuilder: (context, index) {
-              final cat = provider.categories[index];
+              final cat = categories[index];
               final isExpanded = _expandedIndex == index;
               final catColor = Color(cat.colorValue);
 
               return GestureDetector(
-                behavior: HitTestBehavior.opaque,
+                key: ValueKey(cat.id), // Penting untuk Reorderable
                 onTap: () {
                   setState(() {
                     _expandedIndex = isExpanded ? null : index;
@@ -144,53 +188,43 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isExpanded ? Colors.blue.withOpacity(0.02) : Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    // ── BORDER BIRU MUDA SAAT AKTIF ──
+                    color: isExpanded ? catColor.withOpacity(0.05) : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isExpanded ? Colors.blue.withOpacity(0.3) : Colors.grey.shade100,
+                      color: isExpanded ? catColor.withOpacity(0.3) : Colors.grey.shade100,
                       width: isExpanded ? 2 : 1,
                     ),
-                    boxShadow: isExpanded 
-                        ? [BoxShadow(color: Colors.blue.withOpacity(0.05), blurRadius: 10)]
-                        : [],
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
                   ),
                   child: Row(
                     children: [
-                      // Ikon Kategori
+                      // Handle Drag
+                      const Icon(Icons.drag_indicator, color: Colors.grey, size: 20),
+                      const SizedBox(width: 12),
+                      // Icon Kategori
                       Container(
                         padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: catColor.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(IconData(cat.iconCodePoint, fontFamily: 'MaterialIcons'), color: catColor, size: 24),
+                        decoration: BoxDecoration(color: catColor.withOpacity(0.1), shape: BoxShape.circle),
+                        child: Icon(IconData(cat.iconCodePoint, fontFamily: 'MaterialIcons'), color: catColor, size: 22),
                       ),
                       const SizedBox(width: 15),
-                      // Nama Kategori
+                      // Nama
                       Expanded(
-                        child: Text(cat.name, style: TextStyle(fontWeight: isExpanded ? FontWeight.w800 : FontWeight.w600, fontSize: 16)),
+                        child: Text(cat.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                       ),
-                      // ── KONTROL EDIT / HAPUS SAAT AKTIF ──
                       if (isExpanded)
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.edit_outlined, color: Colors.blue, size: 22),
-                              onPressed: () => _showCategoryDialog(category: cat),
+                              icon: const Icon(Icons.open_in_new, color: Colors.green, size: 20),
+                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryDetailScreen(category: cat))),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.red, size: 22),
-                              onPressed: () {
-                                provider.deleteCategory(cat.id!);
-                                setState(() => _expandedIndex = null);
-                              },
-                            ),
+                            IconButton(icon: const Icon(Icons.edit_outlined, color: Colors.blue), onPressed: () => _showCategoryDialog(category: cat)),
+                            IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () => provider.deleteCategory(cat.id!)),
                           ],
                         )
                       else
-                        // ── CHEVRON SAAT TIDAK AKTIF ──
                         const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
                     ],
                   ),
@@ -200,14 +234,11 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           );
         },
       ),
-      // ── FLOATING ACTION BUTTON BIRU ──
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCategoryDialog(),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: const Icon(Icons.add, size: 30),
+        backgroundColor: Colors.black,
+        label: const Text('Kategori Kustom', style: TextStyle(fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.add),
       ),
     );
   }
