@@ -4,6 +4,7 @@ import 'providers/account_provider.dart';
 import 'providers/goal_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/category_provider.dart';
+import 'providers/transaction_provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/pin_screen.dart';
 
@@ -16,6 +17,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => GoalProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => TransactionProvider()),
       ],
       child: const MyApp(),
     ),

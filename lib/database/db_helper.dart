@@ -26,7 +26,7 @@ class DatabaseHelper {
       databaseFactory = databaseFactoryFfiWeb;
       return await openDatabase(
         filePath,
-        version: 8,
+        version: 9,
         onCreate: _createDB,
         onUpgrade: _upgradeDB,
       );
@@ -42,7 +42,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -103,6 +103,10 @@ class DatabaseHelper {
     
     if (oldVersion < 8) {
       await db.execute('ALTER TABLE transactions ADD COLUMN target_account_id INTEGER');
+    }
+
+    if (oldVersion < 9) {
+      await db.execute("ALTER TABLE goals ADD COLUMN category TEXT DEFAULT 'Lainnya'");
     }
   }
 
@@ -167,7 +171,8 @@ CREATE TABLE transactions (
       status $textType,
       image_path TEXT,
       auto_debit_amount REAL,
-      auto_debit_date INTEGER
+      auto_debit_date INTEGER,
+      category TEXT DEFAULT 'Lainnya'
     )
     ''');
 

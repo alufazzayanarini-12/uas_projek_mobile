@@ -199,14 +199,31 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Color(_currentGoal.color).withOpacity(0.1),
+                                      color: Color(_currentGoal.color).withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(IconData(_currentGoal.icon, fontFamily: 'MaterialIcons'), size: 40, color: Color(_currentGoal.color)),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 8),
+                              // Category badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Color(_currentGoal.color).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  _currentGoal.category,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(_currentGoal.color),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
                                 child: LinearProgressIndicator(
@@ -262,6 +279,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                       // Details
                       const Text('Informasi Target', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 12),
+                      _buildDetailRow(Icons.category, 'Kategori', _currentGoal.category),
+                      _buildDetailRow(Icons.account_balance_wallet, 'Sisa Target', NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(_currentGoal.remainingAmount)),
                       _buildDetailRow(Icons.timer_outlined, 'Sisa Waktu', '$daysLeft Hari'),
                       _buildDetailRow(Icons.event_note, 'Tenggat Waktu', DateFormat('dd MMMM yyyy').format(_currentGoal.deadline)),
                       if (_currentGoal.autoDebitAmount != null)

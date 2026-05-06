@@ -22,19 +22,32 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   Color _selectedColor = Colors.blue;
   IconData _selectedIcon = Icons.flag;
   File? _imageFile;
-  bool _enableAutoDebit = false;
-  double _autoDebitAmount = 0.0;
-  int _autoDebitDate = 1;
+  String _selectedCategory = 'Lainnya';
 
-  final List<Color> _colors = [
-    Colors.blue, Colors.red, Colors.green, Colors.orange, 
-    Colors.purple, Colors.teal, Colors.pink, Colors.amber
-  ];
+  // Controller untuk input nominal
+  final _amountController = TextEditingController();
 
-  final List<IconData> _icons = [
-    Icons.flag, Icons.home, Icons.directions_car, Icons.airplanemode_active,
-    Icons.computer, Icons.smartphone, Icons.shopping_bag, Icons.favorite
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _applyCategory(_selectedCategory);
+    _amountController.addListener(() {
+      setState(() {
+        _targetAmount = double.tryParse(_amountController.text) ?? 0.0;
+      });
+    });
+  }
+
+  void _applyCategory(String categoryName) {
+    final preset = Goal.getCategoryPreset(categoryName);
+    if (preset != null) {
+      setState(() {
+        _selectedCategory = categoryName;
+        _selectedColor = Color(preset['color'] as int);
+        _selectedIcon = IconData(preset['icon'] as int, fontFamily: 'MaterialIcons');
+      });
+    }
+  }
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -49,7 +62,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   void _saveGoal() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      
+
       final goal = Goal(
         name: _name,
         targetAmount: _targetAmount,
@@ -58,8 +71,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
         color: _selectedColor.value,
         icon: _selectedIcon.codePoint,
         imagePath: _imageFile?.path,
-        autoDebitAmount: _enableAutoDebit ? _autoDebitAmount : null,
-        autoDebitDate: _enableAutoDebit ? _autoDebitDate : null,
+        category: _selectedCategory,
       );
 
       Provider.of<GoalProvider>(context, listen: false).addGoal(goal);
@@ -74,191 +86,220 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != _deadline) {
-      setState(() {
-        _deadline = picked;
-      });
-    }
+    if (picked != null) setState(() => _deadline = picked);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Tambah Target'),
+        title: const Text('Target Baru', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Photo Picker Section
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  width: double.infinity,
-                  height: 150,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── 1. KATEGORI (SCROLL & CHIPS) ──
+                    const Text('Pilih Kategori', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: Goal.presetCategories.map((cat) {
+                          final isSelected = _selectedCategory == cat['name'];
+                          final catColor = Color(cat['color'] as int);
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              label: Text(cat['name'] as String),
+                              selected: isSelected,
+                              onSelected: (val) => _applyCategory(cat['name'] as String),
+                              avatar: isSelected 
+                                  ? const Icon(Icons.check, size: 16, color: Colors.white)
+                                  : Icon(IconData(cat['icon'] as int, fontFamily: 'MaterialIcons'), size: 16, color: catColor),
+                              selectedColor: catColor,
+                              labelStyle: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black87,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                              backgroundColor: Colors.grey[100],
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+
+                    // ── 2. PASANG FOTO (DASHED BOX) ──
+                    const Text('Pasang Foto Mimpi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        width: double.infinity,
+                        height: 180,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(20),
+                          border: _imageFile == null 
+                              ? Border.all(color: Colors.grey.shade300, width: 2, style: BorderStyle.solid) // Note: Flutter dash border needs custom painter, using solid for now
+                              : null,
+                        ),
+                        child: _imageFile != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Image.file(_imageFile!, fit: BoxFit.cover),
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_a_photo_outlined, size: 48, color: Colors.grey[400]),
+                                  const SizedBox(height: 12),
+                                  Text('Klik untuk pilih foto dari galeri', 
+                                    style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500)),
+                                  Text('Area ini bisa diklik seluruhnya', 
+                                    style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+                                ],
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+
+                    // ── 3. FORM INPUT ──
+                    TextFormField(
+                      decoration: InputDecoration(
+                        labelText: 'Nama Target',
+                        hintText: 'Contoh: Laptop Baru',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                        prefixIcon: Icon(Icons.flag, color: _selectedColor),
+                      ),
+                      onChanged: (val) => setState(() => _name = val),
+                      validator: (value) => value!.isEmpty ? 'Nama tidak boleh kosong' : null,
+                      onSaved: (value) => _name = value!,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _amountController,
+                      decoration: InputDecoration(
+                        labelText: 'Nominal Target',
+                        prefixText: 'Rp ',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                        prefixIcon: Icon(Icons.attach_money, color: _selectedColor),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value!.isEmpty ? 'Nominal harus diisi' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    ListTile(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: Colors.grey.shade300)),
+                      leading: Icon(Icons.calendar_today, color: _selectedColor),
+                      title: const Text('Tenggat Waktu'),
+                      subtitle: Text(DateFormat('dd MMMM yyyy').format(_deadline), style: const TextStyle(fontWeight: FontWeight.bold)),
+                      trailing: const Icon(Icons.edit, size: 20),
+                      onTap: () => _selectDate(context),
+                    ),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── 4. PREVIEW INSTAN (BOTTOM STICKY) ──
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, -5))],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('PREVIEW TARGET', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey, letterSpacing: 1.2)),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(12),
-                    image: _imageFile != null 
-                        ? DecorationImage(image: FileImage(_imageFile!), fit: BoxFit.cover)
-                        : null,
+                    color: _selectedColor.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: _selectedColor.withOpacity(0.1)),
                   ),
-                  child: _imageFile == null 
-                      ? const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                            SizedBox(height: 8),
-                            Text('Pasang Foto Mimpi Kamu', style: TextStyle(color: Colors.grey)),
-                          ],
-                        )
-                      : null,
-                ),
-              ),
-              const SizedBox(height: 24),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Nama Target (Maks. 50 Karakter)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.flag),
-                ),
-                maxLength: 50,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Nama target tidak boleh kosong';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _name = value!,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Nominal Target',
-                  border: OutlineInputBorder(),
-                  prefixText: 'Rp ',
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Nominal target harus diisi';
-                  }
-                  if (double.tryParse(value) == null || double.parse(value) <= 0) {
-                    return 'Nominal tidak valid';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _targetAmount = double.parse(value!),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Saldo Awal (Opsional)',
-                  border: OutlineInputBorder(),
-                  prefixText: 'Rp ',
-                ),
-                keyboardType: TextInputType.number,
-                onSaved: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    _currentAmount = double.tryParse(value) ?? 0.0;
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Batas Waktu (Tenggat)'),
-                subtitle: Text(DateFormat('dd MMMM yyyy').format(_deadline)),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: () => _selectDate(context),
-              ),
-              const Divider(),
-              const Text('Pilih Warna & Ikon', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 50,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _colors.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedColor = _colors[index]),
-                      child: Container(
-                        width: 40,
-                        margin: const EdgeInsets.only(right: 8),
+                  child: Row(
+                    children: [
+                      // Circular Icon/Image Preview
+                      Container(
+                        width: 50,
+                        height: 50,
                         decoration: BoxDecoration(
-                          color: _colors[index],
+                          color: _selectedColor.withOpacity(0.2),
                           shape: BoxShape.circle,
-                          border: _selectedColor == _colors[index] ? Border.all(color: Colors.black, width: 2) : null,
+                          image: _imageFile != null 
+                              ? DecorationImage(image: FileImage(_imageFile!), fit: BoxFit.cover)
+                              : null,
+                        ),
+                        child: _imageFile == null 
+                            ? Icon(_selectedIcon, color: _selectedColor)
+                            : null,
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_name.isEmpty ? 'Nama Target' : _name, 
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
+                            Text(_selectedCategory, 
+                              style: TextStyle(color: _selectedColor, fontSize: 12, fontWeight: FontWeight.w600)),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 50,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _icons.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedIcon = _icons[index]),
-                      child: Container(
-                        width: 40,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: _selectedIcon == _icons[index] ? Colors.grey[300] : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(_icons[index], color: _selectedColor),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text('Rp ${NumberFormat('#,###').format(_targetAmount)}', 
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                          Text(DateFormat('dd MMM yyyy').format(_deadline), 
+                            style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                        ],
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 ),
-              ),
-              const Divider(),
-              SwitchListTile(
-                title: const Text('Aktifkan Simulasi Autodebit'),
-                subtitle: const Text('Pindahkan saldo otomatis setiap bulan'),
-                value: _enableAutoDebit,
-                onChanged: (val) => setState(() => _enableAutoDebit = val),
-              ),
-              if (_enableAutoDebit) ...[
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Nominal per bulan', prefixText: 'Rp '),
-                  keyboardType: TextInputType.number,
-                  onSaved: (value) => _autoDebitAmount = double.tryParse(value ?? '0') ?? 0,
-                ),
-                DropdownButtonFormField<int>(
-                  decoration: const InputDecoration(labelText: 'Tanggal Penarikan'),
-                  value: _autoDebitDate,
-                  items: List.generate(28, (i) => DropdownMenuItem(value: i + 1, child: Text('Tanggal ${i + 1}'))),
-                  onChanged: (val) => setState(() => _autoDebitDate = val!),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton(
+                    onPressed: _saveGoal,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _selectedColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      elevation: 0,
+                    ),
+                    child: const Text('SIMPAN TARGET', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
                 ),
               ],
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _selectedColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  onPressed: _saveGoal,
-                  child: const Text('Simpan Target'),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
