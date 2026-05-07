@@ -42,7 +42,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 10,
+      version: 11,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -109,18 +109,8 @@ class DatabaseHelper {
       await db.execute("ALTER TABLE goals ADD COLUMN category TEXT DEFAULT 'Lainnya'");
     }
 
-    if (oldVersion < 10) {
-      await db.execute('''
-        CREATE TABLE debts (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          contact_name TEXT NOT NULL,
-          amount REAL NOT NULL,
-          remaining_amount REAL NOT NULL,
-          due_date TEXT,
-          type TEXT NOT NULL, -- 'debt' (hutang) or 'credit' (piutang)
-          status TEXT NOT NULL -- 'active' or 'paid'
-        )
-      ''');
+    if (oldVersion < 11) {
+      await db.execute('ALTER TABLE categories ADD COLUMN budget_limit REAL DEFAULT 0.0');
     }
   }
 
@@ -201,7 +191,8 @@ CREATE TABLE transactions (
       order_index $intType,
       is_archived INTEGER DEFAULT 0,
       is_pinned INTEGER DEFAULT 0,
-      parent_id INTEGER
+      parent_id INTEGER,
+      budget_limit REAL DEFAULT 0.0
     )
     ''');
 
