@@ -5,12 +5,13 @@ class SettingsProvider with ChangeNotifier {
   bool _isBalanceHidden = false;
   bool _isAppLockEnabled = false;
   bool _isBiometricEnabled = false;
+  String _userName = 'Arini'; // Nama Default
 
   bool get isBalanceHidden => _isBalanceHidden;
   bool get isAppLockEnabled => _isAppLockEnabled;
   bool get isBiometricEnabled => _isBiometricEnabled;
+  String get userName => _userName;
   
-  // Alias untuk kompatibilitas kode lama
   bool get isPinEnabled => _isAppLockEnabled;
 
   SettingsProvider() {
@@ -22,6 +23,14 @@ class SettingsProvider with ChangeNotifier {
     _isBalanceHidden = prefs.getBool('hide_balance') ?? false;
     _isAppLockEnabled = prefs.getBool('app_lock_enabled') ?? false;
     _isBiometricEnabled = prefs.getBool('biometric_enabled') ?? false;
+    _userName = prefs.getString('user_name') ?? 'Arini';
+    notifyListeners();
+  }
+
+  Future<void> setUserName(String name) async {
+    _userName = name;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_name', name);
     notifyListeners();
   }
 

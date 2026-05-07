@@ -8,6 +8,7 @@ import '../models/account.dart';
 import '../models/transaction_model.dart';
 import 'add_account_screen.dart';
 import 'account_detail_screen.dart';
+import 'add_transaction_screen.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,8 +19,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _isMenuOpen = false;
-
   @override
   void initState() {
     super.initState();
@@ -33,8 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _toggleMenu() => setState(() => _isMenuOpen = !_isMenuOpen);
-
   @override
   Widget build(BuildContext context) {
     final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
@@ -42,10 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
-        title: const Text('Tabunganku', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF1A237E), fontSize: 22)),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
+        title: const Text('Tabunganku', style: TextStyle(color: Color(0xFF1A237E), fontWeight: FontWeight.w900)),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: Color(0xFF1A237E)),
@@ -54,84 +51,70 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 10),
         ],
       ),
-      body: Stack(
-        children: [
-          Consumer2<AccountProvider, TransactionProvider>(
-            builder: (context, accProvider, txProvider, child) {
-              double totalBalance = accProvider.totalBalance;
-              final recentTxs = txProvider.transactions.take(10).toList();
-
-              return RefreshIndicator(
-                onRefresh: () async {
-                  await accProvider.loadAccounts();
-                  await txProvider.loadTransactions();
-                },
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: [
-                    const SizedBox(height: 10),
-                    _buildPremiumBalanceCard(totalBalance, fmt),
-                    const SizedBox(height: 35),
-                    _buildSectionHeader('Daftar Rekening', () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddAccountScreen()))),
-                    const SizedBox(height: 15),
-                    ...accProvider.accounts.map((acc) => _buildModernAccountCard(acc, fmt)).toList(),
-                    const SizedBox(height: 35),
-                    const Text('Riwayat Transaksi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8E99AF))),
-                    const SizedBox(height: 15),
-                    if (recentTxs.isEmpty)
-                      const Center(child: Padding(padding: EdgeInsets.all(20), child: Text('Belum ada transaksi.', style: TextStyle(color: Colors.grey))))
-                    else
-                      ...recentTxs.map((tx) => _buildTransactionItem(tx, fmt, accProvider.accounts)).toList(),
-                    const SizedBox(height: 120),
-                  ],
-                ),
-              );
-            },
-          ),
-          if (_isMenuOpen) _buildBlurOverlay(),
-        ],
+      body: Consumer2<AccountProvider, TransactionProvider>(
+        builder: (context, accProvider, txProvider, child) {
+          return ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            children: [
+              const SizedBox(height: 15),
+              _buildModernProfileCard(accProvider.totalBalance, fmt),
+              const SizedBox(height: 30),
+              _buildSectionHeader('Daftar Rekening', () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddAccountScreen()))),
+              const SizedBox(height: 15),
+              ...accProvider.accounts.map((acc) => _buildAccountCard(acc, fmt)).toList(),
+              const SizedBox(height: 100),
+            ],
+          );
+        },
       ),
-      floatingActionButton: _buildHomeSpeedDial(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showActionCenter,
+        backgroundColor: const Color(0xFF00BCD4),
+        elevation: 8,
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
+      ),
     );
   }
 
-  Widget _buildPremiumBalanceCard(double total, NumberFormat fmt) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF3949AB), Color(0xFF5E35B1)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [BoxShadow(color: const Color(0xFF3949AB).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Total Saldo Tersedia', style: TextStyle(color: Colors.white70, fontSize: 13)),
-          const SizedBox(height: 10),
-          Consumer<SettingsProvider>(
-            builder: (context, settings, _) => Text(
-              settings.isBalanceHidden ? '*******' : fmt.format(total),
-              style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-            ),
+  Widget _buildModernProfileCard(double total, NumberFormat fmt) {
+    return Consumer<SettingsProvider>(
+      builder: (context, settings, _) {
+        String initials = settings.userName.trim().split(' ').map((l) => l[0]).take(2).join().toUpperCase();
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(colors: [Color(0xFF1A237E), Color(0xFF3949AB)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [BoxShadow(color: const Color(0xFF1A237E).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
           ),
-          const SizedBox(height: 25),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Update Terakhir', style: TextStyle(color: Colors.white38, fontSize: 11)),
-              Text(DateFormat('dd MMMM yyyy').format(DateTime.now()), style: const TextStyle(color: Colors.white38, fontSize: 11)),
+              Row(
+                children: [
+                  CircleAvatar(backgroundColor: Colors.white24, radius: 22, child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                  const SizedBox(width: 15),
+                  GestureDetector(
+                    onTap: () => _showEditProfileModal(context, settings),
+                    child: Text(settings.userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 25),
+              Text(fmt.format(total), style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildModernAccountCard(Account account, NumberFormat fmt) {
+  Widget _buildAccountCard(Account account, NumberFormat fmt) {
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AccountDetailScreen(account: account))),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 15),
+        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)]),
         child: Row(
@@ -146,227 +129,128 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTransactionItem(TransactionModel tx, NumberFormat fmt, List<Account> accounts) {
-    final isDeposit = tx.type == 'deposit';
-    final acc = accounts.firstWhere((a) => a.id == tx.accountId, orElse: () => Account(name: '?', balance: 0, colorValue: 0, iconCodePoint: 0));
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: isDeposit ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1), 
-            child: Icon(isDeposit ? Icons.arrow_downward : Icons.arrow_upward, color: isDeposit ? Colors.green : Colors.red, size: 20)
-          ),
-          const SizedBox(width: 15),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(tx.description, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)), Text(acc.name, style: const TextStyle(fontSize: 11, color: Colors.blueGrey))])),
-          Text('${isDeposit ? '+' : '-'} ${fmt.format(tx.amount)}', style: TextStyle(fontWeight: FontWeight.bold, color: isDeposit ? Colors.green : Colors.red)),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSectionHeader(String title, VoidCallback onAdd) {
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8E99AF))), IconButton(icon: const Icon(Icons.add_circle_outline, color: Color(0xFF3949AB)), onPressed: onAdd)]);
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8E99AF))), IconButton(icon: const Icon(Icons.add_circle_outline, color: Color(0xFF1A237E)), onPressed: onAdd)]);
   }
 
-  Widget _buildBlurOverlay() => GestureDetector(onTap: _toggleMenu, child: Container(color: Colors.black.withOpacity(0.3)));
-
-  Widget _buildHomeSpeedDial() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (_isMenuOpen) ...[
-          _buildMiniFab(Icons.add_shopping_cart, 'Catat Transaksi', Colors.blue, () => _showGeneralTxModal()),
-          const SizedBox(height: 12),
-        ],
-        FloatingActionButton(
-          onPressed: _toggleMenu,
-          backgroundColor: _isMenuOpen ? Colors.black : const Color(0xFF00BCD4),
-          child: Icon(_isMenuOpen ? Icons.close : Icons.add, color: Colors.white, size: 30),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMiniFab(IconData icon, String label, Color col, VoidCallback onTap) {
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      Card(elevation: 2, child: Padding(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)))),
-      const SizedBox(width: 10),
-      FloatingActionButton.small(onPressed: onTap, backgroundColor: col, child: Icon(icon, color: Colors.white)),
-    ]);
-  }
-
-  void _showGeneralTxModal() {
-    final accounts = Provider.of<AccountProvider>(context, listen: false).accounts;
-    if (accounts.isEmpty) return;
+  void _showActionCenter() {
+    final txProvider = Provider.of<TransactionProvider>(context, listen: false);
+    final accProvider = Provider.of<AccountProvider>(context, listen: false);
     
+    // Hitung Ringkasan Bulan Ini
+    double income = 0;
+    double expense = 0;
+    final now = DateTime.now();
+    for (var tx in txProvider.transactions) {
+      if (tx.date.month == now.month && tx.date.year == now.year) {
+        if (tx.type == 'deposit') income += tx.amount; else expense += tx.amount;
+      }
+    }
+
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-      builder: (context) => _QuickTransactionForm(accounts: accounts, onSaved: () {
-        _refreshData();
-        if(_isMenuOpen) _toggleMenu();
-      }),
-    );
-  }
-}
-
-class _QuickTransactionForm extends StatefulWidget {
-  final List<Account> accounts;
-  final VoidCallback onSaved;
-  const _QuickTransactionForm({required this.accounts, required this.onSaved});
-
-  @override
-  State<_QuickTransactionForm> createState() => _QuickTransactionFormState();
-}
-
-class _QuickTransactionFormState extends State<_QuickTransactionForm> {
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
-  late int _selectedAccountId;
-  String _type = 'deposit';
-  bool _isSaving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedAccountId = widget.accounts.first.id!;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20, top: 25, left: 25, right: 25),
-      child: SingleChildScrollView(
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(25),
+        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(35))),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Catat Transaksi', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            
-            // ── TOGGLE SETOR / TARIK ──
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
+            const SizedBox(height: 25),
+            const Text('Pusat Aksi', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 25),
+            // ── RINGKASAN CEPAT ──
             Row(
               children: [
-                Expanded(child: _buildTypeToggle('Setor', 'deposit', Colors.green)),
+                _buildSummaryBox('Pemasukan', income, Colors.green),
                 const SizedBox(width: 15),
-                Expanded(child: _buildTypeToggle('Tarik', 'withdrawal', Colors.red)),
+                _buildSummaryBox('Pengeluaran', expense, Colors.red),
               ],
             ),
-            const SizedBox(height: 25),
-            
-            // ── PILIH REKENING ──
-            const Text('Pilih Rekening', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
-            DropdownButton<int>(
-              isExpanded: true,
-              value: _selectedAccountId,
-              items: widget.accounts.map((acc) => DropdownMenuItem(value: acc.id, child: Text(acc.name))).toList(),
-              onChanged: (val) => setState(() => _selectedAccountId = val!),
+            const SizedBox(height: 35),
+            // ── MENU UTAMA ──
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildActionMenu(Icons.south_west, 'Setor', Colors.green, () {
+                  Navigator.pop(context);
+                  if (accProvider.accounts.isNotEmpty) Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransactionScreen(account: accProvider.accounts.first)));
+                }),
+                _buildActionMenu(Icons.north_east, 'Tarik', Colors.red, () {}),
+                _buildActionMenu(Icons.sync_alt, 'Kirim', Colors.blue, () {}),
+              ],
             ),
-            const SizedBox(height: 20),
-            
-            TextField(controller: _amountController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Nominal', prefixText: 'Rp ', border: OutlineInputBorder())),
-            const SizedBox(height: 15),
-            TextField(controller: _noteController, decoration: const InputDecoration(labelText: 'Keterangan', border: OutlineInputBorder())),
             const SizedBox(height: 30),
-            
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : _handleSave,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _isSaving ? Colors.grey : (_type == 'deposit' ? Colors.green : Colors.red),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
-                child: _isSaving 
-                  ? const CircularProgressIndicator(color: Colors.white) 
-                  : const Text('SIMPAN TRANSAKSI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              ),
-            ),
+            const Divider(),
+            _buildListAction(Icons.picture_as_pdf, 'Unduh Laporan (PDF)', Colors.orange),
+            _buildListAction(Icons.track_changes, 'Set Target Tabungan', Colors.purple),
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTypeToggle(String label, String value, Color color) {
-    bool isSelected = _type == value;
-    return InkWell(
-      onTap: () => setState(() => _type = value),
+  Widget _buildSummaryBox(String label, double amount, Color color) {
+    final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? color : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? color : Colors.transparent),
-        ),
-        child: Center(
-          child: Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.grey, fontWeight: FontWeight.bold)),
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(color: color.withOpacity(0.05), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withOpacity(0.1))),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 5),
+            Text(fmt.format(amount), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          ],
         ),
       ),
     );
   }
 
-  void _handleSave() async {
-    String amountStr = _amountController.text.trim();
-    double amount = double.tryParse(amountStr) ?? 0;
-    
-    // VALIDASI INSTAN: Beri tahu pengguna jika nominal salah
-    if (amountStr.isEmpty || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ Isi nominal dulu dengan benar!'), backgroundColor: Colors.orange),
-      );
-      return;
-    }
+  Widget _buildActionMenu(IconData icon, String label, Color col, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: col.withOpacity(0.1), shape: BoxShape.circle), child: Icon(icon, color: col, size: 28)),
+          const SizedBox(height: 10),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+        ],
+      ),
+    );
+  }
 
-    setState(() => _isSaving = true);
-    
-    try {
-      final tx = TransactionModel(
-        accountId: _selectedAccountId,
-        type: _type,
-        amount: amount,
-        description: _noteController.text.isEmpty ? 'Tabungan Saya' : _noteController.text,
-        date: DateTime.now()
-      );
-      
-      // 1. Simpan ke Database (Melalui AccountProvider agar saldo update)
-      await Provider.of<AccountProvider>(context, listen: false).addTransaction(tx);
-      
-      // 2. Beri pesan sukses instan
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('✅ Transaksi Berhasil Disimpan!'), backgroundColor: Colors.green),
-        );
-      }
+  Widget _buildListAction(IconData icon, String title, Color col) {
+    return ListTile(
+      leading: Icon(icon, color: col),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+      trailing: const Icon(Icons.chevron_right, size: 20),
+      onTap: () {},
+    );
+  }
 
-      // 3. Pemicu Update Riwayat (Dua Jalur agar Pasti Muncul)
-      if (mounted) {
-        await Provider.of<TransactionProvider>(context, listen: false).loadTransactions();
-        widget.onSaved(); // Panggil refresh dari HomeScreen
-        
-        // Tutup Jendela
-        Navigator.pop(context);
-        
-        // Jalur refresh tambahan setelah modal tutup (agar pasti muncul)
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (mounted) {
-            Provider.of<TransactionProvider>(context, listen: false).loadTransactions();
-            Provider.of<AccountProvider>(context, listen: false).loadAccounts();
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('❌ Gagal: $e'), backgroundColor: Colors.red));
-      }
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
+  void _showEditProfileModal(BuildContext context, SettingsProvider settings) {
+    final controller = TextEditingController(text: settings.userName);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20, top: 25, left: 25, right: 25),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Ganti Nama Profil', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            TextField(controller: controller, autofocus: true, decoration: const InputDecoration(labelText: 'Nama Baru', border: OutlineInputBorder())),
+            const SizedBox(height: 20),
+            SizedBox(width: double.infinity, height: 50, child: ElevatedButton(onPressed: () { settings.setUserName(controller.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1A237E)), child: const Text('SIMPAN', style: TextStyle(color: Colors.white)))),
+          ],
+        ),
+      ),
+    );
   }
 }
