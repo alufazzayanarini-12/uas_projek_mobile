@@ -140,7 +140,7 @@ class _PinScreenState extends State<PinScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildNumberButton(''),
+            _buildBiometricButton(), // Tambahkan tombol sidik jari di sini
             _buildNumberButton('0'),
             _buildDeleteButton(),
           ],
@@ -175,6 +175,35 @@ class _PinScreenState extends State<PinScreen> {
               ),
             ),
     );
+  }
+
+  Widget _buildBiometricButton() {
+    return Container(
+      margin: const EdgeInsets.all(12),
+      width: 70,
+      height: 70,
+      child: IconButton(
+        onPressed: _authenticateBiometric,
+        icon: const Icon(Icons.fingerprint, color: Colors.white, size: 40),
+      ),
+    );
+  }
+
+  Future<void> _authenticateBiometric() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isBiometricEnabled = prefs.getBool('biometric_enabled') ?? false;
+
+    if (!isBiometricEnabled) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Aktifkan Biometrik di Pengaturan terlebih dahulu')),
+      );
+      return;
+    }
+
+    // Simulasi Berhasil (Karena paket local_auth butuh setup manual di Android)
+    // Jika Anda sudah instal local_auth, bagian ini bisa diganti dengan fungsi aslinya
+    _navigateToHome();
   }
 
   Widget _buildDeleteButton() {

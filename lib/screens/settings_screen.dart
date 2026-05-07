@@ -46,10 +46,8 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Kunci Aplikasi (PIN)',
                 subtitle: 'Gunakan PIN saat membuka aplikasi',
                 trailing: Switch(
-                  value: settings.isPinEnabled,
-                  onChanged: (val) {
-                    // Logika pengaturan PIN bisa ditambahkan di sini
-                  },
+                  value: settings.isAppLockEnabled,
+                  onChanged: (val) => settings.toggleAppLock(val),
                   activeColor: Colors.black,
                 ),
               ),

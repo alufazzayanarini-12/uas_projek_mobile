@@ -3,12 +3,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsProvider with ChangeNotifier {
   bool _isBalanceHidden = false;
-  bool _isPinEnabled = false;
+  bool _isAppLockEnabled = false;
   bool _isBiometricEnabled = false;
 
   bool get isBalanceHidden => _isBalanceHidden;
-  bool get isPinEnabled => _isPinEnabled;
+  bool get isAppLockEnabled => _isAppLockEnabled;
   bool get isBiometricEnabled => _isBiometricEnabled;
+  
+  // Alias untuk kompatibilitas kode lama
+  bool get isPinEnabled => _isAppLockEnabled;
 
   SettingsProvider() {
     _loadSettings();
@@ -17,7 +20,7 @@ class SettingsProvider with ChangeNotifier {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _isBalanceHidden = prefs.getBool('hide_balance') ?? false;
-    _isPinEnabled = prefs.getString('app_pin') != null;
+    _isAppLockEnabled = prefs.getBool('app_lock_enabled') ?? false;
     _isBiometricEnabled = prefs.getBool('biometric_enabled') ?? false;
     notifyListeners();
   }
@@ -29,8 +32,10 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setPinEnabled(bool value) async {
-    _isPinEnabled = value;
+  Future<void> toggleAppLock(bool value) async {
+    _isAppLockEnabled = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('app_lock_enabled', _isAppLockEnabled);
     notifyListeners();
   }
 

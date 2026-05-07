@@ -315,6 +315,33 @@ CREATE TABLE transactions (
     return result.map((json) => TransactionModel.fromMap(json)).toList();
   }
 
+  Future<void> deleteTransaction(int id) async {
+    final db = await instance.database;
+    await db.transaction((txn) async {
+      // 1. Dapatkan data transaksi sebelum dihapus untuk update saldo
+      final txMap = await txn.query('transactions', where: 'id = ?', whereArgs: [id]);
+      if (txMap.isNotEmpty) {
+        final tx = TransactionModel.fromMap(txMap.first);
+        
+        // 2. Update saldo akun asal (Kebalikan dari saat simpan)
+        final accountMap = await txn.query('accounts', where: 'id = ?', whereArgs: [tx.accountId]);
+        if (accountMap.isNotEmpty) {
+          final account = Account.fromMap(accountMap.first);
+          double newBalance = account.balance;
+          if (tx.type == 'deposit') {
+            newBalance -= tx.amount; // Jika setoran dihapus, saldo berkurang
+          } else {
+            newBalance += tx.amount; // Jika penarikan dihapus, saldo bertambah
+          }
+          await txn.update('accounts', {'balance': newBalance}, where: 'id = ?', whereArgs: [tx.accountId]);
+        }
+      }
+      
+      // 3. Hapus transaksinya
+      await txn.delete('transactions', where: 'id = ?', whereArgs: [id]);
+    });
+  }
+
   // Goal Operations
   Future<Goal> createGoal(Goal goal) async {
     final db = await instance.database;

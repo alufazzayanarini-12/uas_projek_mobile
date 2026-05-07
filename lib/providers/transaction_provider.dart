@@ -13,14 +13,27 @@ class TransactionProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _transactions = await DatabaseHelper.instance.readAllTransactions();
-    
+    try {
+      _transactions = await DatabaseHelper.instance.readAllTransactions();
+    } catch (e) {
+      print("Error loading transactions: $e");
+    }
+
     _isLoading = false;
     notifyListeners();
   }
 
   Future<void> addTransaction(TransactionModel transaction) async {
-    await DatabaseHelper.instance.createTransaction(transaction);
+    try {
+      await DatabaseHelper.instance.createTransaction(transaction);
+      await loadTransactions(); // Paksa reload setelah tambah
+    } catch (e) {
+      print("Error adding transaction: $e");
+    }
+  }
+
+  Future<void> deleteTransaction(int id) async {
+    await DatabaseHelper.instance.deleteTransaction(id);
     await loadTransactions();
   }
 }
