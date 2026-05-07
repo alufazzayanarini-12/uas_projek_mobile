@@ -24,9 +24,17 @@ class _PinScreenState extends State<PinScreen> {
 
   Future<void> _checkSavedPin() async {
     final prefs = await SharedPreferences.getInstance();
+    final isSecurityEnabled = prefs.getBool('app_lock_enabled') ?? false; // Cek apakah kunci aktif
+    
     setState(() {
       _savedPin = prefs.getString('app_pin');
       _isLoading = false;
+
+      // Jika tidak ada PIN atau kunci aplikasi dimatikan, langsung masuk
+      if ((_savedPin == null && !widget.isSetup) || (!isSecurityEnabled && !widget.isSetup)) {
+        _navigateToHome();
+        return;
+      }
 
       if (_savedPin == null) {
         _message = 'Buat PIN Baru';
@@ -72,10 +80,14 @@ class _PinScreenState extends State<PinScreen> {
   }
 
   void _navigateToHome() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+        );
+      }
+    });
   }
 
   @override
