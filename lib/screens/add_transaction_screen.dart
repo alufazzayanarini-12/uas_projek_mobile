@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../models/account.dart';
 import '../models/transaction_model.dart';
 import '../models/category_model.dart';
 import '../providers/account_provider.dart';
 import '../providers/category_provider.dart';
+import '../providers/transaction_provider.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final Account account;
@@ -15,223 +17,190 @@ class AddTransactionScreen extends StatefulWidget {
 }
 
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
-  final _formKey = GlobalKey<FormState>();
-  String _type = 'deposit'; // 'deposit', 'withdrawal', or 'transfer'
-  double _amount = 0.0;
-  String _description = '';
-  int? _selectedCategoryId;
-  int? _targetAccountId;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CategoryProvider>(context, listen: false).loadCategories();
-    });
-  }
-
-  void _saveTransaction() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-
-      // Validasi saldo jika penarikan atau transfer
-      if ((_type == 'withdrawal' || _type == 'transfer') && _amount > widget.account.balance) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Saldo tidak mencukupi untuk transaksi ini.')),
-        );
-        return;
-      }
-
-      if (_type == 'transfer' && _targetAccountId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pilih akun tujuan transfer.')),
-        );
-        return;
-      }
-
-      final transaction = TransactionModel(
-        accountId: widget.account.id!,
-        type: _type,
-        amount: _amount,
-        description: _description,
-        categoryId: _selectedCategoryId,
-        targetAccountId: _targetAccountId,
-      );
-
-      Provider.of<AccountProvider>(context, listen: false).addTransaction(transaction);
-      Navigator.pop(context);
-    }
-  }
+  final _amountController = TextEditingController();
+  final _noteController = TextEditingController();
+  String _type = 'deposit'; // 'deposit', 'withdrawal', 'transfer'
+  CategoryModel? _selectedCategory;
 
   @override
   Widget build(BuildContext context) {
+    final catProvider = Provider.of<CategoryProvider>(context);
+    final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Transaksi Baru'),
+        backgroundColor: const Color(0xFFE1F5FE), // Biru Muda
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF0288D1)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Transaksi Baru', style: TextStyle(color: Color(0xFF0288D1), fontWeight: FontWeight.bold)),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Card(
-                color: Color(widget.account.colorValue).withOpacity(0.1),
-                elevation: 0,
-                child: ListTile(
-                  leading: Icon(IconData(widget.account.iconCodePoint, fontFamily: 'MaterialIcons'), color: Color(widget.account.colorValue)),
-                  title: Text(widget.account.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('Saldo: Rp ${widget.account.balance.toStringAsFixed(0)}'),
-                ),
+        padding: const EdgeInsets.all(25),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── KOTAK INFO ARINI (UNGU MUDA) ──
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E5F5), // Ungu Muda
+                borderRadius: BorderRadius.circular(20),
               ),
-              const SizedBox(height: 16),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 150,
-                      child: RadioListTile<String>(
-                        title: const Text('Setor', style: TextStyle(fontSize: 12)),
-                        value: 'deposit',
-                        groupValue: _type,
-                        onChanged: (value) => setState(() => _type = value!),
-                        activeColor: Colors.green,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: RadioListTile<String>(
-                        title: const Text('Tarik', style: TextStyle(fontSize: 12)),
-                        value: 'withdrawal',
-                        groupValue: _type,
-                        onChanged: (value) => setState(() => _type = value!),
-                        activeColor: Colors.red,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: RadioListTile<String>(
-                        title: const Text('Transfer', style: TextStyle(fontSize: 12)),
-                        value: 'transfer',
-                        groupValue: _type,
-                        onChanged: (value) => setState(() => _type = value!),
-                        activeColor: Colors.blue,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                  ],
-                ),
+              child: Row(
+                children: [
+                  const CircleAvatar(
+                    backgroundColor: Color(0xFFAB47BC),
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
+                  const SizedBox(width: 15),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.account.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF7B1FA2))),
+                      const Text('Rekening Aktif', style: TextStyle(color: Color(0xFF7B1FA2), fontSize: 12)),
+                    ],
+                  ),
+                ],
               ),
-              if (_type == 'transfer') ...[
-                const SizedBox(height: 16),
-                Consumer<AccountProvider>(
-                  builder: (context, provider, child) {
-                    final otherAccounts = provider.accounts.where((a) => a.id != widget.account.id).toList();
-                    return DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(
-                        labelText: 'Akun Tujuan (Penerima)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.account_balance_wallet_outlined),
-                      ),
-                      value: _targetAccountId,
-                      items: otherAccounts.map((acc) {
-                        return DropdownMenuItem<int>(
-                          value: acc.id,
-                          child: Text(acc.name),
-                        );
-                      }).toList(),
-                      onChanged: (value) => setState(() => _targetAccountId = value),
-                      validator: (value) => _type == 'transfer' && value == null ? 'Pilih akun tujuan' : null,
-                    );
-                  },
+            ),
+            const SizedBox(height: 30),
+
+            // ── RADIO BUTTONS ──
+            const Text('Tipe Transaksi', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+            Row(
+              children: [
+                Expanded(
+                  child: RadioListTile<String>(
+                    title: const Text('Setor', style: TextStyle(fontSize: 12)),
+                    value: 'deposit',
+                    groupValue: _type,
+                    onChanged: (v) => setState(() => _type = v!),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                Expanded(
+                  child: RadioListTile<String>(
+                    title: const Text('Tarik', style: TextStyle(fontSize: 12)),
+                    value: 'withdrawal',
+                    groupValue: _type,
+                    onChanged: (v) => setState(() => _type = v!),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                Expanded(
+                  child: RadioListTile<String>(
+                    title: const Text('Kirim', style: TextStyle(fontSize: 12)),
+                    value: 'transfer',
+                    groupValue: _type,
+                    onChanged: (v) => setState(() => _type = v!),
+                    contentPadding: EdgeInsets.zero,
+                  ),
                 ),
               ],
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Nominal',
-                  border: const OutlineInputBorder(),
-                  prefixText: 'Rp ',
-                  prefixIcon: Icon(
-                    _type == 'deposit' ? Icons.trending_up : Icons.trending_down,
-                    color: _type == 'deposit' ? Colors.green : Colors.red,
-                  ),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Nominal harus diisi';
-                  }
-                  if (double.tryParse(value) == null || double.parse(value) <= 0) {
-                    return 'Nominal tidak valid';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _amount = double.parse(value!),
+            ),
+            const SizedBox(height: 20),
+
+            // ── INPUT FIELD ──
+            _buildInputField('Nominal', _amountController, Icons.money, TextInputType.number, prefix: 'Rp '),
+            const SizedBox(height: 20),
+            _buildInputField('Keterangan / Catatan', _noteController, Icons.note_alt_outlined, TextInputType.text),
+            const SizedBox(height: 20),
+            
+            // ── DROP DOWN KATEGORI ──
+            const Text('Kategori', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(15),
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Keterangan / Catatan',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.notes),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Keterangan harus diisi';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _description = value!,
-              ),
-              const SizedBox(height: 16),
-              Consumer<CategoryProvider>(
-                builder: (context, provider, child) {
-                  return DropdownButtonFormField<int>(
-                    decoration: const InputDecoration(
-                      labelText: 'Kategori',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.category_outlined),
-                    ),
-                    value: _selectedCategoryId,
-                    items: provider.categories.map((cat) {
-                      return DropdownMenuItem<int>(
-                        value: cat.id,
-                        child: Row(
-                          children: [
-                            Icon(IconData(cat.iconCodePoint, fontFamily: 'MaterialIcons'), color: Color(cat.colorValue), size: 20),
-                            const SizedBox(width: 10),
-                            Text(cat.name),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) => setState(() => _selectedCategoryId = value),
-                    validator: (value) => value == null ? 'Pilih kategori' : null,
-                  );
-                },
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _saveTransaction,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _type == 'deposit' 
-                      ? Colors.green 
-                      : (_type == 'withdrawal' ? Colors.red : Colors.blue),
-                  ),
-                  child: const Text('Simpan Transaksi'),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<CategoryModel>(
+                  isExpanded: true,
+                  hint: const Text('Pilih Kategori'),
+                  value: _selectedCategory,
+                  items: catProvider.categories.map((c) => DropdownMenuItem(
+                    value: c,
+                    child: Row(children: [Icon(IconData(c.iconCodePoint, fontFamily: 'MaterialIcons'), color: Color(c.colorValue)), const SizedBox(width: 10), Text(c.name)]),
+                  )).toList(),
+                  onChanged: (v) => setState(() => _selectedCategory = v),
                 ),
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 40),
+
+            // ── TOMBOL SIMPAN ──
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: _handleSave,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0288D1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+                child: const Text('SIMPAN TRANSAKSI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _buildInputField(String label, TextEditingController controller, IconData icon, TextInputType type, {String? prefix}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 10),
+        TextField(
+          controller: controller,
+          keyboardType: type,
+          decoration: InputDecoration(
+            prefixText: prefix,
+            prefixIcon: Icon(icon, color: Colors.grey),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: Colors.grey[300]!)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _handleSave() async {
+    double amount = double.tryParse(_amountController.text) ?? 0;
+    if (amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nominal harus lebih dari 0')));
+      return;
+    }
+
+    final tx = TransactionModel(
+      accountId: widget.account.id!,
+      type: _type,
+      amount: amount,
+      description: _noteController.text.isEmpty ? 'Transaksi Baru' : _noteController.text,
+      date: DateTime.now(),
+    );
+
+    try {
+      await Provider.of<AccountProvider>(context, listen: false).addTransaction(tx);
+      await Provider.of<TransactionProvider>(context, listen: false).loadTransactions();
+      
+      if (mounted) {
+        Navigator.pop(context); // Kembali ke Buku Tabungan
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transaksi Berhasil Disimpan!'), backgroundColor: Colors.green));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
+    }
   }
 }

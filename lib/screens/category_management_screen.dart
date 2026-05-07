@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/category_provider.dart';
 import '../models/category_model.dart';
+import 'debt_management_screen.dart';
 
 class CategoryManagementScreen extends StatelessWidget {
   const CategoryManagementScreen({super.key});
@@ -17,6 +18,8 @@ class CategoryManagementScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
+        title: const Text('Kategori Tabungan', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        centerTitle: true,
       ),
       body: Consumer<CategoryProvider>(
         builder: (context, catProvider, child) {
@@ -27,7 +30,16 @@ class CategoryManagementScreen extends StatelessWidget {
             itemCount: categories.length,
             itemBuilder: (context, index) {
               final cat = categories[index];
-              return _buildCategoryCard(cat);
+              return InkWell(
+                onTap: () {
+                  if (cat.name.toLowerCase() == 'hutang') {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const DebtManagementScreen()));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Fitur untuk ${cat.name} akan segera hadir!')));
+                  }
+                },
+                child: _buildCategoryCard(cat),
+              );
             },
           );
         },

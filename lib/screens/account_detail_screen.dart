@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'add_transaction_screen.dart';
 import '../models/account.dart';
 import '../models/transaction_model.dart';
 import '../providers/account_provider.dart';
@@ -49,7 +50,15 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
           Expanded(child: _buildTransactionList(fmt)),
         ],
       ),
-      floatingActionButton: _buildModernFAB(currentAccount),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.push(
+          context, 
+          MaterialPageRoute(builder: (context) => AddTransactionScreen(account: currentAccount))
+        ).then((_) => _loadTransactions()),
+        backgroundColor: const Color(0xFF00BCD4), // Cyan
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
+      ),
     );
   }
 

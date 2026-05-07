@@ -68,9 +68,19 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showActionCenter,
-        backgroundColor: const Color(0xFF00BCD4),
-        elevation: 8,
+        onPressed: () {
+          final accProvider = Provider.of<AccountProvider>(context, listen: false);
+          if (accProvider.accounts.isNotEmpty) {
+            Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (context) => AddTransactionScreen(account: accProvider.accounts.first))
+            ).then((_) => _refreshData());
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Silakan buat rekening terlebih dahulu')));
+          }
+        },
+        backgroundColor: const Color(0xFF00BCD4), // Cyan
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
     );
