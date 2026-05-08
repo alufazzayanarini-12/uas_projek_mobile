@@ -187,6 +187,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       accountId: widget.account.id!,
       type: _type,
       amount: amount,
+      categoryId: _selectedCategory?.id, // Kirim ID kategori ke database
       description: _noteController.text.isEmpty ? 'Transaksi Baru' : _noteController.text,
       date: DateTime.now(),
     );
@@ -194,6 +195,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     try {
       await Provider.of<AccountProvider>(context, listen: false).addTransaction(tx);
       await Provider.of<TransactionProvider>(context, listen: false).loadTransactions();
+      
+      // ── INTEGRASI KE MANAJEMEN KATEGORI ──
+      if (_selectedCategory != null) {
+        Provider.of<CategoryProvider>(context, listen: false).processTransaction(
+          _selectedCategory!.name,
+          _type,
+          amount,
+        );
+      }
       
       if (mounted) {
         Navigator.pop(context); // Kembali ke Buku Tabungan

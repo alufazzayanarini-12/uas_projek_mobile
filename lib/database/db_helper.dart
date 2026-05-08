@@ -42,7 +42,7 @@ class DatabaseHelper {
 
     final db = await openDatabase(
       path,
-      version: 12,
+      version: 13,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -76,8 +76,31 @@ class DatabaseHelper {
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    await checkAndFixColumns(db); // Selalu cek saat upgrade
-    // ... logic upgrade lainnya tetap ada
+    await checkAndFixColumns(db); // Selalu cek kolom kategori
+    
+    if (oldVersion < 13) {
+      // Migrasi tabel transaksi agar kolom goal_id & category_id boleh NULL
+      await db.execute('ALTER TABLE transactions RENAME TO transactions_old');
+      await db.execute('''
+        CREATE TABLE transactions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          account_id INTEGER NOT NULL,
+          goal_id INTEGER,
+          category_id INTEGER,
+          target_account_id INTEGER,
+          type TEXT NOT NULL,
+          amount REAL NOT NULL,
+          description TEXT NOT NULL,
+          date TEXT NOT NULL,
+          FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE
+        )
+      ''');
+      await db.execute('''
+        INSERT INTO transactions (account_id, goal_id, category_id, target_account_id, type, amount, description, date)
+        SELECT account_id, goal_id, category_id, target_account_id, type, amount, description, date FROM transactions_old
+      ''');
+      await db.execute('DROP TABLE transactions_old');
+    }
   }
 
   Future<void> seedDefaultCategoriesManually() async {

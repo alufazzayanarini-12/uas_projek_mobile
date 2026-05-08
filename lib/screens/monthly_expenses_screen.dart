@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../providers/category_provider.dart';
 
 class MonthlyExpensesScreen extends StatefulWidget {
   const MonthlyExpensesScreen({super.key});
@@ -11,11 +13,7 @@ class MonthlyExpensesScreen extends StatefulWidget {
 class _MonthlyExpensesScreenState extends State<MonthlyExpensesScreen> {
   final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
   
-  // Data Anggaran
-  double totalBudget = 3000000;
-  double spentSoFar = 1200000;
-  
-  // Sub-Kategori
+  // Data Sub-Kategori (Mock, bisa disambungkan ke DB nanti)
   List<Map<String, dynamic>> subCategories = [
     {'name': 'Makan & Minum', 'budget': 1500000, 'spent': 600000, 'icon': Icons.restaurant},
     {'name': 'Transportasi', 'budget': 500000, 'spent': 200000, 'icon': Icons.directions_car},
@@ -24,7 +22,14 @@ class _MonthlyExpensesScreenState extends State<MonthlyExpensesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // SINKRONISASI DATA DARI PROVIDER
+    final catProvider = Provider.of<CategoryProvider>(context);
+    double totalBudget = catProvider.monthlyBudget;
+    double spentSoFar = catProvider.monthlySpent;
+    
     double healthPercentage = spentSoFar / totalBudget;
+    if (healthPercentage > 1.0) healthPercentage = 1.0;
+    
     Color healthColor = healthPercentage > 0.8 ? Colors.red : (healthPercentage > 0.5 ? Colors.orange : Colors.teal);
 
     return Scaffold(
@@ -41,7 +46,7 @@ class _MonthlyExpensesScreenState extends State<MonthlyExpensesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── HEALTH METER DASHBOARD ──
+            // ── SMART MONITORING DASHBOARD (REAL-TIME) ──
             Container(
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(30), boxShadow: [BoxShadow(color: Colors.teal.withOpacity(0.05), blurRadius: 20)]),
@@ -57,9 +62,9 @@ class _MonthlyExpensesScreenState extends State<MonthlyExpensesScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  Text(healthPercentage > 0.8 ? '⚠️ Segera Hemat!' : '✅ Budget Masih Aman', style: TextStyle(fontWeight: FontWeight.bold, color: healthColor, fontSize: 13)),
+                  Text(healthPercentage >= 0.9 ? '⚠️ Anggaran Hampir Habis!' : '✅ Budget Masih Aman', style: TextStyle(fontWeight: FontWeight.bold, color: healthColor, fontSize: 13)),
                   const Divider(height: 30),
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [_buildMiniStat('Target Budget', fmt.format(totalBudget)), _buildMiniStat('Sisa Uang', fmt.format(totalBudget - spentSoFar))])
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [_buildMiniStat('Target Budget', fmt.format(totalBudget)), _buildMiniStat('Terpakai', fmt.format(spentSoFar))])
                 ],
               ),
             ),
@@ -70,73 +75,12 @@ class _MonthlyExpensesScreenState extends State<MonthlyExpensesScreen> {
             ...subCategories.map((cat) => _buildSubCatTile(cat)).toList(),
 
             const SizedBox(height: 30),
-            const Text('Manajemen Pengeluaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 15),
-            _buildActionTile(Icons.notifications_active_outlined, 'Auto-Tagihan Rutin', 'WiFi & Listrik akan jatuh tempo', () => _showBillReminders()),
-            _buildActionTile(Icons.bar_chart, 'Analisis Budget vs Realita', 'Perbandingan belanja bulan ini', () => _showAnalysis()),
-            _buildActionTile(Icons.swap_horiz, 'Pindahkan Sisa Saldo', 'Kirim sisa uang ke Dana Darurat', () => _showTransferOption()),
+            _buildActionTile(Icons.notifications_active_outlined, 'Auto-Tagihan Rutin', 'Kelola tagihan bulanan Anda', () {}),
+            _buildActionTile(Icons.bar_chart, 'Analisis Budget vs Realita', 'Lihat laporan pengeluaran', () {}),
+            const SizedBox(height: 10),
+            const Center(child: Text('Data akan terupdate otomatis via tombol (+)', style: TextStyle(color: Colors.grey, fontSize: 11))),
           ],
         ),
-      ),
-    );
-  }
-
-  // 1. MODAL TAGIHAN
-  void _showBillReminders() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(25),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Tagihan Mendatang', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            _buildBillItem('Internet (IndiHome)', 'Rp 350.000', '15 Mei 2026', Colors.blue),
-            _buildBillItem('Listrik (PLN)', 'Rp 450.000', '20 Mei 2026', Colors.orange),
-            const SizedBox(height: 20),
-            SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () => Navigator.pop(context), style: ElevatedButton.styleFrom(backgroundColor: Colors.teal), child: const Text('BAYAR SEMUA SEKARANG', style: TextStyle(color: Colors.white)))),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 2. MODAL ANALISIS
-  void _showAnalysis() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(25),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Budget vs Realita', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            _buildAnalysisBar('Makan', 0.4),
-            _buildAnalysisBar('Hiburan', 0.9), // Contoh boros
-            _buildAnalysisBar('Transport', 0.2),
-            const SizedBox(height: 15),
-            const Text('Saran: Pengeluaran "Hiburan" hampir melewati batas!', style: TextStyle(fontSize: 12, color: Colors.red, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 3. MODAL TRANSFER SISA
-  void _showTransferOption() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Pindahkan Sisa Saldo?'),
-        content: const Text('Sisa saldo bulan ini akan otomatis dipindahkan ke kategori "Dana Darurat" saat tanggal 1 bulan depan.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Mungkin Nanti')),
-          ElevatedButton(onPressed: () => Navigator.pop(context), style: ElevatedButton.styleFrom(backgroundColor: Colors.teal), child: const Text('AKTIFKAN AUTO-MOVE', style: TextStyle(color: Colors.white))),
-        ],
       ),
     );
   }
@@ -159,27 +103,6 @@ class _MonthlyExpensesScreenState extends State<MonthlyExpensesScreen> {
           ),
           const SizedBox(height: 10),
           LinearProgressIndicator(value: progress, backgroundColor: Colors.teal[50], color: Colors.teal, minHeight: 4),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBillItem(String title, String amount, String date, Color color) {
-    return ListTile(
-      leading: Icon(Icons.receipt, color: color),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      subtitle: Text('Jatuh tempo: $date', style: const TextStyle(fontSize: 11)),
-      trailing: Text(amount, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
-    );
-  }
-
-  Widget _buildAnalysisBar(String label, double val) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        children: [
-          SizedBox(width: 70, child: Text(label, style: const TextStyle(fontSize: 12))),
-          Expanded(child: LinearProgressIndicator(value: val, color: val > 0.8 ? Colors.red : Colors.teal, backgroundColor: Colors.grey[200], minHeight: 8)),
         ],
       ),
     );

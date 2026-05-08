@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../providers/category_provider.dart';
 import 'dart:math';
 
 class EducationFundScreen extends StatefulWidget {
@@ -11,12 +13,8 @@ class EducationFundScreen extends StatefulWidget {
 
 class _EducationFundScreenState extends State<EducationFundScreen> {
   final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-  
-  // Data Utama
-  double mainTarget = 150000000;
-  double mainCurrent = 45000000;
 
-  // Data Jenjang Pendidikan
+  // Data Jenjang Pendidikan (Mock, bisa disambungkan ke DB nanti)
   List<Map<String, dynamic>> educationStages = [
     {'level': 'SD', 'target': 20000000.0, 'current': 20000000.0, 'status': 'Tercapai', 'isDone': true},
     {'level': 'SMP', 'target': 30000000.0, 'current': 15000000.0, 'status': 'Sedang Berjalan', 'isDone': false},
@@ -26,6 +24,10 @@ class _EducationFundScreenState extends State<EducationFundScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // MENGAMBIL DATA DARI PROVIDER
+    final catProvider = Provider.of<CategoryProvider>(context);
+    double mainTarget = catProvider.educationTarget;
+    double mainCurrent = catProvider.educationCurrent;
     double mainProgress = mainCurrent / mainTarget;
 
     return Scaffold(
@@ -42,7 +44,7 @@ class _EducationFundScreenState extends State<EducationFundScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── DASHBOARD UTAMA ──
+            // ── DASHBOARD UTAMA (DATANYA REAL-TIME DARI PROVIDER) ──
             Container(
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
@@ -63,25 +65,22 @@ class _EducationFundScreenState extends State<EducationFundScreen> {
                   Text(fmt.format(mainCurrent), style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
                   Text('Target: ${fmt.format(mainTarget)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                   const SizedBox(height: 20),
-                  LinearProgressIndicator(value: mainProgress, backgroundColor: Colors.white24, color: Colors.yellow[400], minHeight: 8),
+                  LinearProgressIndicator(value: mainProgress > 1.0 ? 1.0 : mainProgress, backgroundColor: Colors.white24, color: Colors.yellow[400], minHeight: 8),
                   const SizedBox(height: 10),
-                  const Align(alignment: Alignment.centerRight, child: Text('8 Tahun Lagi Menuju Kuliah', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold))),
+                  const Align(alignment: Alignment.centerRight, child: Text('Update Real-time via (+)', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold))),
                 ],
               ),
             ),
             const SizedBox(height: 30),
 
-            // ── RENCANA JENJANG (MULTI-STAGE) ──
             const Text('Rencana Jenjang Pendidikan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 15),
             ...educationStages.asMap().entries.map((entry) => _buildEducationStepTile(entry.key, entry.value)).toList(),
 
             const SizedBox(height: 30),
-
-            // ── FITUR KALKULATOR ──
             const Text('Alat Perencanaan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 15),
-            _buildActionCard(Icons.calculate_outlined, 'Kalkulator Biaya Masa Depan', 'Hitung inflasi sekolah (10-15%/thn)', () => _showInflationCalculator()),
+            _buildActionCard(Icons.calculate_outlined, 'Kalkulator Biaya Masa Depan', 'Hitung inflasi sekolah (10-15%/thn)', () => _showInflationCalculator(catProvider)),
           ],
         ),
       ),
@@ -118,11 +117,11 @@ class _EducationFundScreenState extends State<EducationFundScreen> {
     showModalBottomSheet(context: context, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))), builder: (context) => Container(padding: const EdgeInsets.all(25), child: Column(mainAxisSize: MainAxisSize.min, children: [Text('Detail Jenjang ${stage['level']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), const Divider(height: 30), _buildInfoRow('Total Target', fmt.format(stage['target'])), _buildInfoRow('Dana Terkumpul', fmt.format(stage['current'])), _buildInfoRow('Kekurangan', fmt.format(stage['target'] - stage['current'])), const SizedBox(height: 20), CheckboxListTile(title: const Text('Tandai sebagai Tercapai', style: TextStyle(fontSize: 14)), value: stage['isDone'], onChanged: (val) { setState(() => educationStages[index]['isDone'] = val); Navigator.pop(context); },),],),),);
   }
 
-  void _showInflationCalculator() {
+  void _showInflationCalculator(CategoryProvider catProvider) {
     double currentCost = 50000000;
     double years = 5;
     double inflationRate = 0.10;
-    showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))), builder: (context) => StatefulBuilder(builder: (context, setModalState) { double futureCost = currentCost * pow((1 + inflationRate), years); return Padding(padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 25, top: 25, left: 25, right: 25), child: Column(mainAxisSize: MainAxisSize.min, children: [const Text('Kalkulator Biaya Masa Depan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), const SizedBox(height: 20), TextField(decoration: const InputDecoration(labelText: 'Biaya Saat Ini (Sekarang)', prefixText: 'Rp '), keyboardType: TextInputType.number, onChanged: (v) => setModalState(() => currentCost = double.tryParse(v) ?? 50000000),), const SizedBox(height: 20), Text('Jangka Waktu: ${years.toInt()} Tahun Lagi'), Slider(value: years, min: 1, max: 20, divisions: 19, onChanged: (v) => setModalState(() => years = v)), const SizedBox(height: 10), const Align(alignment: Alignment.centerLeft, child: Text('Estimasi Inflasi Tahunan', style: TextStyle(fontWeight: FontWeight.bold))), Row(children: [0.05, 0.10, 0.15].map((rate) => Padding(padding: const EdgeInsets.only(right: 10), child: ChoiceChip(label: Text('${(rate * 100).toInt()}%'), selected: inflationRate == rate, onSelected: (v) => setModalState(() => inflationRate = rate),),)).toList(),), const Divider(height: 40), Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(20)), child: Column(children: [const Text('Estimasi Biaya Masa Depan', style: TextStyle(fontSize: 12, color: Colors.blue)), Text(fmt.format(futureCost), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue)), const SizedBox(height: 5), Text('Selisih: +${fmt.format(futureCost - currentCost)}', style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),],),), const SizedBox(height: 20), Text('Saran: Tabung ${fmt.format(futureCost / (years * 12))}/bulan', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)), const SizedBox(height: 25), SizedBox(width: double.infinity, height: 55, child: ElevatedButton(onPressed: () { setState(() => mainTarget = futureCost); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[700], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))), child: const Text('TERAPKAN KE TARGET', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),),)],),);},),);
+    showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))), builder: (context) => StatefulBuilder(builder: (context, setModalState) { double futureCost = currentCost * pow((1 + inflationRate), years); return Padding(padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 25, top: 25, left: 25, right: 25), child: Column(mainAxisSize: MainAxisSize.min, children: [const Text('Kalkulator Biaya Masa Depan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), const SizedBox(height: 20), TextField(decoration: const InputDecoration(labelText: 'Biaya Saat Ini (Sekarang)', prefixText: 'Rp '), keyboardType: TextInputType.number, onChanged: (v) => setModalState(() => currentCost = double.tryParse(v) ?? 50000000),), const SizedBox(height: 20), Text('Jangka Waktu: ${years.toInt()} Tahun Lagi'), Slider(value: years, min: 1, max: 20, divisions: 19, onChanged: (v) => setModalState(() => years = v)), const Divider(height: 40), Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(20)), child: Column(children: [const Text('Estimasi Biaya Masa Depan', style: TextStyle(fontSize: 12, color: Colors.blue)), Text(fmt.format(futureCost), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue)),],),), const SizedBox(height: 25), SizedBox(width: double.infinity, height: 55, child: ElevatedButton(onPressed: () { catProvider.educationTarget = futureCost; catProvider.notifyListeners(); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[700], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))), child: const Text('TERAPKAN KE TARGET', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),),)],),);},),);
   }
 
   Widget _buildInfoRow(String label, String value) {

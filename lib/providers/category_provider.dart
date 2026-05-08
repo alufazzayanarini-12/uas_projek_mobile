@@ -1,36 +1,54 @@
 import 'package:flutter/material.dart';
 import '../models/category_model.dart';
-import '../models/transaction_model.dart';
 import '../database/db_helper.dart';
 
 class CategoryProvider with ChangeNotifier {
   List<CategoryModel> _categories = [];
-  bool _isLoading = false;
+  
+  // ── DATA DETAIL KATEGORI (SENTRALISASI) ──
+  double savingsCurrent = 1500000;
+  double savingsTarget = 5000000;
+  
+  double educationCurrent = 45000000;
+  double educationTarget = 150000000;
+  
+  double monthlyBudget = 3000000;
+  double monthlySpent = 1200000;
 
-  List<CategoryModel> get categories => _categories.where((c) => !c.isArchived && c.parentId == null).toList();
-  List<CategoryModel> get archivedCategories => _categories.where((c) => c.isArchived).toList();
-  bool get isLoading => _isLoading;
+  // Getter hanya untuk kategori yang tidak diarsip
+  List<CategoryModel> get categories => _categories.where((c) => !c.isArchived).toList();
+  List<CategoryModel> get allCategories => _categories;
 
   Future<void> loadCategories() async {
-    _isLoading = true;
-    notifyListeners();
-
     _categories = await DatabaseHelper.instance.readAllCategories();
-
-    // ── JIKA KOSONG, ISI ULANG DENGAN KATEGORI DEFAULT ──
+    
+    // Auto-seed jika database kosong
     if (_categories.isEmpty) {
       await DatabaseHelper.instance.seedDefaultCategoriesManually();
       _categories = await DatabaseHelper.instance.readAllCategories();
     }
-
-    _isLoading = false;
     notifyListeners();
   }
 
-  List<CategoryModel> getSubCategories(int parentId) {
-    return _categories.where((c) => c.parentId == parentId).toList();
+  // ── LOGIKA INTEGRASI TRANSAKSI ──
+  void processTransaction(String categoryName, String type, double amount) {
+    final name = categoryName.toLowerCase();
+    
+    if (name.contains('tabungan')) {
+      if (type == 'deposit') savingsCurrent += amount;
+      if (type == 'withdrawal') savingsCurrent -= amount;
+    } else if (name.contains('pendidikan')) {
+      if (type == 'deposit') educationCurrent += amount;
+      if (type == 'withdrawal') educationCurrent -= amount;
+    } else if (name.contains('bulanan')) {
+      if (type == 'withdrawal') monthlySpent += amount;
+      if (type == 'deposit') monthlySpent -= amount;
+    }
+    
+    notifyListeners();
   }
 
+  // ── OPERASI DATABASE ──
   Future<void> addCategory(CategoryModel category) async {
     await DatabaseHelper.instance.createCategory(category);
     await loadCategories();
@@ -46,35 +64,21 @@ class CategoryProvider with ChangeNotifier {
     await loadCategories();
   }
 
+  // ── FITUR KHUSUS ──
+  Future<void> reorderCategories(int oldIndex, int newIndex) async {
+    final activeCats = categories;
+    if (newIndex > oldIndex) newIndex -= 1;
+    
+    final item = activeCats.removeAt(oldIndex);
+    activeCats.insert(newIndex, item);
+    
+    await DatabaseHelper.instance.updateCategoryOrders(activeCats);
+    await loadCategories();
+  }
+
   Future<void> toggleArchive(CategoryModel category) async {
     final updated = category.copyWith(isArchived: !category.isArchived);
-    await updateCategory(updated);
-  }
-
-  Future<void> togglePin(CategoryModel category) async {
-    final updated = category.copyWith(isPinned: !category.isPinned);
-    await updateCategory(updated);
-  }
-
-  Future<List<TransactionModel>> getCategoryTransactions(int categoryId) async {
-    final allTransactions = await DatabaseHelper.instance.readAllTransactions();
-    final subCategoryIds = _categories.where((c) => c.parentId == categoryId).map((c) => c.id).toList();
-    
-    return allTransactions.where((t) => 
-      t.categoryId == categoryId || (t.categoryId != null && subCategoryIds.contains(t.categoryId))
-    ).toList();
-  }
-
-  Future<void> reorderCategories(int oldIndex, int newIndex) async {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
-    final list = categories; // Reordering only among non-archived root categories
-    final CategoryModel item = list.removeAt(oldIndex);
-    list.insert(newIndex, item);
-    
-    // Update all categories with new order for these specific items
-    await DatabaseHelper.instance.updateCategoryOrders(list);
+    await DatabaseHelper.instance.updateCategory(updated);
     await loadCategories();
   }
 }
