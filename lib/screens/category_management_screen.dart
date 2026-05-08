@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../providers/category_provider.dart';
 import '../models/category_model.dart';
 import 'debt_management_screen.dart';
+import 'personal_savings_screen.dart';
+import 'education_fund_screen.dart';
 
 class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({super.key});
@@ -108,8 +110,13 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               Expanded(
                 child: InkWell(
                   onTap: () {
-                    if (cat.name.toLowerCase() == 'hutang') {
+                    final name = cat.name.toLowerCase();
+                    if (name == 'hutang') {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const DebtManagementScreen()));
+                    } else if (name == 'tabungan saya') {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const PersonalSavingsScreen()));
+                    } else if (name == 'pendidikan') {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const EducationFundScreen()));
                     }
                   },
                   child: Column(
