@@ -6,6 +6,7 @@ import '../models/category_model.dart';
 import 'debt_management_screen.dart';
 import 'personal_savings_screen.dart';
 import 'education_fund_screen.dart';
+import 'monthly_expenses_screen.dart';
 
 class CategoryManagementScreen extends StatefulWidget {
   const CategoryManagementScreen({super.key});
@@ -117,6 +118,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const PersonalSavingsScreen()));
                     } else if (name == 'pendidikan') {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const EducationFundScreen()));
+                    } else if (name == 'uang bulanan') {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const MonthlyExpensesScreen()));
                     }
                   },
                   child: Column(
