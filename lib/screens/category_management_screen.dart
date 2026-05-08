@@ -125,14 +125,17 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 itemBuilder: (context) => [
                   const PopupMenuItem(value: 'edit', child: Text('Edit')),
                   const PopupMenuItem(value: 'archive', child: Text('Arsip')),
+                  const PopupMenuItem(value: 'delete', child: Text('Hapus', style: TextStyle(color: Colors.red))),
                 ],
                 onSelected: (val) {
                   if (val == 'archive') Provider.of<CategoryProvider>(context, listen: false).toggleArchive(cat);
                   if (val == 'edit') _showAddCategoryDialog(category: cat);
+                  if (val == 'delete') _showDeleteConfirmation(cat);
                 },
               ),
             ],
           ),
+          // ... rest of card
           if (cat.budgetLimit > 0) ...[
             const SizedBox(height: 15),
             ClipRRect(
@@ -140,6 +143,27 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               child: LinearProgressIndicator(value: 0.35, backgroundColor: Colors.grey[100], color: Color(cat.colorValue), minHeight: 6),
             ),
           ]
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(CategoryModel cat) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Kategori?'),
+        content: Text('Apakah Anda yakin ingin menghapus "${cat.name}"? Data transaksi lama tidak akan hilang, tapi kategori ini akan dihapus dari daftar.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+          TextButton(
+            onPressed: () {
+              Provider.of<CategoryProvider>(context, listen: false).deleteCategory(cat.id!);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kategori berhasil dihapus')));
+            },
+            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
