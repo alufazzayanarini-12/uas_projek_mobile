@@ -1,220 +1,144 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'main_navigation_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/settings_provider.dart';
+import 'home_screen.dart';
 
 class PinScreen extends StatefulWidget {
-  final bool isSetup;
-  const PinScreen({super.key, this.isSetup = false});
+  const PinScreen({super.key});
 
   @override
   State<PinScreen> createState() => _PinScreenState();
 }
 
 class _PinScreenState extends State<PinScreen> {
-  String _enteredPin = '';
-  String? _savedPin;
-  String _message = 'Masukkan PIN';
-  bool _isLoading = true;
+  String _pin = '';
+  final String _correctPin = '1234'; // PIN Default Anda
 
-  @override
-  void initState() {
-    super.initState();
-    _checkSavedPin();
-  }
-
-  Future<void> _checkSavedPin() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isSecurityEnabled = prefs.getBool('app_lock_enabled') ?? false; // Cek apakah kunci aktif
-    
-    setState(() {
-      _savedPin = prefs.getString('app_pin');
-      _isLoading = false;
-
-      // Jika tidak ada PIN atau kunci aplikasi dimatikan, langsung masuk
-      if ((_savedPin == null && !widget.isSetup) || (!isSecurityEnabled && !widget.isSetup)) {
-        _navigateToHome();
-        return;
-      }
-
-      if (_savedPin == null) {
-        _message = 'Buat PIN Baru';
-      }
-    });
-  }
-
-  void _onNumberPressed(String number) async {
-    if (_enteredPin.length < 4) {
+  void _onKeypadTap(String val) {
+    if (_pin.length < 4) {
       setState(() {
-        _enteredPin += number;
+        _pin += val;
       });
+    }
 
-      if (_enteredPin.length == 4) {
-        if (_savedPin == null || widget.isSetup) {
-          // Setting up new PIN
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('app_pin', _enteredPin);
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PIN Berhasil Disimpan')));
-          _navigateToHome();
-        } else {
-          // Validating PIN
-          if (_enteredPin == _savedPin) {
-            _navigateToHome();
-          } else {
-            setState(() {
-              _enteredPin = '';
-              _message = 'PIN Salah! Coba lagi.';
-            });
-          }
-        }
-      }
+    // Jika sudah 4 angka, langsung verifikasi
+    if (_pin.length == 4) {
+      Future.delayed(const Duration(milliseconds: 200), () => _verifyPin());
     }
   }
 
-  void _onDeletePressed() {
-    if (_enteredPin.isNotEmpty) {
+  void _verifyPin() {
+    if (_pin == _correctPin) {
+      Navigator.pushReplacement(
+        context, 
+        MaterialPageRoute(builder: (context) => const HomeScreen())
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('PIN Salah! Gunakan "1234"', textAlign: TextAlign.center), 
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 1),
+        ),
+      );
       setState(() {
-        _enteredPin = _enteredPin.substring(0, _enteredPin.length - 1);
+        _pin = '';
       });
     }
-  }
-
-  void _navigateToHome() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-        );
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     return Scaffold(
-      backgroundColor: const Color(0xFF03045E),
+      backgroundColor: const Color(0xFF1A237E), // Biru Tua Premium
       body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.lock_outline, size: 64, color: Colors.white),
-            const SizedBox(height: 24),
-            Text(
-              _message,
-              style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            const SizedBox(height: 60), // Menurunkan konten agar tidak terlalu ke atas
+            const Icon(Icons.lock_person_outlined, size: 80, color: Colors.white),
+            const SizedBox(height: 20),
+            const Text(
+              'Masukkan PIN Keamanan',
+              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1),
             ),
             const SizedBox(height: 40),
+            
+            // ── INDIKATOR TITIK PIN ──
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(4, (index) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 12),
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: index < _enteredPin.length ? Colors.white : Colors.white24,
-                  ),
-                );
-              }),
+              children: List.generate(4, (index) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: index < _pin.length ? Colors.cyanAccent : Colors.white24,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white38),
+                ),
+              )),
             ),
             const SizedBox(height: 60),
-            _buildNumberPad(),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildNumberPad() {
-    return Column(
-      children: [
-        _buildNumberRow(['1', '2', '3']),
-        _buildNumberRow(['4', '5', '6']),
-        _buildNumberRow(['7', '8', '9']),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildBiometricButton(), // Tambahkan tombol sidik jari di sini
-            _buildNumberButton('0'),
-            _buildDeleteButton(),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNumberRow(List<String> numbers) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: numbers.map((n) => _buildNumberButton(n)).toList(),
-    );
-  }
-
-  Widget _buildNumberButton(String number) {
-    return Container(
-      margin: const EdgeInsets.all(12),
-      width: 70,
-      height: 70,
-      child: number.isEmpty
-          ? null
-          : TextButton(
-              onPressed: () => _onNumberPressed(number),
-              style: TextButton.styleFrom(
-                shape: const CircleBorder(),
-                backgroundColor: Colors.white12,
-              ),
-              child: Text(
-                number,
-                style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+            // ── KEYPAD ANGKA ──
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: GridView.count(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 20,
+                  children: [
+                    for (var i = 1; i <= 9; i++) _buildKeypadButton(i.toString()),
+                    const SizedBox(), // Kosong di kiri nol
+                    _buildKeypadButton('0'),
+                    _buildBackspaceButton(),
+                  ],
+                ),
               ),
             ),
-    );
-  }
-
-  Widget _buildBiometricButton() {
-    return Container(
-      margin: const EdgeInsets.all(12),
-      width: 70,
-      height: 70,
-      child: IconButton(
-        onPressed: _authenticateBiometric,
-        icon: const Icon(Icons.fingerprint, color: Colors.white, size: 40),
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }
 
-  Future<void> _authenticateBiometric() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isBiometricEnabled = prefs.getBool('biometric_enabled') ?? false;
-
-    if (!isBiometricEnabled) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Aktifkan Biometrik di Pengaturan terlebih dahulu')),
-      );
-      return;
-    }
-
-    // Simulasi Berhasil (Karena paket local_auth butuh setup manual di Android)
-    // Jika Anda sudah instal local_auth, bagian ini bisa diganti dengan fungsi aslinya
-    _navigateToHome();
+  Widget _buildKeypadButton(String val) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _onKeypadTap(val),
+        borderRadius: BorderRadius.circular(100),
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white12, width: 2),
+            color: Colors.white.withOpacity(0.05),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            val,
+            style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w400),
+          ),
+        ),
+      ),
+    );
   }
 
-  Widget _buildDeleteButton() {
-    return Container(
-      margin: const EdgeInsets.all(12),
-      width: 70,
-      height: 70,
-      child: IconButton(
-        onPressed: _onDeletePressed,
-        icon: const Icon(Icons.backspace_outlined, color: Colors.white),
-        iconSize: 32,
+  Widget _buildBackspaceButton() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          if (_pin.isNotEmpty) {
+            setState(() => _pin = _pin.substring(0, _pin.length - 1));
+          }
+        },
+        borderRadius: BorderRadius.circular(100),
+        child: Container(
+          alignment: Alignment.center,
+          child: const Icon(Icons.backspace_outlined, color: Colors.white70, size: 28),
+        ),
       ),
     );
   }

@@ -42,7 +42,7 @@ class DatabaseHelper {
 
     final db = await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -80,15 +80,20 @@ class DatabaseHelper {
     // ... logic upgrade lainnya tetap ada
   }
 
+  Future<void> seedDefaultCategoriesManually() async {
+    final db = await instance.database;
+    await _seedDefaultCategories(db);
+  }
+
   Future<void> _seedDefaultCategories(Database db) async {
     final List<Map<String, dynamic>> defaultCategories = [
-      {'name': 'Hutang', 'icon_code_point': 0xf0289, 'color_value': 0xFFF44336, 'order_index': 0},
-      {'name': 'Tabungan Saya', 'icon_code_point': 0xe54e, 'color_value': 0xFFE91E63, 'order_index': 1},
-      {'name': 'Pendidikan', 'icon_code_point': 0xe5bc, 'color_value': 0xFF2196F3, 'order_index': 2},
-      {'name': 'Uang Bulanan', 'icon_code_point': 0xe040, 'color_value': 0xFF4CAF50, 'order_index': 3},
-      {'name': 'Dana Darurat', 'icon_code_point': 0xe30d, 'color_value': 0xFFFF9800, 'order_index': 4},
-      {'name': 'Uang Saku', 'icon_code_point': 0xe541, 'color_value': 0xFF9C27B0, 'order_index': 5},
-      {'name': 'Lainnya', 'icon_code_point': 0xe1b1, 'color_value': 0xFF607D8B, 'order_index': 6},
+      {'name': 'Hutang', 'icon_code_point': 0xf0289, 'color_value': 0xFFF44336, 'order_index': 0, 'budget_limit': 0.0},
+      {'name': 'Tabungan Saya', 'icon_code_point': 0xe54e, 'color_value': 0xFFE91E63, 'order_index': 1, 'budget_limit': 0.0},
+      {'name': 'Pendidikan', 'icon_code_point': 0xe5bc, 'color_value': 0xFF2196F3, 'order_index': 2, 'budget_limit': 0.0},
+      {'name': 'Uang Bulanan', 'icon_code_point': 0xe040, 'color_value': 0xFF4CAF50, 'order_index': 3, 'budget_limit': 0.0},
+      {'name': 'Dana Darurat', 'icon_code_point': 0xe30d, 'color_value': 0xFFFF9800, 'order_index': 4, 'budget_limit': 0.0},
+      {'name': 'Uang Saku', 'icon_code_point': 0xe541, 'color_value': 0xFF9C27B0, 'order_index': 5, 'budget_limit': 0.0},
+      {'name': 'Lainnya', 'icon_code_point': 0xe1b1, 'color_value': 0xFF607D8B, 'order_index': 6, 'budget_limit': 0.0},
     ];
 
     for (var cat in defaultCategories) {
@@ -117,9 +122,9 @@ CREATE TABLE accounts (
 CREATE TABLE transactions (
   id $idType,
   account_id $intType,
-  goal_id $intType,
-  category_id $intType,
-  target_account_id $intType,
+  goal_id INTEGER,
+  category_id INTEGER,
+  target_account_id INTEGER,
   type $textType,
   amount $realType,
   description $textType,

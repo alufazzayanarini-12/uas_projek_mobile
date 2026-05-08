@@ -7,16 +7,23 @@ import 'providers/category_provider.dart';
 import 'providers/transaction_provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/pin_screen.dart';
+import 'screens/home_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final settingsProvider = SettingsProvider();
+
+  final categoryProvider = CategoryProvider();
+  await categoryProvider.loadCategories(); // ── PAKSA LOAD DATA DI SINI ──
+
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: settingsProvider),
+        ChangeNotifierProvider.value(value: categoryProvider),
         ChangeNotifierProvider(create: (_) => AccountProvider()),
         ChangeNotifierProvider(create: (_) => GoalProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
       ],
       child: const MyApp(),
@@ -29,10 +36,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
+    
     return MaterialApp(
       title: 'Aplikasi Tabungan',
       theme: AppTheme.lightTheme,
-      home: const PinScreen(),
+      home: settings.isAppLockEnabled ? const PinScreen() : const HomeScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

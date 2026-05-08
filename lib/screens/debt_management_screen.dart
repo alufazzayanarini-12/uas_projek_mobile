@@ -22,14 +22,14 @@ class DebtManagementScreen extends StatelessWidget {
         children: [
           // ── DAFTAR KONTAK PIUTANG ──
           _buildDebtHeader('Daftar Kontak & Hutang'),
-          _buildDebtCard('Budi Santoso', 'Rp 2.000.000', 0.6, 'Sisa: Rp 800.000', Colors.orange),
-          _buildDebtCard('Siti Aminah', 'Rp 5.000.000', 0.3, 'Sisa: Rp 3.500.000', Colors.red),
+          _buildDebtCard('Nia', 'Rp 2.000.000', 0.6, 'Sisa: Rp 800.000', Colors.orange),
+          _buildDebtCard('Wulan', 'Rp 5.000.000', 0.3, 'Sisa: Rp 3.500.000', Colors.red),
           const SizedBox(height: 25),
 
           // ── JATUH TEMPO (KALENDER RINGKAS) ──
           _buildDebtHeader('Jatuh Tempo Terdekat'),
-          _buildDueItem('Budi Santoso', '15 Mei 2026', 'Rp 400.000 (Cicilan 3)'),
-          _buildDueItem('Siti Aminah', '20 Mei 2026', 'Rp 1.000.000 (Cicilan 1)'),
+          _buildDueItem('Nia', '15 Mei 2026', 'Rp 400.000 (Cicilan 3)'),
+          _buildDueItem('Wulan', '20 Mei 2026', 'Rp 1.000.000 (Cicilan 1)'),
           const SizedBox(height: 25),
 
           // ── FITUR TAMBAHAN ──

@@ -17,6 +17,12 @@ class CategoryProvider with ChangeNotifier {
 
     _categories = await DatabaseHelper.instance.readAllCategories();
 
+    // ── JIKA KOSONG, ISI ULANG DENGAN KATEGORI DEFAULT ──
+    if (_categories.isEmpty) {
+      await DatabaseHelper.instance.seedDefaultCategoriesManually();
+      _categories = await DatabaseHelper.instance.readAllCategories();
+    }
+
     _isLoading = false;
     notifyListeners();
   }

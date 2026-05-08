@@ -15,14 +15,12 @@ class CategoryManagementScreen extends StatefulWidget {
 class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-  // Daftar Pilihan Ikon
   final List<IconData> _availableIcons = [
     Icons.shopping_cart, Icons.restaurant, Icons.directions_car, Icons.movie,
     Icons.home, Icons.school, Icons.fitness_center, Icons.medical_services,
     Icons.flight, Icons.games, Icons.volunteer_activism, Icons.account_balance_wallet
   ];
 
-  // Daftar Pilihan Warna
   final List<Color> _availableColors = [
     Colors.red, Colors.pink, Colors.purple, Colors.deepPurple,
     Colors.indigo, Colors.blue, Colors.cyan, Colors.teal,
@@ -48,14 +46,17 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           final categories = catProvider.categories;
 
           if (categories.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.category_outlined, size: 80, color: Colors.grey),
-                  SizedBox(height: 15),
-                  Text('Belum ada kategori.', style: TextStyle(color: Colors.grey)),
-                  Text('Klik + Kategori Kustom di bawah!', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  const Icon(Icons.category_outlined, size: 80, color: Colors.grey),
+                  const SizedBox(height: 15),
+                  const Text('Belum ada kategori.', style: TextStyle(color: Colors.grey)),
+                  ElevatedButton(
+                    onPressed: () => catProvider.loadCategories(),
+                    child: const Text('Refresh Data'),
+                  )
                 ],
               ),
             );
@@ -135,7 +136,6 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               ),
             ],
           ),
-          // ... rest of card
           if (cat.budgetLimit > 0) ...[
             const SizedBox(height: 15),
             ClipRRect(
@@ -153,14 +153,13 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus Kategori?'),
-        content: Text('Apakah Anda yakin ingin menghapus "${cat.name}"? Data transaksi lama tidak akan hilang, tapi kategori ini akan dihapus dari daftar.'),
+        content: Text('Apakah Anda yakin ingin menghapus "${cat.name}"?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
           TextButton(
             onPressed: () {
               Provider.of<CategoryProvider>(context, listen: false).deleteCategory(cat.id!);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kategori berhasil dihapus')));
             },
             child: const Text('Hapus', style: TextStyle(color: Colors.red)),
           ),
@@ -195,8 +194,6 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 const SizedBox(height: 20),
                 TextField(controller: budgetController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Batas Anggaran Bulanan', prefixText: 'Rp ', border: OutlineInputBorder())),
                 const SizedBox(height: 25),
-                
-                // ── PILIH IKON ──
                 const Text('Pilih Ikon', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -216,8 +213,6 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   ),
                 ),
                 const SizedBox(height: 25),
-
-                // ── PILIH WARNA ──
                 const Text('Pilih Warna', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -236,7 +231,6 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   ),
                 ),
                 const SizedBox(height: 35),
-
                 SizedBox(
                   width: double.infinity,
                   height: 55,
