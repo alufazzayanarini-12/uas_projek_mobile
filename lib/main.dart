@@ -8,6 +8,7 @@ import 'providers/transaction_provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/pin_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/main_navigation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +42,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Aplikasi Tabungan',
       theme: AppTheme.lightTheme,
-      home: settings.isAppLockEnabled ? const PinScreen() : const HomeScreen(),
+      home: settings.isAppLockEnabled ? const PinScreen() : const MainNavigationScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
