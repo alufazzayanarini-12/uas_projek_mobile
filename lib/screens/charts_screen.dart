@@ -296,7 +296,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
               foregroundColor: const Color(0xFF002B1D),
               elevation: 0,
               minimumSize: const Size(double.infinity, 50),
-              shape: BorderRadius.circular(15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
             ),
             child: Text('Sesuaikan Parameter', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
