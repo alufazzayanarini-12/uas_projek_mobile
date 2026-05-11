@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
-import 'home_screen.dart';
+import 'main_navigation_screen.dart';
 
 class PinScreen extends StatefulWidget {
   const PinScreen({super.key});
@@ -31,7 +31,7 @@ class _PinScreenState extends State<PinScreen> {
     if (_pin == _correctPin) {
       Navigator.pushReplacement(
         context, 
-        MaterialPageRoute(builder: (context) => const HomeScreen())
+        MaterialPageRoute(builder: (context) => const MainNavigationScreen())
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'home_screen.dart';
 import 'goals_screen.dart';
 import 'charts_screen.dart';
+import 'add_transaction_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -16,8 +17,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const ChartsScreen(), // Analisis
-    const Scaffold(body: Center(child: Text('Tambah'))), // FAB action
+    const ChartsScreen(), // Wawasan
+    const AddTransactionScreen(), // Tambah
     const GoalsScreen(), // Aturan
     const Center(child: Text('Profil')), 
   ];
@@ -25,34 +26,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Menggunakan extendBody agar konten bisa berada di bawah BottomAppBar jika diperlukan
-      extendBody: true,
+      backgroundColor: const Color(0xFFF8F9FE),
       body: _screens[_currentIndex],
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          height: 85,
-          margin: const EdgeInsets.fromLTRB(15, 0, 15, 15),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(25),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildNavItem(0, Icons.grid_view_rounded, 'Beranda'),
-              _buildNavItem(1, Icons.insights_rounded, 'Analisis'),
-              _buildFab(),
-              _buildNavItem(3, Icons.code_rounded, 'Aturan'),
-              _buildNavItem(4, Icons.person_outline_rounded, 'Profil'),
-            ],
-          ),
+      bottomNavigationBar: Container(
+        height: 85,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Colors.black.withOpacity(0.05), width: 1)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildNavItem(0, Icons.grid_view_rounded, 'Beranda'),
+            _buildNavItem(1, Icons.query_stats_rounded, 'Wawasan'),
+            _buildNavItem(2, Icons.add_circle_outline_rounded, 'Tambah'),
+            _buildNavItem(3, Icons.terminal_rounded, 'Aturan'),
+            _buildNavItem(4, Icons.person_outline_rounded, 'Profil'),
+          ],
         ),
       ),
     );
@@ -64,58 +54,35 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       onTap: () => setState(() => _currentIndex = index),
       behavior: HitTestBehavior.opaque,
       child: Container(
-        width: 65,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: isActive
-            ? BoxDecoration(
-                color: const Color(0xFFBDCECA), 
-                borderRadius: BorderRadius.circular(16),
-              )
-            : null,
+        width: 70,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: isActive ? const Color(0xFF002B1D) : const Color(0xFF8E99AF),
-              size: 24,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: isActive
+                  ? BoxDecoration(
+                      color: const Color(0xFFBDCECA), 
+                      borderRadius: BorderRadius.circular(12),
+                    )
+                  : null,
+              child: Icon(
+                icon,
+                color: isActive ? const Color(0xFF002B1D) : const Color(0xFF8E99AF),
+                size: 24,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: GoogleFonts.outfit(
                 color: isActive ? const Color(0xFF002B1D) : const Color(0xFF8E99AF),
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildFab() {
-    return GestureDetector(
-      onTap: () {
-        // Handle FAB click
-      },
-      child: Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          color: const Color(0xFF002B1D),
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF002B1D).withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }

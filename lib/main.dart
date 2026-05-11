@@ -10,13 +10,14 @@ import 'screens/pin_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/main_navigation_screen.dart';
 
+// Versi: 1.1 (Force Rebuild)
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final settingsProvider = SettingsProvider();
-
   final categoryProvider = CategoryProvider();
-  await categoryProvider.loadCategories(); // ── PAKSA LOAD DATA DI SINI ──
+  await categoryProvider.loadCategories(); 
 
   runApp(
     MultiProvider(
@@ -37,13 +38,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings = Provider.of<SettingsProvider>(context);
-    
-    return MaterialApp(
-      title: 'Aplikasi Tabungan',
-      theme: AppTheme.lightTheme,
-      home: settings.isAppLockEnabled ? const PinScreen() : const MainNavigationScreen(),
-      debugShowCheckedModeBanner: false,
+    return Consumer<SettingsProvider>(
+      builder: (context, settings, _) {
+        return MaterialApp(
+          title: 'MindMoney',
+          theme: AppTheme.lightTheme,
+          home: settings.isAppLockEnabled ? const PinScreen() : const MainNavigationScreen(),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }
