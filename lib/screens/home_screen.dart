@@ -8,6 +8,7 @@ import '../providers/settings_provider.dart';
 import '../models/goal.dart';
 import 'goal_detail_screen.dart';
 import 'settings_screen.dart';
+import 'add_transaction_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -84,9 +85,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 25),
                 Row(
                   children: [
-                    Expanded(child: _buildGoalProgressCard('New Laptop', 0.70, 'Rp 14.5M')),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddTransactionScreen())),
+                        child: _buildGoalProgressCard('New Laptop', 0.70, 'Rp 14.5M'),
+                      ),
+                    ),
                     const SizedBox(width: 20),
-                    Expanded(child: _buildGoalProgressCard('Vacation', 0.45, 'Rp 8.2M')),
+                    Expanded(child: _buildGoalProgressCard('Books NW', 0.45, 'Rp 8.2M')),
                   ],
                 ),
                 const SizedBox(height: 25),
