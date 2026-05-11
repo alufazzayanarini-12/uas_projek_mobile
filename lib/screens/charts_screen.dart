@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'financial_auditor_screen.dart';
 
 class ChartsScreen extends StatefulWidget {
   const ChartsScreen({super.key});
@@ -290,7 +291,9 @@ class _ChartsScreenState extends State<ChartsScreen> {
           Text('Rp 12.450.000', style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => FinancialAuditorScreen()));
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFB7E4C7),
               foregroundColor: const Color(0xFF002B1D),
