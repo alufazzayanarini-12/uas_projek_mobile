@@ -91,12 +91,31 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddTransactionScreen())),
-                            child: _buildGoalProgressCard('New Laptop', 0.70, 'Rp 14.5M', isDark),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(
+                              goalTitle: 'Laptop Baru',
+                              targetAmount: 'Rp 15.000.000',
+                              currentAmount: 'Rp 11.250.000',
+                              remainingAmount: 'Rp 3.750.000',
+                              progress: 0.75,
+                              icon: Icons.laptop_mac,
+                            ))),
+                            child: _buildGoalProgressCard('Laptop Baru', 0.75, 'Rp 11.2M', isDark),
                           ),
                         ),
                         const SizedBox(width: 20),
-                        Expanded(child: _buildGoalProgressCard('Books NW', 0.45, 'Rp 8.2M', isDark)),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(
+                              goalTitle: 'Books NW',
+                              targetAmount: 'Rp 8.000.000',
+                              currentAmount: 'Rp 3.600.000',
+                              remainingAmount: 'Rp 4.400.000',
+                              progress: 0.45,
+                              icon: Icons.book_outlined,
+                            ))),
+                            child: _buildGoalProgressCard('Books NW', 0.45, 'Rp 3.6M', isDark),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 25),
