@@ -10,8 +10,6 @@ import 'screens/pin_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/main_navigation_screen.dart';
 
-// Versi: 1.1 (Force Rebuild)
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -43,6 +41,8 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'MindMoney',
           theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
           home: settings.isAppLockEnabled ? const PinScreen() : const MainNavigationScreen(),
           debugShowCheckedModeBanner: false,
         );

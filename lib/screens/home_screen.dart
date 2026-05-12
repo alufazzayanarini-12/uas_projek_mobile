@@ -20,7 +20,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _isAutoSaveEnabled = true;
-  final String _profileImagePath = 'C:/Users/Sipul/.gemini/antigravity/brain/2693fa1e-fb88-410b-a3ca-8813d5a1d002/arini_actual_profile_1778586287965.png';
 
   @override
   void initState() {
@@ -39,77 +38,83 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        toolbarHeight: 70,
-        titleSpacing: 25,
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundImage: FileImage(File(_profileImagePath)),
-            ),
-            const SizedBox(width: 15),
-            Text(
-              'MindMoney',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFF002B1D),
-                fontWeight: FontWeight.bold,
-                fontSize: 28,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Color(0xFF002B1D), size: 28),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())),
-          ),
-          const SizedBox(width: 20),
-        ],
-      ),
-      body: Consumer2<AccountProvider, TransactionProvider>(
-        builder: (context, accProvider, txProvider, child) {
-          final displayBalance = accProvider.totalBalance > 0 ? accProvider.totalBalance : 12450000.0;
+    return Consumer<SettingsProvider>(
+      builder: (context, settings, child) {
+        final isDark = settings.isDarkMode;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 25),
-            child: Column(
+        return Scaffold(
+          backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE),
+          appBar: AppBar(
+            backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            elevation: 0,
+            toolbarHeight: 70,
+            titleSpacing: 25,
+            title: Row(
               children: [
-                const SizedBox(height: 25),
-                _buildMainBalanceCard(displayBalance, fmt),
-                const SizedBox(height: 25),
-                _buildAutoSaveCard(),
-                const SizedBox(height: 25),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddTransactionScreen())),
-                        child: _buildGoalProgressCard('New Laptop', 0.70, 'Rp 14.5M'),
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(child: _buildGoalProgressCard('Books NW', 0.45, 'Rp 8.2M')),
-                  ],
+                CircleAvatar(
+                  radius: 22,
+                  backgroundImage: settings.getProfileImageProvider(),
                 ),
-                const SizedBox(height: 25),
-                _buildEmergencyFundCard(45000000, 50000000, 0.92, fmt),
-                const SizedBox(height: 25),
-                _buildGrowthAnalysisCard(),
-                const SizedBox(height: 120),
+                const SizedBox(width: 15),
+                Text(
+                  'MindMoney',
+                  style: GoogleFonts.outfit(
+                    color: isDark ? Colors.white : const Color(0xFF002B1D),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 28,
+                  ),
+                ),
               ],
             ),
-          );
-        },
-      ),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white : const Color(0xFF002B1D), size: 28),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())),
+              ),
+              const SizedBox(width: 20),
+            ],
+          ),
+          body: Consumer2<AccountProvider, TransactionProvider>(
+            builder: (context, accProvider, txProvider, child) {
+              final displayBalance = accProvider.totalBalance > 0 ? accProvider.totalBalance : 12450000.0;
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 25),
+                    _buildMainBalanceCard(displayBalance, fmt, isDark),
+                    const SizedBox(height: 25),
+                    _buildAutoSaveCard(isDark),
+                    const SizedBox(height: 25),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddTransactionScreen())),
+                            child: _buildGoalProgressCard('New Laptop', 0.70, 'Rp 14.5M', isDark),
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(child: _buildGoalProgressCard('Books NW', 0.45, 'Rp 8.2M', isDark)),
+                      ],
+                    ),
+                    const SizedBox(height: 25),
+                    _buildEmergencyFundCard(45000000, 50000000, 0.92, fmt, isDark),
+                    const SizedBox(height: 25),
+                    _buildGrowthAnalysisCard(isDark),
+                    const SizedBox(height: 120),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildMainBalanceCard(double total, NumberFormat fmt) {
+  Widget _buildMainBalanceCard(double total, NumberFormat fmt, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
@@ -161,25 +166,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildAutoSaveCard() {
+  Widget _buildAutoSaveCard(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28), border: Border.all(color: Colors.black.withOpacity(0.04))),
+      decoration: BoxDecoration(color: isDark ? const Color(0xFF1E1E1E) : Colors.white, borderRadius: BorderRadius.circular(28), border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04))),
       child: Row(
         children: [
-          Container(padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: const Color(0xFFE8F0FE), borderRadius: BorderRadius.circular(15)), child: const Icon(Icons.code_rounded, color: Color(0xFF002B1D), size: 26)),
+          Container(padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFE8F0FE), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.code_rounded, color: isDark ? Colors.white : const Color(0xFF002B1D), size: 26)),
           const SizedBox(width: 20),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Auto-Save Protocol', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: const Color(0xFF002B1D))), const SizedBox(height: 4), Text('Round-ups & logic-based rules', style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 14))])),
-          Switch(value: _isAutoSaveEnabled, onChanged: (val) => setState(() => _isAutoSaveEnabled = val), activeColor: const Color(0xFF002B1D)),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Auto-Save Protocol', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? Colors.white : const Color(0xFF002B1D))), const SizedBox(height: 4), Text('Round-ups & logic-based rules', style: GoogleFonts.outfit(color: isDark ? Colors.white70 : Colors.grey[600], fontSize: 14))])),
+          Switch(value: _isAutoSaveEnabled, onChanged: (val) => setState(() => _isAutoSaveEnabled = val), activeColor: isDark ? Colors.green : const Color(0xFF002B1D)),
         ],
       ),
     );
   }
 
-  Widget _buildGoalProgressCard(String title, double progress, String amount) {
+  Widget _buildGoalProgressCard(String title, double progress, String amount, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28), border: Border.all(color: Colors.black.withOpacity(0.04))),
+      decoration: BoxDecoration(color: isDark ? const Color(0xFF1E1E1E) : Colors.white, borderRadius: BorderRadius.circular(28), border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04))),
       child: Column(
         children: [
           SizedBox(
@@ -187,55 +192,55 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                CircularProgressIndicator(value: progress, strokeWidth: 9, backgroundColor: const Color(0xFFF1F4F9), valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF002B1D)), strokeCap: StrokeCap.round),
-                Text('${(progress * 100).toInt()}%', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+                CircularProgressIndicator(value: progress, strokeWidth: 9, backgroundColor: isDark ? Colors.white10 : const Color(0xFFF1F4F9), valueColor: AlwaysStoppedAnimation<Color>(isDark ? Colors.green : const Color(0xFF002B1D)), strokeCap: StrokeCap.round),
+                Text('${(progress * 100).toInt()}%', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? Colors.white : Colors.black)),
               ],
             ),
           ),
           const SizedBox(height: 20),
-          Text(title, style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 14)),
+          Text(title, style: GoogleFonts.outfit(color: isDark ? Colors.white70 : Colors.grey[600], fontSize: 14)),
           const SizedBox(height: 6),
-          Text(amount, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: const Color(0xFF002B1D))),
+          Text(amount, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? Colors.white : const Color(0xFF002B1D))),
         ],
       ),
     );
   }
 
-  Widget _buildEmergencyFundCard(double current, double target, double progress, NumberFormat fmt) {
+  Widget _buildEmergencyFundCard(double current, double target, double progress, NumberFormat fmt, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28), border: Border.all(color: Colors.black.withOpacity(0.04))),
+      decoration: BoxDecoration(color: isDark ? const Color(0xFF1E1E1E) : Colors.white, borderRadius: BorderRadius.circular(28), border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Emergency Fund', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 20, color: const Color(0xFF002B1D))), Text('Computational Safety Net', style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 14))]),
-              Text('${(progress * 100).toInt()}%', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 28, color: const Color(0xFF002B1D))),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Emergency Fund', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 20, color: isDark ? Colors.white : const Color(0xFF002B1D))), Text('Computational Safety Net', style: GoogleFonts.outfit(color: isDark ? Colors.white70 : Colors.grey[600], fontSize: 14))]),
+              Text('${(progress * 100).toInt()}%', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 28, color: isDark ? Colors.white : const Color(0xFF002B1D))),
             ],
           ),
           const SizedBox(height: 25),
-          ClipRRect(borderRadius: BorderRadius.circular(15), child: LinearProgressIndicator(value: progress, minHeight: 9, backgroundColor: const Color(0xFFF1F4F9), valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF002B1D)))),
+          ClipRRect(borderRadius: BorderRadius.circular(15), child: LinearProgressIndicator(value: progress, minHeight: 9, backgroundColor: isDark ? Colors.white10 : const Color(0xFFF1F4F9), valueColor: AlwaysStoppedAnimation<Color>(isDark ? Colors.green : const Color(0xFF002B1D)))),
           const SizedBox(height: 15),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(fmt.format(current), style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey[600])), Text('Target: Rp 50M', style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey[600]))]),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(fmt.format(current), style: GoogleFonts.outfit(fontSize: 13, color: isDark ? Colors.white70 : Colors.grey[600])), Text('Target: Rp 50M', style: GoogleFonts.outfit(fontSize: 13, color: isDark ? Colors.white70 : Colors.grey[600]))]),
         ],
       ),
     );
   }
 
-  Widget _buildGrowthAnalysisCard() {
+  Widget _buildGrowthAnalysisCard(bool isDark) {
     return Container(
       width: double.infinity, padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(color: const Color(0xFFE0E5E2), borderRadius: BorderRadius.circular(30), image: const DecorationImage(image: NetworkImage('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop'), fit: BoxFit.cover, opacity: 0.1)),
+      decoration: BoxDecoration(color: isDark ? const Color(0xFF2E3D35) : const Color(0xFFE0E5E2), borderRadius: BorderRadius.circular(30), image: const DecorationImage(image: NetworkImage('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop'), fit: BoxFit.cover, opacity: 0.1)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7), decoration: BoxDecoration(color: Colors.black.withOpacity(0.08), borderRadius: BorderRadius.circular(20)), child: Text('Growth Analysis', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600))),
+          Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7), decoration: BoxDecoration(color: Colors.black.withOpacity(0.08), borderRadius: BorderRadius.circular(20)), child: Text('Growth Analysis', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black))),
           const SizedBox(height: 20),
-          Text('Capital Efficiency is up 12%', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D))),
+          Text('Capital Efficiency is up 12%', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF002B1D))),
           const SizedBox(height: 20),
-          Row(children: [Text('View Detailed Report', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: const Color(0xFF002B1D))), const SizedBox(width: 12), const Icon(Icons.arrow_forward, size: 20, color: Color(0xFF002B1D))]),
+          Row(children: [Text('View Detailed Report', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.green[200] : const Color(0xFF002B1D))), const SizedBox(width: 12), Icon(Icons.arrow_forward, size: 20, color: isDark ? Colors.green[200] : const Color(0xFF002B1D))]),
         ],
       ),
     );
