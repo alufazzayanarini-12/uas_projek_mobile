@@ -4,6 +4,7 @@ import 'home_screen.dart';
 import 'goals_screen.dart';
 import 'charts_screen.dart';
 import 'add_transaction_screen.dart';
+import 'profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -17,10 +18,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const ChartsScreen(), // Wawasan
-    const AddTransactionScreen(), // Tambah
-    const GoalsScreen(), // Aturan
-    const Center(child: Text('Profil')), 
+    const ChartsScreen(), // Insights
+    const AddTransactionScreen(), // Add
+    const GoalsScreen(), // Rules
+    const ProfileScreen(), // Profile
   ];
 
   @override
@@ -37,11 +38,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildNavItem(0, Icons.grid_view_rounded, 'Beranda'),
-            _buildNavItem(1, Icons.query_stats_rounded, 'Wawasan'),
-            _buildNavItem(2, Icons.add_circle_outline_rounded, 'Tambah'),
-            _buildNavItem(3, Icons.terminal_rounded, 'Aturan'),
-            _buildNavItem(4, Icons.person_outline_rounded, 'Profil'),
+            _buildNavItem(0, Icons.home_outlined, 'Home'),
+            _buildNavItem(1, Icons.analytics_outlined, 'Insights'),
+            _buildNavItem(2, Icons.add_circle_outline_rounded, 'Add'),
+            _buildNavItem(3, Icons.terminal_rounded, 'Rules'),
+            _buildNavItem(4, Icons.person_outline_rounded, 'Profile'),
           ],
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
 import '../providers/account_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/settings_provider.dart';
@@ -19,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _isAutoSaveEnabled = true;
+  final String _profileImagePath = 'C:/Users/Sipul/.gemini/antigravity/brain/2693fa1e-fb88-410b-a3ca-8813d5a1d002/arini_actual_profile_1778586287965.png';
 
   @override
   void initState() {
@@ -46,9 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
         titleSpacing: 25,
         title: Row(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 22,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=man_mindmoney'),
+              backgroundImage: FileImage(File(_profileImagePath)),
             ),
             const SizedBox(width: 15),
             Text(
@@ -71,7 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Consumer2<AccountProvider, TransactionProvider>(
         builder: (context, accProvider, txProvider, child) {
-          // Menggunakan data dummy jika data asli kosong agar tampilan persis seperti gambar saat awal
           final displayBalance = accProvider.totalBalance > 0 ? accProvider.totalBalance : 12450000.0;
 
           return SingleChildScrollView(

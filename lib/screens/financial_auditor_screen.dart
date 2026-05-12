@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
 
 class FinancialAuditorScreen extends StatelessWidget {
   const FinancialAuditorScreen({super.key});
+
+  final String _profileImagePath = 'C:/Users/Sipul/.gemini/antigravity/brain/2693fa1e-fb88-410b-a3ca-8813d5a1d002/arini_actual_profile_1778586287965.png';
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +30,9 @@ class FinancialAuditorScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(icon: const Icon(Icons.settings_outlined, color: Color(0xFF002B1D)), onPressed: () {}),
-          const CircleAvatar(
+          CircleAvatar(
             radius: 18,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=man_mindmoney'),
+            backgroundImage: FileImage(File(_profileImagePath)),
           ),
           const SizedBox(width: 15),
         ],
@@ -116,7 +119,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(color: const Color(0xFFF1F4F9), shape: BoxShape.circle),
-                child: const Icon(Icons.priority_high_rounded, color: Colors.white, size: 40), // Placeholder for the light '!' icon
+                child: const Icon(Icons.priority_high_rounded, color: Colors.white, size: 40), 
               ),
             ],
           ),
@@ -190,7 +193,7 @@ class FinancialAuditorScreen extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(5),
             child: const LinearProgressIndicator(
-              value: 1.0, // Always full/overflowing in image
+              value: 1.0, 
               minHeight: 8,
               backgroundColor: Color(0xFFE5E7EB),
               valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFB91C1C)),
@@ -223,11 +226,11 @@ class FinancialAuditorScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildNavItem(Icons.grid_view_rounded, 'Beranda'),
-          _buildNavItem(Icons.query_stats_rounded, 'Wawasan', isActive: true),
-          _buildNavItem(Icons.add_circle_outline_rounded, 'Tambah'),
-          _buildNavItem(Icons.terminal_rounded, 'Aturan'),
-          _buildNavItem(Icons.person_outline_rounded, 'Profil'),
+          _buildNavItem(Icons.home_outlined, 'Home'),
+          _buildNavItem(Icons.analytics_outlined, 'Insights', isActive: true),
+          _buildNavItem(Icons.add_circle_outline_rounded, 'Add'),
+          _buildNavItem(Icons.terminal_rounded, 'Rules'),
+          _buildNavItem(Icons.person_outline_rounded, 'Profile'),
         ],
       ),
     );
