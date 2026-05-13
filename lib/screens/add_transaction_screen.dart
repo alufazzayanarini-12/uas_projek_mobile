@@ -2,18 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/goal_provider.dart';
+import '../models/goal.dart';
 import 'settings_screen.dart';
+import 'package:intl/intl.dart';
 
 class AddTransactionScreen extends StatelessWidget {
   const AddTransactionScreen({super.key, dynamic account});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SettingsProvider>(
-      builder: (context, settings, child) {
+    return Consumer2<SettingsProvider, GoalProvider>(
+      builder: (context, settings, goalProvider, child) {
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
         final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+        final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
+        // Get the first active goal if available, otherwise show a placeholder
+        Goal? goal;
+        if (goalProvider.goals.isNotEmpty) {
+          goal = goalProvider.goals.first;
+        }
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE),
@@ -48,53 +58,55 @@ class AddTransactionScreen extends StatelessWidget {
               const SizedBox(width: 15),
             ],
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                Text(
-                  'RINCIAN TARGET TABUNGAN',
-                  style: GoogleFonts.outfit(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[600],
-                    letterSpacing: 1.2,
-                  ),
+          body: goal == null 
+            ? Center(child: Text('Tidak ada target aktif', style: GoogleFonts.outfit(color: textColor)))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    Text(
+                      'RINCIAN TARGET TABUNGAN',
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${goal.name} - ${fmt.format(goal.targetAmount)}',
+                      style: GoogleFonts.outfit(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    _buildMainProgressSection(goal, isDark, textColor),
+                    const SizedBox(height: 25),
+                    _buildMonthlyTargetCard(goal, isDark, textColor, cardColor, fmt),
+                    const SizedBox(height: 20),
+                    _buildAtomicSavingsCard(goal, isDark, textColor, fmt),
+                    const SizedBox(height: 20),
+                    _buildDecompositionTreeCard(goal, isDark, textColor, cardColor, fmt),
+                    const SizedBox(height: 120),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Laptop Baru - Rp 15.000.000',
-                  style: GoogleFonts.outfit(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                _buildMainProgressSection(isDark, textColor),
-                const SizedBox(height: 25),
-                _buildMonthlyTargetCard(isDark, textColor, cardColor),
-                const SizedBox(height: 20),
-                _buildAtomicSavingsCard(isDark, textColor),
-                const SizedBox(height: 20),
-                _buildDecompositionTreeCard(isDark, textColor, cardColor),
-                const SizedBox(height: 120),
-              ],
-            ),
-          ),
+              ),
         );
       }
     );
   }
 
-  Widget _buildMainProgressSection(bool isDark, Color textColor) {
+  Widget _buildMainProgressSection(Goal goal, bool isDark, Color textColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          '75%',
+          '${goal.progressPercent.toInt()}%',
           style: GoogleFonts.outfit(fontSize: 36, fontWeight: FontWeight.bold, color: textColor),
         ),
         Text(
@@ -105,7 +117,7 @@ class AddTransactionScreen extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: LinearProgressIndicator(
-            value: 0.75,
+            value: goal.progressFraction,
             minHeight: 10,
             backgroundColor: isDark ? Colors.white10 : const Color(0xFFE5E7EB),
             valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF002B1D)),
@@ -115,7 +127,7 @@ class AddTransactionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMonthlyTargetCard(bool isDark, Color textColor, Color cardColor) {
+  Widget _buildMonthlyTargetCard(Goal goal, bool isDark, Color textColor, Color cardColor, NumberFormat fmt) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -139,7 +151,7 @@ class AddTransactionScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(color: const Color(0xFF084B3E), borderRadius: BorderRadius.circular(15)),
-                child: Text('Rp 625.000 / mo', style: GoogleFonts.outfit(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text('${fmt.format(goal.monthlySuggestion)} / bln', style: GoogleFonts.outfit(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -151,11 +163,11 @@ class AddTransactionScreen extends StatelessWidget {
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(5),
-                  child: LinearProgressIndicator(value: 0.45, minHeight: 8, backgroundColor: isDark ? Colors.white10 : const Color(0xFFE8EEF9), valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF98D8B6))),
+                  child: LinearProgressIndicator(value: goal.progressFraction, minHeight: 8, backgroundColor: isDark ? Colors.white10 : const Color(0xFFE8EEF9), valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF98D8B6))),
                 ),
               ),
               const SizedBox(width: 15),
-              Text('24 Bulan', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: textColor)),
+              Text('${goal.daysRemaining ~/ 30} Bulan', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: textColor)),
             ],
           ),
         ],
@@ -163,7 +175,7 @@ class AddTransactionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAtomicSavingsCard(bool isDark, Color textColor) {
+  Widget _buildAtomicSavingsCard(Goal goal, bool isDark, Color textColor, NumberFormat fmt) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -185,7 +197,7 @@ class AddTransactionScreen extends StatelessWidget {
           const SizedBox(height: 10),
           Text('Unit fundamental keberhasilan finansial.', style: GoogleFonts.outfit(fontSize: 14, color: isDark ? Colors.white70 : Colors.grey[600])),
           const SizedBox(height: 25),
-          Text('Rp 20.000', style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF002B1D))),
+          Text(fmt.format(goal.dailySuggestion), style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF002B1D))),
           Text('PER SIKLUS HARIAN', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white60 : Colors.grey[600])),
           const SizedBox(height: 25),
           ElevatedButton(
@@ -204,7 +216,7 @@ class AddTransactionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDecompositionTreeCard(bool isDark, Color textColor, Color cardColor) {
+  Widget _buildDecompositionTreeCard(Goal goal, bool isDark, Color textColor, Color cardColor, NumberFormat fmt) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -217,26 +229,13 @@ class AddTransactionScreen extends StatelessWidget {
         children: [
           Text('Visualisasi Pohon Dekomposisi', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
           const SizedBox(height: 40),
-          _buildTreeNode('TARGET UTAMA', 'Rp 15.000.000', isDark, isMain: true),
+          _buildTreeNode('TARGET UTAMA', fmt.format(goal.targetAmount), isDark, isMain: true),
           const SizedBox(height: 20),
           Container(width: 2, height: 30, color: isDark ? Colors.white10 : Colors.grey[300]),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildTreeNode('BULAN 1-12', 'Rp 7.500k', isDark),
-              const SizedBox(width: 20),
-              _buildTreeNode('BULAN 13-24', 'Rp 7.500k', isDark),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildSmallNode('Rp 20.000', isDark),
-              const SizedBox(width: 10),
-              _buildSmallNode('Rp 20.000', isDark),
-              const SizedBox(width: 10),
-              _buildSmallNode('Rp 20.000', isDark),
+              _buildTreeNode('ATOMIK HARIAN', fmt.format(goal.dailySuggestion), isDark),
             ],
           ),
         ],
@@ -257,24 +256,6 @@ class AddTransactionScreen extends StatelessWidget {
           Text(label, style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: isMain ? Colors.white70 : Colors.grey)),
           const SizedBox(height: 4),
           Text(amount, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isMain ? Colors.white : (isDark ? Colors.white : const Color(0xFF002B1D)))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSmallNode(String amount, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F4F9),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.blue.withOpacity(0.2), style: BorderStyle.none),
-      ),
-      child: Column(
-        children: [
-          Icon(Icons.bolt, size: 16, color: isDark ? Colors.white70 : const Color(0xFF002B1D)),
-          Text('Atomik harian', style: GoogleFonts.outfit(fontSize: 8, color: Colors.grey)),
-          Text(amount, style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF002B1D))),
         ],
       ),
     );

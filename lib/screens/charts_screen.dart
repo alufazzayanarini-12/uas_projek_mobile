@@ -187,13 +187,13 @@ class _ChartsScreenState extends State<ChartsScreen> {
             children: [
               const Icon(Icons.auto_fix_high_rounded, color: Color(0xFF76C893), size: 28),
               const SizedBox(width: 12),
-              Text('Biaya Rekursif', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+              Text('Biaya Tetap', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
             ],
           ),
           const SizedBox(height: 20),
           _buildRecursiveItem(Icons.business_center_rounded, 'Sewa/KPR', 'Rp 2,1jt', 0.8, const Color(0xFF002B1D), isDark),
           const SizedBox(height: 15),
-          _buildRecursiveItem(Icons.directions_car_rounded, 'Log Komuter', 'Rp 340rb', 0.4, const Color(0xFF76C893), isDark),
+          _buildRecursiveItem(Icons.directions_car_rounded, 'Biaya Komuter', 'Rp 340rb', 0.4, const Color(0xFF76C893), isDark),
         ],
       ),
     );

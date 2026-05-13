@@ -112,7 +112,7 @@ class GeneralSettingsScreen extends StatelessWidget {
       subtitle: Text(isDark ? 'Tema Gelap Aktif' : 'Tema Terang Aktif', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
       trailing: Switch(
         value: isDark,
-        onChanged: (v) => settings.setDarkMode(v),
+        onChanged: (v) => settings.toggleDarkMode(v),
         activeColor: const Color(0xFF002B1D),
       ),
     );

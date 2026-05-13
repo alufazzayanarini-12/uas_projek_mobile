@@ -167,9 +167,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildBadge('Premium Member', const Color(0xFFBDCECA), const Color(0xFF002B1D)),
+              _buildBadge('Anggota Premium', const Color(0xFFBDCECA), const Color(0xFF002B1D)),
               const SizedBox(width: 10),
-              _buildBadge('Joined Jan 2023', const Color(0xFFE8EEF9), Colors.blue[900]!),
+              _buildBadge('Bergabung Jan 2023', const Color(0xFFE8EEF9), Colors.blue[900]!),
             ],
           ),
         ],
@@ -305,7 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
               elevation: 0,
             ),
-            child: Text('Log Out', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text('Keluar', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

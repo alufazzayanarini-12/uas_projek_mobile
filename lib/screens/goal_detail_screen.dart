@@ -2,35 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/goal_provider.dart';
+import '../models/goal.dart';
 import 'edit_goal_screen.dart';
 import 'settings_screen.dart';
 import 'automation_settings_screen.dart';
+import 'package:intl/intl.dart';
 
 class GoalDetailScreen extends StatelessWidget {
-  final String goalTitle;
-  final String targetAmount;
-  final String savedAmount;
-  final String remainingAmount;
-  final double progress;
-  final IconData icon;
+  final int goalId;
 
   const GoalDetailScreen({
     super.key,
-    required this.goalTitle,
-    required this.targetAmount,
-    required this.savedAmount,
-    required this.remainingAmount,
-    required this.progress,
-    required this.icon,
+    required this.goalId,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SettingsProvider>(
-      builder: (context, settings, child) {
+    return Consumer2<SettingsProvider, GoalProvider>(
+      builder: (context, settings, goalProvider, child) {
+        final goalIndex = goalProvider.goals.indexWhere((g) => g.id == goalId);
+        
+        if (goalIndex == -1) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Target tidak ditemukan'),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Kembali'),
+                  )
+                ],
+              ),
+            ),
+          );
+        }
+
+        final goal = goalProvider.goals[goalIndex];
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
         final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+        final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE),
@@ -42,7 +56,7 @@ class GoalDetailScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              goalTitle,
+              goal.name,
               style: GoogleFonts.outfit(color: textColor, fontWeight: FontWeight.bold, fontSize: 24),
             ),
             actions: [
@@ -57,15 +71,15 @@ class GoalDetailScreen extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 20),
-                _buildHeaderCard(isDark, textColor, cardColor),
+                _buildHeaderCard(goal, isDark, textColor, cardColor, currencyFormat),
                 const SizedBox(height: 25),
-                _buildDecompositionTree(isDark, textColor, cardColor),
+                _buildDecompositionTree(goal, isDark, textColor, cardColor, currencyFormat),
                 const SizedBox(height: 25),
-                _buildSavingsSummary(isDark, textColor, cardColor),
+                _buildSavingsSummary(goal, isDark, textColor, cardColor, currencyFormat),
                 const SizedBox(height: 25),
-                _buildSettingsSection(context, isDark, textColor, cardColor),
+                _buildSettingsSection(context, goal, isDark, textColor, cardColor),
                 const SizedBox(height: 25),
-                _buildRecentTransactions(context, isDark, textColor, cardColor),
+                _buildRecentTransactions(context, goal, isDark, textColor, cardColor, currencyFormat),
                 const SizedBox(height: 50),
               ],
             ),
@@ -75,7 +89,7 @@ class GoalDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderCard(bool isDark, Color textColor, Color cardColor) {
+  Widget _buildHeaderCard(Goal goal, bool isDark, Color textColor, Color cardColor, NumberFormat fmt) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -90,7 +104,7 @@ class GoalDetailScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(color: const Color(0xFFE8F0FE), borderRadius: BorderRadius.circular(16)),
-                child: Icon(icon, color: const Color(0xFF002B1D), size: 32),
+                child: Icon(IconData(goal.icon, fontFamily: 'MaterialIcons'), color: const Color(0xFF002B1D), size: 32),
               ),
               const SizedBox(width: 20),
               Expanded(
@@ -98,7 +112,7 @@ class GoalDetailScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Sisa untuk menabung', style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey)),
-                    Text(remainingAmount, style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor)),
+                    Text(fmt.format(goal.remainingAmount), style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor)),
                   ],
                 ),
               ),
@@ -106,7 +120,7 @@ class GoalDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${(progress * 100).toInt()}%',
+                    '${goal.progressPercent.toInt()}%',
                     style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.bold, color: textColor),
                   ),
                   Text(
@@ -121,7 +135,7 @@ class GoalDetailScreen extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
-              value: progress,
+              value: goal.progressFraction,
               minHeight: 12,
               backgroundColor: isDark ? Colors.white10 : const Color(0xFFE8F0FE),
               valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF002B1D)),
@@ -132,7 +146,7 @@ class GoalDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDecompositionTree(bool isDark, Color textColor, Color cardColor) {
+  Widget _buildDecompositionTree(Goal goal, bool isDark, Color textColor, Color cardColor, NumberFormat fmt) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -148,10 +162,10 @@ class GoalDetailScreen extends StatelessWidget {
             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 30),
-          _buildTreeNode('TARGET UTAMA', targetAmount, isDark, isMain: true),
+          _buildTreeNode('TARGET UTAMA', fmt.format(goal.targetAmount), isDark, isMain: true),
           const SizedBox(height: 20),
           Container(width: 2, height: 30, color: isDark ? Colors.white10 : Colors.grey[300]),
-          _buildTreeNode('ATOMIK HARIAN', 'Rp 20.000', isDark, isAtomic: true),
+          _buildTreeNode('ATOMIK HARIAN', fmt.format(goal.dailySuggestion), isDark, isAtomic: true),
         ],
       ),
     );
@@ -184,7 +198,7 @@ class GoalDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSavingsSummary(bool isDark, Color textColor, Color cardColor) {
+  Widget _buildSavingsSummary(Goal goal, bool isDark, Color textColor, Color cardColor, NumberFormat fmt) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -200,9 +214,9 @@ class GoalDetailScreen extends StatelessWidget {
             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 20),
-          _buildSummaryRow(Icons.account_balance_wallet_outlined, 'Telah Ditabung', savedAmount, isDark),
+          _buildSummaryRow(Icons.account_balance_wallet_outlined, 'Telah Ditabung', fmt.format(goal.currentAmount), isDark),
           const SizedBox(height: 15),
-          _buildSummaryRow(Icons.flag_outlined, 'Target Pencapaian', 'Desember 2026', isDark),
+          _buildSummaryRow(Icons.flag_outlined, 'Target Pencapaian', DateFormat('MMMM yyyy', 'id_ID').format(goal.deadline), isDark),
           const SizedBox(height: 15),
           _buildSummaryRow(Icons.trending_up_outlined, 'Performa Menabung', 'Sangat Baik', isDark),
         ],
@@ -228,7 +242,7 @@ class GoalDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsSection(BuildContext context, bool isDark, Color textColor, Color cardColor) {
+  Widget _buildSettingsSection(BuildContext context, Goal goal, bool isDark, Color textColor, Color cardColor) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -246,8 +260,7 @@ class GoalDetailScreen extends StatelessWidget {
           const SizedBox(height: 15),
           _buildSettingItem(Icons.edit_outlined, 'Ubah Target', isDark, onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => EditGoalScreen(
-              currentTitle: goalTitle,
-              currentAmount: targetAmount,
+              goal: goal,
             )));
           }),
           _buildSettingItem(Icons.refresh_outlined, 'Atur Otomatisasi', isDark, onTap: () {
@@ -269,7 +282,7 @@ class GoalDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentTransactions(BuildContext context, bool isDark, Color textColor, Color cardColor) {
+  Widget _buildRecentTransactions(BuildContext context, Goal goal, bool isDark, Color textColor, Color cardColor, NumberFormat fmt) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -291,15 +304,15 @@ class GoalDetailScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 15),
-          _buildTransactionRow('Hari ini', 'Auto-save harian', 'Rp 20.000', isDark),
-          _buildTransactionRow('Kemarin', 'Top up manual', 'Rp 150.000', isDark, isManual: true),
-          _buildTransactionRow('12 Mei', 'Auto-save harian', 'Rp 20.000', isDark),
+          _buildTransactionRow('Hari ini', 'Auto-save harian', fmt.format(goal.dailySuggestion), isDark, fmt),
+          _buildTransactionRow('Kemarin', 'Top up manual', 'Rp 150.000', isDark, fmt, isManual: true),
+          _buildTransactionRow('12 Mei', 'Auto-save harian', fmt.format(goal.dailySuggestion), isDark, fmt),
         ],
       ),
     );
   }
 
-  Widget _buildTransactionRow(String date, String desc, String amount, bool isDark, {bool isManual = false}) {
+  Widget _buildTransactionRow(String date, String desc, String amount, bool isDark, NumberFormat fmt, {bool isManual = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(

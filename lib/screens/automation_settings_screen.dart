@@ -82,7 +82,7 @@ class _AutomationSettingsScreenState extends State<AutomationSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Protokol Auto-Save', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+                Text('Protokol Simpan-Otomatis', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
                 Text('Simpan secara otomatis setiap hari', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
               ],
             ),
