@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/settings_provider.dart';
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
@@ -13,88 +15,96 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        toolbarHeight: 70,
-        titleSpacing: 25,
-        title: Row(
-          children: [
-            Text(
-              'MindMoney',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFF002B1D),
-                fontWeight: FontWeight.bold,
-                fontSize: 28,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          const CircleAvatar(
-            radius: 18,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=man_mindmoney'),
-          ),
-          const SizedBox(width: 10),
-          IconButton(icon: const Icon(Icons.settings_outlined, color: Color(0xFF002B1D)), onPressed: () {}),
-          const SizedBox(width: 15),
-        ],
-      ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Consumer<SettingsProvider>(
+      builder: (context, settings, child) {
+        final isDark = settings.isDarkMode;
+        final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
+        final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+
+        return Scaffold(
+          backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE),
+          appBar: AppBar(
+            backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            elevation: 0,
+            toolbarHeight: 70,
+            titleSpacing: 25,
+            title: Row(
               children: [
-                const SizedBox(height: 25),
                 Text(
-                  'Mesin Aturan',
+                  'Daily Savings',
                   style: GoogleFonts.outfit(
-                    fontSize: 26,
+                    color: isDark ? Colors.white : const Color(0xFF002B1D),
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF002B1D),
+                    fontSize: 28,
                   ),
                 ),
-                const SizedBox(height: 15),
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.add, size: 20),
-                  label: Text('Aturan Baru', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF002B1D),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(160, 45),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                _buildMainRuleCard(),
-                const SizedBox(height: 25),
-                _buildAutomationHealthCard(),
-                const SizedBox(height: 150),
               ],
             ),
+            actions: [
+              CircleAvatar(
+                radius: 18,
+                backgroundImage: settings.getProfileImageProvider(),
+              ),
+              const SizedBox(width: 10),
+              IconButton(icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white : const Color(0xFF002B1D)), onPressed: () {}),
+              const SizedBox(width: 15),
+            ],
           ),
-          Positioned(
-            right: 20,
-            bottom: 20,
-            child: _buildLightningFab(),
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 25),
+                    Text(
+                      'Mesin Aturan',
+                      style: GoogleFonts.outfit(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.add, size: 20),
+                      label: Text('Aturan Baru', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF002B1D),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(160, 45),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    _buildMainRuleCard(isDark, textColor, cardColor),
+                    const SizedBox(height: 25),
+                    _buildAutomationHealthCard(isDark, textColor, cardColor),
+                    const SizedBox(height: 150),
+                  ],
+                ),
+              ),
+              Positioned(
+                right: 20,
+                bottom: 20,
+                child: _buildLightningFab(),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }
     );
   }
 
-  Widget _buildMainRuleCard() {
+  Widget _buildMainRuleCard(bool isDark, Color textColor, Color cardColor) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.black.withOpacity(0.04)),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,8 +114,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: const Color(0xFFD4E3E1), borderRadius: BorderRadius.circular(12)),
-                child: const Icon(Icons.psychology_outlined, color: Color(0xFF002B1D), size: 28),
+                decoration: BoxDecoration(color: isDark ? Colors.white10 : const Color(0xFFD4E3E1), borderRadius: BorderRadius.circular(12)),
+                child: Icon(Icons.psychology_outlined, color: isDark ? Colors.white70 : const Color(0xFF002B1D), size: 28),
               ),
               const SizedBox(width: 15),
               Expanded(
@@ -114,7 +124,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   children: [
                     Text(
                       'Logika Penyangga\nDarurat',
-                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D), height: 1.2),
+                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor, height: 1.2),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -129,7 +139,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: const Color(0xFFE8EEF9), borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.blue.withOpacity(0.2))),
+                    decoration: BoxDecoration(color: isDark ? Colors.blue.withOpacity(0.1) : const Color(0xFFE8EEF9), borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.blue.withOpacity(0.2))),
                     child: Text('SYSTEM_01', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue[800])),
                   ),
                   const SizedBox(height: 8),
@@ -138,7 +148,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     child: Switch(
                       value: _isRuleEnabled,
                       onChanged: (v) => setState(() => _isRuleEnabled = v),
-                      activeColor: const Color(0xFF002B1D),
+                      activeColor: isDark ? Colors.green : const Color(0xFF002B1D),
                     ),
                   ),
                 ],
@@ -146,13 +156,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
             ],
           ),
           const SizedBox(height: 25),
-          _buildIfThenLogic(),
+          _buildIfThenLogic(isDark, textColor),
         ],
       ),
     );
   }
 
-  Widget _buildIfThenLogic() {
+  Widget _buildIfThenLogic(bool isDark, Color textColor) {
     return Column(
       children: [
         Row(
@@ -160,21 +170,21 @@ class _GoalsScreenState extends State<GoalsScreen> {
             Container(
               width: 40,
               height: 40,
-              decoration: BoxDecoration(color: const Color(0xFFE8EEF9), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: isDark ? Colors.blue.withOpacity(0.2) : const Color(0xFFE8EEF9), borderRadius: BorderRadius.circular(10)),
               alignment: Alignment.center,
-              child: Text('IF', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.blue[900])),
+              child: Text('IF', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: isDark ? Colors.blue[200] : Colors.blue[900])),
             ),
             const SizedBox(width: 15),
             Expanded(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.grey[200]!)),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(15), border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!)),
                 child: Row(
                   children: [
                     const Icon(Icons.account_balance_wallet_outlined, size: 16, color: Colors.grey),
                     const SizedBox(width: 10),
                     Text('Saldo > ', style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey)),
-                    Text('Rp 5.000.000', style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D))),
+                    Text('Rp 5.000.000', style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: textColor)),
                     const Spacer(),
                     const Icon(Icons.edit_outlined, size: 16, color: Colors.grey),
                   ],
@@ -188,33 +198,33 @@ class _GoalsScreenState extends State<GoalsScreen> {
           height: 30,
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.only(left: 19),
-          child: Container(width: 2, height: 30, color: Colors.grey[200]),
+          child: Container(width: 2, height: 30, color: isDark ? Colors.white10 : Colors.grey[200]),
         ),
         Row(
           children: [
             Container(
               width: 40,
               height: 40,
-              decoration: BoxDecoration(color: const Color(0xFF002B1D), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: isDark ? Colors.green.withOpacity(0.2) : const Color(0xFF002B1D), borderRadius: BorderRadius.circular(10)),
               alignment: Alignment.center,
-              child: Text('THEN', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 10)),
+              child: Text('THEN', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: isDark ? Colors.green[200] : Colors.white, fontSize: 10)),
             ),
             const SizedBox(width: 15),
             Expanded(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-                decoration: BoxDecoration(color: const Color(0xFFEDF5F2), borderRadius: BorderRadius.circular(15)),
+                decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFEDF5F2), borderRadius: BorderRadius.circular(15)),
                 child: Row(
                   children: [
-                    const Icon(Icons.move_up_rounded, size: 18, color: Color(0xFF002B1D)),
+                    Icon(Icons.move_up_rounded, size: 18, color: isDark ? Colors.white70 : const Color(0xFF002B1D)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: RichText(
                         text: TextSpan(
-                          style: GoogleFonts.outfit(fontSize: 12, color: const Color(0xFF002B1D)),
+                          style: GoogleFonts.outfit(fontSize: 12, color: textColor),
                           children: [
                             const TextSpan(text: 'Pindahkan '),
-                            TextSpan(text: 'Rp 500.000 ', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            const TextSpan(text: 'Rp 500.000 ', style: TextStyle(fontWeight: FontWeight.bold)),
                             const TextSpan(text: 'ke '),
                           ],
                         ),
@@ -222,8 +232,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(color: const Color(0xFFCADBD9), borderRadius: BorderRadius.circular(20)),
-                      child: Text('Dana Darurat', style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D))),
+                      decoration: BoxDecoration(color: isDark ? Colors.white10 : const Color(0xFFCADBD9), borderRadius: BorderRadius.circular(20)),
+                      child: Text('Dana Darurat', style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF002B1D))),
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.edit_outlined, size: 16, color: Colors.grey),
@@ -237,18 +247,18 @@ class _GoalsScreenState extends State<GoalsScreen> {
     );
   }
 
-  Widget _buildAutomationHealthCard() {
+  Widget _buildAutomationHealthCard(bool isDark, Color textColor, Color cardColor) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.black.withOpacity(0.04)),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Kesehatan Otomatisasi', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D))),
+          Text('Kesehatan Otomatisasi', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -257,14 +267,14 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('TOTAL AKSI', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
-                  Text('142', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D))),
+                  Text('142', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor)),
                 ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text('Akurasi', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
-                  Text('99.8%', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D))),
+                  Text('99.8%', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor)),
                 ],
               ),
             ],
@@ -274,10 +284,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
             height: 60,
             width: double.infinity,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[100]!),
+              border: Border.all(color: isDark ? Colors.white10 : Colors.grey[100]!),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: CustomPaint(painter: WavePainter()),
+            child: CustomPaint(painter: WavePainter(isDark ? Colors.white24 : const Color(0xFF002B1D))),
           ),
         ],
       ),
@@ -299,10 +309,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
 }
 
 class WavePainter extends CustomPainter {
+  final Color color;
+  WavePainter(this.color);
+
   @override
   void paint(Canvas canvas, Size size) {
     var paint = Paint()
-      ..color = const Color(0xFF002B1D)
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;

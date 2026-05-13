@@ -254,7 +254,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 10),
           _buildSupportCard(Icons.security_outlined, 'Kebijakan Privasi', isDark),
           const SizedBox(height: 10),
-          _buildSupportCard(Icons.info_outline, 'Tentang MindMoney', isDark),
+          _buildSupportCard(Icons.info_outline, 'Tentang Daily Savings', isDark),
         ],
       ),
     );

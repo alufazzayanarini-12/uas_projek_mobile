@@ -25,7 +25,7 @@ class FinancialAuditorScreen extends StatelessWidget {
             title: Row(
               children: [
                 Text(
-                  'MindMoney',
+                  'Daily Savings',
                   style: GoogleFonts.outfit(
                     color: isDark ? Colors.white : const Color(0xFF002B1D),
                     fontWeight: FontWeight.bold,
@@ -240,11 +240,11 @@ class FinancialAuditorScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildNavItem(Icons.home_outlined, 'Home', isDark),
-          _buildNavItem(Icons.analytics_outlined, 'Insights', isDark, isActive: true),
-          _buildNavItem(Icons.add_circle_outline_rounded, 'Add', isDark),
-          _buildNavItem(Icons.terminal_rounded, 'Rules', isDark),
-          _buildNavItem(Icons.person_outline_rounded, 'Profile', isDark),
+          _buildNavItem(Icons.home_outlined, 'Beranda', isDark),
+          _buildNavItem(Icons.analytics_outlined, 'Wawasan', isDark, isActive: true),
+          _buildNavItem(Icons.add_circle_outline_rounded, 'Tambah', isDark),
+          _buildNavItem(Icons.terminal_rounded, 'Aturan', isDark),
+          _buildNavItem(Icons.person_outline_rounded, 'Profil', isDark),
         ],
       ),
     );

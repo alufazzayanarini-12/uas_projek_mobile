@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import 'edit_goal_screen.dart';
 
 class GoalDetailScreen extends StatelessWidget {
   final String goalTitle;
@@ -58,9 +59,9 @@ class GoalDetailScreen extends StatelessWidget {
                 const SizedBox(height: 25),
                 _buildSavingsSummary(isDark, textColor, cardColor),
                 const SizedBox(height: 25),
-                _buildSettingsSection(isDark, textColor, cardColor),
+                _buildSettingsSection(context, isDark, textColor, cardColor),
                 const SizedBox(height: 25),
-                _buildRecentTransactions(isDark, textColor, cardColor),
+                _buildRecentTransactions(context, isDark, textColor, cardColor),
                 const SizedBox(height: 50),
               ],
             ),
@@ -261,7 +262,7 @@ class GoalDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsSection(bool isDark, Color textColor, Color cardColor) {
+  Widget _buildSettingsSection(BuildContext context, bool isDark, Color textColor, Color cardColor) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -277,7 +278,12 @@ class GoalDetailScreen extends StatelessWidget {
             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 15),
-          _buildSettingItem(Icons.edit_outlined, 'Ubah Target', isDark),
+          _buildSettingItem(Icons.edit_outlined, 'Ubah Target', isDark, onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => EditGoalScreen(
+              currentTitle: goalTitle,
+              currentAmount: targetAmount,
+            )));
+          }),
           _buildSettingItem(Icons.refresh_outlined, 'Atur Otomatisasi', isDark),
           _buildSettingItem(Icons.pause_circle_outline, 'Jeda Menabung', isDark, isWarning: true),
         ],
@@ -285,17 +291,17 @@ class GoalDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingItem(IconData icon, String label, bool isDark, {bool isWarning = false}) {
+  Widget _buildSettingItem(IconData icon, String label, bool isDark, {bool isWarning = false, VoidCallback? onTap}) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: isWarning ? Colors.red[300] : (isDark ? Colors.white70 : Colors.grey[700])),
       title: Text(label, style: GoogleFonts.outfit(fontSize: 16, color: isWarning ? Colors.red[300] : (isDark ? Colors.white : Colors.black))),
       trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
-      onTap: () {},
+      onTap: onTap ?? () {},
     );
   }
 
-  Widget _buildRecentTransactions(bool isDark, Color textColor, Color cardColor) {
+  Widget _buildRecentTransactions(BuildContext context, bool isDark, Color textColor, Color cardColor) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(

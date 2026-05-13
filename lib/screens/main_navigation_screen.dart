@@ -38,11 +38,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildNavItem(0, Icons.home_outlined, 'Home'),
-            _buildNavItem(1, Icons.analytics_outlined, 'Insights'),
-            _buildNavItem(2, Icons.add_circle_outline_rounded, 'Add'),
-            _buildNavItem(3, Icons.terminal_rounded, 'Rules'),
-            _buildNavItem(4, Icons.person_outline_rounded, 'Profile'),
+            _buildNavItem(0, Icons.home_outlined, 'Beranda'),
+            _buildNavItem(1, Icons.analytics_outlined, 'Wawasan'),
+            _buildNavItem(2, Icons.add_circle_outline_rounded, 'Tambah'),
+            _buildNavItem(3, Icons.terminal_rounded, 'Aturan'),
+            _buildNavItem(4, Icons.person_outline_rounded, 'Profil'),
           ],
         ),
       ),

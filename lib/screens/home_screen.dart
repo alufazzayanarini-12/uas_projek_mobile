@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(width: 15),
                 Text(
-                  'MindMoney',
+                  'Daily Savings',
                   style: GoogleFonts.outfit(
                     color: isDark ? Colors.white : const Color(0xFF002B1D),
                     fontWeight: FontWeight.bold,
