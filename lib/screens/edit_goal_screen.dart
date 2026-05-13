@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
-import '../providers/goal_provider.dart';
-import '../models/goal.dart';
-import 'package:intl/intl.dart';
 
 class EditGoalScreen extends StatefulWidget {
-  final Goal goal;
+  final String currentTitle;
+  final String currentAmount;
 
   const EditGoalScreen({
     super.key,
-    required this.goal,
+    required this.currentTitle,
+    required this.currentAmount,
   });
 
   @override
@@ -22,15 +21,13 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
   late TextEditingController _titleController;
   late TextEditingController _amountController;
   late TextEditingController _dateController;
-  DateTime? _selectedDate;
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.goal.name);
-    _amountController = TextEditingController(text: widget.goal.targetAmount.toInt().toString());
-    _selectedDate = widget.goal.deadline;
-    _dateController = TextEditingController(text: DateFormat('dd/MM/yyyy').format(_selectedDate!));
+    _titleController = TextEditingController(text: widget.currentTitle);
+    _amountController = TextEditingController(text: '15.000.000');
+    _dateController = TextEditingController(text: '12/24/2024');
   }
 
   @override
@@ -39,60 +36,6 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     _amountController.dispose();
     _dateController.dispose();
     super.dispose();
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF002B1D),
-              onPrimary: Colors.white,
-              onSurface: Color(0xFF002B1D),
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _dateController.text = DateFormat('dd/MM/yyyy').format(picked);
-      });
-    }
-  }
-
-  Future<void> _saveChanges() async {
-    final name = _titleController.text.trim();
-    final targetAmount = double.tryParse(_amountController.text) ?? 0.0;
-
-    if (name.isEmpty || targetAmount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mohon masukkan nama dan jumlah yang valid')),
-      );
-      return;
-    }
-
-    final updatedGoal = widget.goal.copyWith(
-      name: name,
-      targetAmount: targetAmount,
-      deadline: _selectedDate,
-    );
-
-    await context.read<GoalProvider>().updateGoal(updatedGoal);
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Target berhasil diperbarui')),
-      );
-      Navigator.pop(context);
-    }
   }
 
   @override
@@ -116,6 +59,13 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
               'Ubah Target',
               style: GoogleFonts.outfit(color: textColor, fontWeight: FontWeight.bold, fontSize: 24),
             ),
+            actions: [
+              CircleAvatar(
+                radius: 18,
+                backgroundImage: settings.getProfileImageProvider(),
+              ),
+              const SizedBox(width: 20),
+            ],
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -129,23 +79,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
                 _buildAnalysisCard(isDark, textColor),
                 const SizedBox(height: 30),
                 TextButton.icon(
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Hapus Target?'),
-                        content: const Text('Tindakan ini tidak dapat dibatalkan.'),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-                          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus', style: TextStyle(color: Colors.red))),
-                        ],
-                      ),
-                    );
-                    if (confirm == true) {
-                      await context.read<GoalProvider>().deleteGoal(widget.goal.id!);
-                      if (mounted) Navigator.pop(context);
-                    }
-                  },
+                  onPressed: () {},
                   icon: const Icon(Icons.delete_outline, color: Color(0xFFB91C1C)),
                   label: Text(
                     'HAPUS TARGET INI',
@@ -163,13 +97,17 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
   }
 
   Widget _buildCurrentTargetCard(bool isDark) {
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         color: const Color(0xFF0D4D3B),
         borderRadius: BorderRadius.circular(24),
+        image: const DecorationImage(
+          image: NetworkImage('https://www.transparenttextures.com/patterns/carbon-fibre.png'),
+          opacity: 0.1,
+          fit: BoxFit.cover,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,15 +118,15 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            widget.goal.name,
+            widget.currentTitle,
             style: GoogleFonts.outfit(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           RichText(
             text: TextSpan(
               children: [
-                TextSpan(text: currencyFormat.format(widget.goal.currentAmount), style: GoogleFonts.outfit(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                TextSpan(text: ' / ${currencyFormat.format(widget.goal.targetAmount)}', style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.5), fontSize: 16)),
+                TextSpan(text: 'Rp 15jt ', style: GoogleFonts.outfit(color: Colors.white, fontSize: 42, fontWeight: FontWeight.bold)),
+                TextSpan(text: '/ Rp 20jt', style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.5), fontSize: 18)),
               ],
             ),
           ),
@@ -211,21 +149,16 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
           _buildInputField('NAMA TARGET', Icons.notes_rounded, _titleController, isDark),
           const SizedBox(height: 25),
           _buildInputField('JUMLAH TARGET (RP)', Icons.payments_outlined, _amountController, isDark, 
-              helperText: 'Gunakan angka tanpa titik atau koma.', keyboardType: TextInputType.number),
+              helperText: 'Gunakan angka tanpa titik atau koma.'),
           const SizedBox(height: 25),
-          GestureDetector(
-            onTap: () => _selectDate(context),
-            child: AbsorbPointer(
-              child: _buildInputField('TANGGAL PENCAPAIAN', Icons.calendar_today_outlined, _dateController, isDark, 
-                  suffixIcon: Icons.calendar_month),
-            ),
-          ),
+          _buildInputField('TANGGAL PENCAPAIAN', Icons.calendar_today_outlined, _dateController, isDark, 
+              suffixIcon: Icons.calendar_month),
         ],
       ),
     );
   }
 
-  Widget _buildInputField(String label, IconData icon, TextEditingController controller, bool isDark, {String? helperText, IconData? suffixIcon, TextInputType? keyboardType}) {
+  Widget _buildInputField(String label, IconData icon, TextEditingController controller, bool isDark, {String? helperText, IconData? suffixIcon}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -236,7 +169,6 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
         const SizedBox(height: 12),
         TextField(
           controller: controller,
-          keyboardType: keyboardType,
           style: GoogleFonts.outfit(color: isDark ? Colors.white : const Color(0xFF002B1D), fontWeight: FontWeight.w600),
           decoration: InputDecoration(
             filled: true,
@@ -279,9 +211,15 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
               children: [
                 Text('Analisis Tabungan', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
                 const SizedBox(height: 4),
-                Text(
-                  'Sistem akan menghitung ulang strategi menabung Anda berdasarkan target baru ini.',
-                  style: GoogleFonts.outfit(fontSize: 13, color: isDark ? Colors.white70 : Colors.grey[700]),
+                RichText(
+                  text: TextSpan(
+                    style: GoogleFonts.outfit(fontSize: 13, color: isDark ? Colors.white70 : Colors.grey[700]),
+                    children: [
+                      const TextSpan(text: 'Dengan target ini, Anda perlu menyisihkan '),
+                      const TextSpan(text: 'Rp 1.250.000', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const TextSpan(text: ' per bulan hingga Desember 2024.'),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -296,7 +234,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       color: Colors.transparent,
       child: ElevatedButton.icon(
-        onPressed: _saveChanges,
+        onPressed: () => Navigator.pop(context),
         icon: const Icon(Icons.check_circle_outline),
         label: Text('Simpan Perubahan', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
         style: ElevatedButton.styleFrom(

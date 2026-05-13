@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
-import '../providers/goal_provider.dart';
-import '../models/goal.dart';
 import 'goal_detail_screen.dart';
-import 'general_settings_screen.dart';
 import 'settings_screen.dart';
 import 'package:intl/intl.dart';
 
@@ -20,48 +17,11 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isAutoSaveEnabled = true;
 
   @override
-  void initState() {
-    super.initState();
-    // Load goals from database
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final goalProvider = context.read<GoalProvider>();
-      goalProvider.loadGoals().then((_) {
-        // If no goals exist, create some defaults for demo purposes
-        if (goalProvider.goals.isEmpty) {
-          _seedDefaultGoals(goalProvider);
-        }
-      });
-    });
-  }
-
-  Future<void> _seedDefaultGoals(GoalProvider provider) async {
-    final laptopGoal = Goal(
-      name: 'Laptop Baru',
-      targetAmount: 15000000,
-      currentAmount: 11250000,
-      deadline: DateTime(2024, 12, 24),
-      icon: Icons.laptop_mac.codePoint,
-      category: 'Gadget',
-    );
-    final booksGoal = Goal(
-      name: 'Books NW',
-      targetAmount: 8000000,
-      currentAmount: 3600000,
-      deadline: DateTime(2025, 6, 15),
-      icon: Icons.book_outlined.codePoint,
-      category: 'Pendidikan',
-    );
-    await provider.addGoal(laptopGoal);
-    await provider.addGoal(booksGoal);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Consumer2<SettingsProvider, GoalProvider>(
-      builder: (context, settings, goalProvider, child) {
+    return Consumer<SettingsProvider>(
+      builder: (context, settings, child) {
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
-        final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
         final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
         return Scaffold(
@@ -113,38 +73,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor),
                 ),
                 const SizedBox(height: 15),
-                
-                if (goalProvider.isLoading)
-                  const Center(child: CircularProgressIndicator())
-                else if (goalProvider.goals.isEmpty)
-                  Center(child: Text('Belum ada target tabungan', style: GoogleFonts.outfit(color: Colors.grey)))
-                else
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 15,
-                      mainAxisSpacing: 15,
-                      childAspectRatio: 1.1,
-                    ),
-                    itemCount: goalProvider.goals.length,
-                    itemBuilder: (context, index) {
-                      final goal = goalProvider.goals[index];
-                      return GestureDetector(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => GoalDetailScreen(
-                          goalId: goal.id!,
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(
+                          goalId: 1, // Fallback ID
                         ))),
-                        child: _buildGoalProgressCard(
-                          goal.name, 
-                          goal.progressFraction, 
-                          fmt.format(goal.currentAmount), 
-                          isDark
-                        ),
-                      );
-                    },
-                  ),
-
+                        child: _buildGoalProgressCard('Laptop Baru', 0.75, 'Rp 11.250.000', isDark),
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(
+                          goalId: 2, // Fallback ID
+                        ))),
+                        child: _buildGoalProgressCard('Books NW', 0.45, 'Rp 3.600.000', isDark),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 25),
                 _buildEmergencyFundCard(45000000, 50000000, 0.92, fmt, isDark),
                 const SizedBox(height: 25),
@@ -154,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         );
-      }
+      },
     );
   }
 
