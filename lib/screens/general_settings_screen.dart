@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
-import 'account_settings_screen.dart';
-import 'security_settings_screen.dart';
-import 'notification_settings_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+class GeneralSettingsScreen extends StatelessWidget {
+  const GeneralSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +24,7 @@ class SettingsScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'Pengaturan',
+              'Pengaturan Umum',
               style: GoogleFonts.outfit(color: textColor, fontWeight: FontWeight.bold, fontSize: 24),
             ),
           ),
@@ -39,31 +36,25 @@ class SettingsScreen extends StatelessWidget {
                 _buildSectionHeader('AKUN & KEAMANAN', isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(context, Icons.person_outline, 'Informasi Pribadi', 'Nama, Email, Telepon', isDark, onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountSettingsScreen()));
-                  }),
-                  _buildSettingsItem(context, Icons.lock_outline, 'Kata Sandi & Keamanan', 'PIN, Sidik Jari', isDark, onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()));
-                  }),
-                  _buildSettingsItem(context, Icons.account_balance_outlined, 'Manajemen Rekening', '2 Rekening Terhubung', isDark),
+                  _buildSettingsItem(Icons.person_outline, 'Informasi Pribadi', 'Nama, Email, Telepon', isDark),
+                  _buildSettingsItem(Icons.lock_outline, 'Kata Sandi & Keamanan', 'PIN, Sidik Jari', isDark),
+                  _buildSettingsItem(Icons.account_balance_outlined, 'Manajemen Rekening', '2 Rekening Terhubung', isDark),
                 ], isDark),
                 const SizedBox(height: 30),
                 _buildSectionHeader('PREFERENSI APLIKASI', isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(context, Icons.notifications_none_outlined, 'Notifikasi', 'Pengingat Harian Aktif', isDark, onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()));
-                  }),
-                  _buildSettingsItem(context, Icons.language_outlined, 'Bahasa', 'Bahasa Indonesia', isDark),
-                  _buildSettingsItem(context, Icons.monetization_on_outlined, 'Mata Uang', 'IDR (Rp)', isDark),
+                  _buildSettingsItem(Icons.notifications_none_outlined, 'Notifikasi', 'Pengingat Harian Aktif', isDark),
+                  _buildSettingsItem(Icons.language_outlined, 'Bahasa', 'Bahasa Indonesia', isDark),
+                  _buildSettingsItem(Icons.monetization_on_outlined, 'Mata Uang', 'IDR (Rp)', isDark),
                   _buildThemeSwitch(settings, isDark),
                 ], isDark),
                 const SizedBox(height: 30),
                 _buildSectionHeader('LAINNYA', isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(context, Icons.help_outline, 'Pusat Bantuan', 'FAQ & Kontak Dukungan', isDark),
-                  _buildSettingsItem(context, Icons.info_outline, 'Tentang Aplikasi', 'Versi 2.1.0', isDark),
+                  _buildSettingsItem(Icons.help_outline, 'Pusat Bantuan', 'FAQ & Kontak Dukungan', isDark),
+                  _buildSettingsItem(Icons.info_outline, 'Tentang Aplikasi', 'Versi 2.1.0', isDark),
                 ], isDark),
                 const SizedBox(height: 40),
                 _buildLogoutButton(),
@@ -94,7 +85,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsItem(BuildContext context, IconData icon, String title, String subtitle, bool isDark, {VoidCallback? onTap}) {
+  Widget _buildSettingsItem(IconData icon, String title, String subtitle, bool isDark) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       leading: Container(
@@ -105,11 +96,7 @@ class SettingsScreen extends StatelessWidget {
       title: Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
       subtitle: Text(subtitle, style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
       trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
-      onTap: onTap ?? () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Membuka rincian: $title'), duration: const Duration(seconds: 1)),
-        );
-      },
+      onTap: () {},
     );
   }
 
@@ -125,7 +112,7 @@ class SettingsScreen extends StatelessWidget {
       subtitle: Text(isDark ? 'Tema Gelap Aktif' : 'Tema Terang Aktif', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
       trailing: Switch(
         value: isDark,
-        onChanged: (v) => settings.toggleDarkMode(v),
+        onChanged: (v) => settings.setDarkMode(v),
         activeColor: const Color(0xFF002B1D),
       ),
     );

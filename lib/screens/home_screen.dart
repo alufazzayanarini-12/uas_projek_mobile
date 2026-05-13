@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(
                               goalTitle: 'Laptop Baru',
                               targetAmount: 'Rp 15.000.000',
-                              currentAmount: 'Rp 11.250.000',
+                              savedAmount: 'Rp 11.250.000',
                               remainingAmount: 'Rp 3.750.000',
                               progress: 0.75,
                               icon: Icons.laptop_mac,
@@ -108,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(
                               goalTitle: 'Books NW',
                               targetAmount: 'Rp 8.000.000',
-                              currentAmount: 'Rp 3.600.000',
+                              savedAmount: 'Rp 3.600.000',
                               remainingAmount: 'Rp 4.400.000',
                               progress: 0.45,
                               icon: Icons.book_outlined,

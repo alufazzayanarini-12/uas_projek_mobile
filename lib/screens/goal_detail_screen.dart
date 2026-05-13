@@ -3,11 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import 'edit_goal_screen.dart';
+import 'settings_screen.dart';
+import 'automation_settings_screen.dart';
 
 class GoalDetailScreen extends StatelessWidget {
   final String goalTitle;
   final String targetAmount;
-  final String currentAmount;
+  final String savedAmount;
   final String remainingAmount;
   final double progress;
   final IconData icon;
@@ -16,7 +18,7 @@ class GoalDetailScreen extends StatelessWidget {
     super.key,
     required this.goalTitle,
     required this.targetAmount,
-    required this.currentAmount,
+    required this.savedAmount,
     required this.remainingAmount,
     required this.progress,
     required this.icon,
@@ -40,11 +42,13 @@ class GoalDetailScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'Daily Savings',
+              goalTitle,
               style: GoogleFonts.outfit(color: textColor, fontWeight: FontWeight.bold, fontSize: 24),
             ),
             actions: [
-              IconButton(icon: Icon(Icons.settings_outlined, color: textColor), onPressed: () {}),
+              IconButton(icon: Icon(Icons.settings_outlined, color: textColor), onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+              }),
               const SizedBox(width: 10),
             ],
           ),
@@ -77,35 +81,24 @@ class GoalDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 5)),
-        ],
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
       ),
       child: Column(
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF002B1D),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Icon(icon, color: Colors.white, size: 30),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: const Color(0xFFE8F0FE), borderRadius: BorderRadius.circular(16)),
+                child: Icon(icon, color: const Color(0xFF002B1D), size: 32),
               ),
               const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      goalTitle,
-                      style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
-                    ),
-                    Text(
-                      'Target: $targetAmount',
-                      style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey),
-                    ),
+                    Text('Sisa untuk menabung', style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey)),
+                    Text(remainingAmount, style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor)),
                   ],
                 ),
               ),
@@ -130,17 +123,9 @@ class GoalDetailScreen extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 12,
-              backgroundColor: isDark ? Colors.white10 : const Color(0xFFE8F0F0),
+              backgroundColor: isDark ? Colors.white10 : const Color(0xFFE8F0FE),
               valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF002B1D)),
             ),
-          ),
-          const SizedBox(height: 15),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(currentAmount, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: textColor)),
-              Text('Sisa $remainingAmount', style: GoogleFonts.outfit(color: Colors.grey)),
-            ],
           ),
         ],
       ),
@@ -157,26 +142,16 @@ class GoalDetailScreen extends StatelessWidget {
         border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Pohon Dekomposisi',
+            'Visualisasi Pohon Dekomposisi',
             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 30),
-          Center(
-            child: Column(
-              children: [
-                _buildTreeNode('TARGET UTAMA', goalTitle, isDark, isMain: true),
-                const SizedBox(height: 15),
-                Container(width: 1, height: 40, color: Colors.grey[300]),
-                _buildTreeNode('BULANAN', 'Rp 625.000', isDark),
-                const SizedBox(height: 15),
-                Container(width: 1, height: 40, color: Colors.grey[300]),
-                _buildTreeNode('ATOMIK', 'Rp 20.000 / day', isDark, isAtomic: true),
-              ],
-            ),
-          ),
+          _buildTreeNode('TARGET UTAMA', targetAmount, isDark, isMain: true),
+          const SizedBox(height: 20),
+          Container(width: 2, height: 30, color: isDark ? Colors.white10 : Colors.grey[300]),
+          _buildTreeNode('ATOMIK HARIAN', 'Rp 20.000', isDark, isAtomic: true),
         ],
       ),
     );
@@ -194,16 +169,15 @@ class GoalDetailScreen extends StatelessWidget {
 
     return Container(
       width: 180,
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
       ),
       child: Column(
         children: [
           Text(label, style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: labColor)),
-          const SizedBox(height: 4),
           Text(value, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: valColor)),
         ],
       ),
@@ -226,15 +200,11 @@ class GoalDetailScreen extends StatelessWidget {
             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 20),
-          _buildSummaryRow(Icons.calendar_month_outlined, 'Target Bulanan', 'Rp 625.000 /bln', isDark),
+          _buildSummaryRow(Icons.account_balance_wallet_outlined, 'Telah Ditabung', savedAmount, isDark),
           const SizedBox(height: 15),
-          _buildSummaryRow(Icons.bolt_outlined, 'Atomic Daily', 'Rp 20.000 /hari', isDark),
-          const SizedBox(height: 20),
-          const Divider(),
-          const SizedBox(height: 20),
-          Text('Estimasi Tercapai:', style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey)),
-          const SizedBox(height: 5),
-          Text('6 Bulan Lagi (Januari 2025)', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+          _buildSummaryRow(Icons.flag_outlined, 'Target Pencapaian', 'Desember 2026', isDark),
+          const SizedBox(height: 15),
+          _buildSummaryRow(Icons.trending_up_outlined, 'Performa Menabung', 'Sangat Baik', isDark),
         ],
       ),
     );
@@ -243,11 +213,7 @@ class GoalDetailScreen extends StatelessWidget {
   Widget _buildSummaryRow(IconData icon, String label, String value, bool isDark) {
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: const Color(0xFFE8F0FE), borderRadius: BorderRadius.circular(10)),
-          child: Icon(icon, color: const Color(0xFF002B1D), size: 20),
-        ),
+        Icon(icon, color: Colors.grey, size: 20),
         const SizedBox(width: 15),
         Expanded(
           child: Column(
@@ -284,8 +250,10 @@ class GoalDetailScreen extends StatelessWidget {
               currentAmount: targetAmount,
             )));
           }),
-          _buildSettingItem(Icons.refresh_outlined, 'Atur Otomatisasi', isDark),
-          _buildSettingItem(Icons.pause_circle_outline, 'Jeda Menabung', isDark, isWarning: true),
+          _buildSettingItem(Icons.refresh_outlined, 'Atur Otomatisasi', isDark, onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AutomationSettingsScreen()));
+          }),
+          _buildSettingItem(Icons.pause_circle_outline, 'Jeda Menabung', isDark, isWarning: true, onTap: () => _showPauseDialog(context, isDark)),
         ],
       ),
     );
@@ -316,27 +284,16 @@ class GoalDetailScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Transaksi Terkini',
+                'Riwayat Tabungan',
                 style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
               ),
-              Text('Lihat Semua', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
+              Text('Lihat Semua', style: GoogleFonts.outfit(fontSize: 12, color: const Color(0xFF002B1D), fontWeight: FontWeight.bold)),
             ],
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('TANGGAL', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-              Text('KETERANGAN', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-              Text('JUMLAH', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-              const SizedBox(width: 30),
-            ],
-          ),
-          const Divider(),
-          _buildTransactionRow('Hari ini, 08:30', 'Atomic Daily Deposit', '+Rp 20.000', isDark),
-          _buildTransactionRow('Kemarin, 08:30', 'Atomic Daily Deposit', '+Rp 20.000', isDark),
-          _buildTransactionRow('20 Oct 2024', 'Atomic Daily Deposit', '+Rp 20.000', isDark),
-          _buildTransactionRow('19 Oct 2024', 'Top-up Manual', '+Rp 500.000', isDark, isManual: true),
+          const SizedBox(height: 15),
+          _buildTransactionRow('Hari ini', 'Auto-save harian', 'Rp 20.000', isDark),
+          _buildTransactionRow('Kemarin', 'Top up manual', 'Rp 150.000', isDark, isManual: true),
+          _buildTransactionRow('12 Mei', 'Auto-save harian', 'Rp 20.000', isDark),
         ],
       ),
     );
@@ -347,25 +304,79 @@ class GoalDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Expanded(child: Text(date, style: GoogleFonts.outfit(fontSize: 12, color: isDark ? Colors.white70 : Colors.black))),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: isManual ? const Color(0xFFE0F2FE) : const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(8)),
+            child: Icon(isManual ? Icons.add_circle_outline : Icons.refresh, size: 16, color: isManual ? Colors.blue[800] : Colors.grey[700]),
+          ),
+          const SizedBox(width: 15),
           Expanded(
-            flex: 2,
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(width: 6, height: 6, decoration: BoxDecoration(color: isManual ? Colors.teal : Colors.black, shape: BoxShape.circle)),
-                const SizedBox(width: 8),
-                Expanded(child: Text(desc, style: GoogleFonts.outfit(fontSize: 12, color: isDark ? Colors.white70 : Colors.black), overflow: TextOverflow.ellipsis)),
+                Text(desc, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF002B1D))),
+                Text(date, style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
               ],
             ),
           ),
-          Text(amount, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            decoration: BoxDecoration(color: const Color(0xFFBDCECA), borderRadius: BorderRadius.circular(4)),
-            child: const Text('BER', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Color(0xFF002B1D))),
-          ),
+          Text(amount, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF0D9488))),
         ],
+      ),
+    );
+  }
+
+  void _showPauseDialog(BuildContext context, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(color: Color(0xFFFFF1F2), shape: BoxShape.circle),
+              child: const Icon(Icons.pause_circle_filled, color: Color(0xFFB91C1C), size: 40),
+            ),
+            const SizedBox(height: 25),
+            Text('Jeda Menabung?', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+            const SizedBox(height: 10),
+            Text(
+              'Otomatisasi akan dihentikan sementara. Anda bisa melanjutkannya kapan saja.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey),
+            ),
+            const SizedBox(height: 30),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Batal', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.grey)),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFB91C1C),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                    ),
+                    child: Text('Jeda Sekarang', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

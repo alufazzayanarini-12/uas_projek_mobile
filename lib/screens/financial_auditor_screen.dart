@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import 'settings_screen.dart';
+import 'fix_logic_screen.dart';
 import 'dart:io';
 
 class FinancialAuditorScreen extends StatelessWidget {
@@ -35,7 +37,9 @@ class FinancialAuditorScreen extends StatelessWidget {
               ],
             ),
             actions: [
-              IconButton(icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white : const Color(0xFF002B1D)), onPressed: () {}),
+              IconButton(icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white : const Color(0xFF002B1D)), onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+              }),
               CircleAvatar(
                 radius: 18,
                 backgroundImage: settings.getProfileImageProvider(),
@@ -61,6 +65,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                 _buildCriticalWarningCard(isDark, textColor, cardColor),
                 const SizedBox(height: 25),
                 _buildAuditItemCard(
+                  context: context,
                   icon: Icons.restaurant_rounded,
                   title: 'Makan & Sosial',
                   amount: 'Rp 850.000',
@@ -73,6 +78,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 _buildAuditItemCard(
+                  context: context,
                   icon: Icons.local_shipping_rounded,
                   title: 'Transportasi & Pengiriman',
                   amount: 'Rp 270.000',
@@ -159,6 +165,7 @@ class FinancialAuditorScreen extends StatelessWidget {
   }
 
   Widget _buildAuditItemCard({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String amount,
@@ -215,7 +222,13 @@ class FinancialAuditorScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => FixLogicScreen(
+                category: title,
+                currentAmount: amount,
+                currentLimit: limit,
+              )));
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: isDark ? Colors.green[800] : const Color(0xFF002B1D),
               foregroundColor: Colors.white,

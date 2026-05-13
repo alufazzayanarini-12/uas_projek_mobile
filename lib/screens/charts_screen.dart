@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import 'financial_auditor_screen.dart';
+import 'settings_screen.dart';
 
 class ChartsScreen extends StatefulWidget {
   const ChartsScreen({super.key});
@@ -49,7 +50,9 @@ class _ChartsScreenState extends State<ChartsScreen> {
                 backgroundImage: settings.getProfileImageProvider(),
               ),
               const SizedBox(width: 10),
-              IconButton(icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white : const Color(0xFF002B1D)), onPressed: () {}),
+              IconButton(icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white : const Color(0xFF002B1D)), onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+              }),
               const SizedBox(width: 15),
             ],
           ),
