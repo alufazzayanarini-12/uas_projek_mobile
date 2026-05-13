@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import 'account_settings_screen.dart';
+import 'security_settings_screen.dart';
+import 'notification_settings_screen.dart';
+import 'bank_management_screen.dart';
+import 'language_settings_screen.dart';
+import 'currency_settings_screen.dart';
 
 class GeneralSettingsScreen extends StatelessWidget {
   const GeneralSettingsScreen({super.key});
@@ -36,17 +42,29 @@ class GeneralSettingsScreen extends StatelessWidget {
                 _buildSectionHeader('AKUN & KEAMANAN', isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(Icons.person_outline, 'Informasi Pribadi', 'Nama, Email, Telepon', isDark),
-                  _buildSettingsItem(Icons.lock_outline, 'Kata Sandi & Keamanan', 'PIN, Sidik Jari', isDark),
-                  _buildSettingsItem(Icons.account_balance_outlined, 'Manajemen Rekening', '2 Rekening Terhubung', isDark),
+                  _buildSettingsItem(context, Icons.person_outline, 'Informasi Pribadi', 'Nama, Email, Telepon', isDark, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountSettingsScreen()));
+                  }),
+                  _buildSettingsItem(context, Icons.lock_outline, 'Kata Sandi & Keamanan', 'PIN, Sidik Jari', isDark, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()));
+                  }),
+                  _buildSettingsItem(context, Icons.account_balance_outlined, 'Manajemen Rekening', '2 Rekening Terhubung', isDark, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const BankManagementScreen()));
+                  }),
                 ], isDark),
                 const SizedBox(height: 30),
                 _buildSectionHeader('PREFERENSI APLIKASI', isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(Icons.notifications_none_outlined, 'Notifikasi', 'Pengingat Harian Aktif', isDark),
-                  _buildSettingsItem(Icons.language_outlined, 'Bahasa', 'Bahasa Indonesia', isDark),
-                  _buildSettingsItem(Icons.monetization_on_outlined, 'Mata Uang', 'IDR (Rp)', isDark),
+                  _buildSettingsItem(context, Icons.notifications_none_outlined, 'Notifikasi', 'Pengingat Harian Aktif', isDark, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()));
+                  }),
+                  _buildSettingsItem(context, Icons.language_outlined, 'Bahasa', 'Bahasa Indonesia', isDark, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()));
+                  }),
+                  _buildSettingsItem(context, Icons.monetization_on_outlined, 'Mata Uang', 'IDR (Rp)', isDark, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const CurrencySettingsScreen()));
+                  }),
                   _buildThemeSwitch(settings, isDark),
                 ], isDark),
                 const SizedBox(height: 30),
@@ -85,7 +103,7 @@ class GeneralSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsItem(IconData icon, String title, String subtitle, bool isDark) {
+  Widget _buildSettingsItem(BuildContext context, IconData icon, String title, String subtitle, bool isDark, {VoidCallback? onTap}) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       leading: Container(
@@ -96,7 +114,7 @@ class GeneralSettingsScreen extends StatelessWidget {
       title: Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
       subtitle: Text(subtitle, style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
       trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
-      onTap: () {},
+      onTap: onTap ?? () {},
     );
   }
 

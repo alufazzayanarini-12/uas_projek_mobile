@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class DebtManagementScreen extends StatefulWidget {
@@ -11,270 +12,281 @@ class DebtManagementScreen extends StatefulWidget {
 class _DebtManagementScreenState extends State<DebtManagementScreen> {
   final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-  // Data Hutang Dinamis
-  List<Map<String, dynamic>> debts = [
-    {'name': 'Nia', 'total': 2000000.0, 'remaining': 800000.0, 'installments': 2, 'color': Colors.orange},
-    {'name': 'Wulan', 'total': 5000000.0, 'remaining': 3500000.0, 'installments': 4, 'color': Colors.red},
-  ];
-
-  List<Map<String, dynamic>> paymentHistory = [];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF2E7D32), // Green header
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Manajemen Hutang', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text('Hutang', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDebtHeader('Daftar Kontak & Hutang'),
-            ...debts.asMap().entries.map((entry) {
-              int idx = entry.key;
-              var d = entry.value;
-              double progress = 1 - ((d['remaining'] as num) / (d['total'] as num)).toDouble();
-              return _buildDebtCard(idx, d['name'], fmt.format(d['total']), progress, fmt.format(d['remaining']), d['color'], '${d['installments']}x');
-            }).toList(),
-
-            const SizedBox(height: 25),
-            _buildDebtHeader('Jatuh Tempo Terdekat'),
-            _buildDueItem('Nia', '15 Mei 2026', 'Rp 400.000 (Cicilan 3)'),
-            _buildDueItem('Wulan', '20 Mei 2026', 'Rp 1.000.000 (Cicilan 1)'),
-            const SizedBox(height: 25),
-            _buildDebtHeader('Opsi Lainnya'),
-            
-            _buildOptionTile(
-              Icons.history, 
-              'Riwayat Cicilan', 
-              '${paymentHistory.length} catatan pembayaran',
-              onTap: () => _showHistoryBottomSheet(),
-            ),
-            _buildOptionTile(
-              Icons.person_add_outlined, 
-              'Tambah Kontak', 
-              'Catat hutang baru',
-              onTap: () => _showAddDebtDialog(),
-            ),
-          ],
-        ),
+      body: Column(
+        children: [
+          _buildMainHeader(),
+          const SizedBox(height: 20),
+          _buildSummaryCards(),
+          const SizedBox(height: 30),
+          _buildContactListHeader(),
+          Expanded(child: _buildContactList()),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddDebtBottomSheet(),
+        backgroundColor: const Color(0xFF2E7D32),
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
     );
   }
 
-  Widget _buildDebtCard(int index, String name, String total, double progress, String remaining, Color color, String remInstallments) {
+  Widget _buildMainHeader() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+      width: double.infinity,
+      padding: const EdgeInsets.only(bottom: 40, top: 20),
+      decoration: const BoxDecoration(
+        color: Color(0xFF2E7D32),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              Text(total, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-            ],
+          Text(
+            'Status Penggunaan',
+            style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14),
           ),
-          const SizedBox(height: 15),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(value: progress, backgroundColor: color.withOpacity(0.1), color: color, minHeight: 8),
-          ),
-          const SizedBox(height: 15),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Sisa: $remaining', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
-              ElevatedButton(
-                onPressed: () => _showPaymentDialog(index),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE3F2FD),
-                  foregroundColor: Colors.blue[700],
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: const Text('Bayar Cicilan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-          Text('Sisa Cicilan: $remInstallments', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-
-  void _showAddDebtDialog() {
-    final nameController = TextEditingController();
-    final amountController = TextEditingController();
-    final installmentController = TextEditingController(text: '10');
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Catat Hutang Baru', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Kontak')),
-            TextField(controller: amountController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Total Hutang (Rp)')),
-            TextField(controller: installmentController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Jumlah Cicilan')),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty && amountController.text.isNotEmpty) {
-                setState(() {
-                  debts.add({
-                    'name': nameController.text,
-                    'total': double.parse(amountController.text),
-                    'remaining': double.parse(amountController.text),
-                    'installments': int.parse(installmentController.text),
-                    'color': Colors.blueGrey,
-                  });
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kontak baru berhasil ditambahkan!')));
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[700], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-            child: const Text('Simpan', style: TextStyle(color: Colors.white)),
+          const SizedBox(height: 10),
+          Text(
+            'Rp 1.250.000',
+            style: GoogleFonts.outfit(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
           ),
         ],
       ),
     );
   }
 
-  void _showPaymentDialog(int index) {
-    final debt = debts[index];
-    final nominalController = TextEditingController(text: '400000');
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Center(child: Text('Bayar Cicilan ${debt['name']}', style: const TextStyle(fontWeight: FontWeight.bold))),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildInfoRow('Sisa Hutang', fmt.format(debt['remaining'])),
-            _buildInfoRow('Sisa Cicilan', '${debt['installments']}x'),
-            const SizedBox(height: 15),
-            TextField(
-              controller: nominalController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Nominal Bayar (Rp)', filled: true, fillColor: Colors.grey[100], border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          ElevatedButton(
-            onPressed: () {
-              double payAmount = double.tryParse(nominalController.text) ?? 0.0;
-              setState(() {
-                debts[index]['remaining'] -= payAmount;
-                if (debts[index]['installments'] > 0) debts[index]['installments'] -= 1;
-                if (debts[index]['remaining'] < 0) debts[index]['remaining'] = 0;
-                paymentHistory.insert(0, {'name': debt['name'], 'amount': payAmount, 'date': DateFormat('dd MMM yyyy, HH:mm').format(DateTime.now())});
-              });
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[700], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-            child: const Text('Konfirmasi', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showHistoryBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(25),
-        height: 400,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Riwayat Pembayaran Cicilan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const Divider(height: 30),
-            Expanded(
-              child: paymentHistory.isEmpty
-                  ? const Center(child: Text('Belum ada riwayat pembayaran', style: TextStyle(color: Colors.grey)))
-                  : ListView.builder(
-                      itemCount: paymentHistory.length,
-                      itemBuilder: (context, i) {
-                        final h = paymentHistory[i];
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: CircleAvatar(backgroundColor: Colors.green[50], child: const Icon(Icons.check, color: Colors.green, size: 18)),
-                          title: Text('Bayar ke ${h['name']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          subtitle: Text(h['date'], style: const TextStyle(fontSize: 11)),
-                          trailing: Text(fmt.format(h['amount']), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDebtHeader(String title) {
-    return Padding(padding: const EdgeInsets.only(bottom: 15), child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))));
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(padding: const EdgeInsets.symmetric(vertical: 5), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)), Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))]));
-  }
-
-  Widget _buildDueItem(String name, String date, String desc) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+  Widget _buildSummaryCards() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.blue[50]!, shape: BoxShape.circle), child: const Icon(Icons.calendar_month, color: Colors.blue, size: 20)),
+          Expanded(
+            child: _buildSummaryCard('Hutang Saya', 'Rp 100k', Colors.red[50]!, Colors.red[700]!),
+          ),
           const SizedBox(width: 15),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(name, style: const TextStyle(fontWeight: FontWeight.bold)), Text(date, style: const TextStyle(fontSize: 12, color: Colors.grey))])),
-          Text(desc, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orange)),
+          Expanded(
+            child: _buildSummaryCard('Piutang', 'Rp 1M', Colors.green[50]!, Colors.green[700]!),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildOptionTile(IconData icon, String title, String subtitle, {VoidCallback? onTap}) {
-    return ListTile(
-      leading: Icon(icon, color: const Color(0xFF1A237E)),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-      trailing: const Icon(Icons.chevron_right),
-      tileColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      onTap: onTap,
+  Widget _buildSummaryCard(String title, String amount, Color bgColor, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: textColor.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          Text(title, style: GoogleFonts.outfit(color: textColor.withOpacity(0.7), fontSize: 13, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 5),
+          Text(amount, style: GoogleFonts.outfit(color: textColor, fontSize: 22, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactListHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          'Daftar Kontak (Klik Nama)',
+          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactList() {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      children: [
+        _buildContactTile('Nia', 'Hutang', 'Rp 100.000', Colors.red),
+        _buildContactTile('Wulan', 'Piutang', 'Rp 1.000.000', Colors.green),
+      ],
+    );
+  }
+
+  Widget _buildContactTile(String name, String type, String amount, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+      ),
+      child: ListTile(
+        onTap: () => _showDetailBottomSheet(name, type, amount),
+        leading: CircleAvatar(
+          backgroundColor: color.withOpacity(0.1),
+          child: Text(name[0], style: GoogleFonts.outfit(color: color, fontWeight: FontWeight.bold)),
+        ),
+        title: Text(name, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        subtitle: Text(type, style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
+        trailing: Text(amount, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: color)),
+      ),
+    );
+  }
+
+  void _showDetailBottomSheet(String name, String type, String amount) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(25),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Detail: $name ($type)',
+                  style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey[800]),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const Divider(),
+            const SizedBox(height: 15),
+            Text('Sisa Saldo:', style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 14)),
+            const SizedBox(height: 5),
+            Text(
+              amount,
+              style: GoogleFonts.outfit(color: Colors.red, fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 25),
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Nominal Bayar / Cicil',
+                hintStyle: GoogleFonts.outfit(color: Colors.grey),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 60),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                elevation: 0,
+              ),
+              child: Text('BAYAR SEKARANG', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+            const SizedBox(height: 30),
+            Text(
+              'Riwayat Cicilan',
+              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700]),
+            ),
+            const SizedBox(height: 15),
+            _buildHistoryItem('01 Mei 2024', 'Rp 50.000'),
+            _buildHistoryItem('25 April 2024', 'Rp 25.000'),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryItem(String date, String amount) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 15),
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F4F9),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(date, style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 13)),
+          Text(amount, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.grey[800])),
+        ],
+      ),
+    );
+  }
+
+  void _showAddDebtBottomSheet() {
+    // Fitur tambah kontak/hutang baru
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 25,
+          top: 25,
+          left: 25,
+          right: 25,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Catat Hutang Baru', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            TextField(decoration: InputDecoration(labelText: 'Nama Kontak', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+            const SizedBox(height: 15),
+            TextField(decoration: InputDecoration(labelText: 'Nominal Hutang', prefixText: 'Rp ', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), keyboardType: TextInputType.number),
+            const SizedBox(height: 15),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[200], foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                    child: const Text('Batal'),
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                    child: const Text('Simpan'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

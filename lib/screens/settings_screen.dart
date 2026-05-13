@@ -5,6 +5,9 @@ import '../providers/settings_provider.dart';
 import 'account_settings_screen.dart';
 import 'security_settings_screen.dart';
 import 'notification_settings_screen.dart';
+import 'bank_management_screen.dart';
+import 'language_settings_screen.dart';
+import 'currency_settings_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -45,7 +48,9 @@ class SettingsScreen extends StatelessWidget {
                   _buildSettingsItem(context, Icons.lock_outline, 'Kata Sandi & Keamanan', 'PIN, Sidik Jari', isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()));
                   }),
-                  _buildSettingsItem(context, Icons.account_balance_outlined, 'Manajemen Rekening', '2 Rekening Terhubung', isDark),
+                  _buildSettingsItem(context, Icons.account_balance_outlined, 'Manajemen Rekening', '2 Rekening Terhubung', isDark, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const BankManagementScreen()));
+                  }),
                 ], isDark),
                 const SizedBox(height: 30),
                 _buildSectionHeader('PREFERENSI APLIKASI', isDark),
@@ -54,8 +59,12 @@ class SettingsScreen extends StatelessWidget {
                   _buildSettingsItem(context, Icons.notifications_none_outlined, 'Notifikasi', 'Pengingat Harian Aktif', isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()));
                   }),
-                  _buildSettingsItem(context, Icons.language_outlined, 'Bahasa', 'Bahasa Indonesia', isDark),
-                  _buildSettingsItem(context, Icons.monetization_on_outlined, 'Mata Uang', 'IDR (Rp)', isDark),
+                  _buildSettingsItem(context, Icons.language_outlined, 'Bahasa', 'Bahasa Indonesia', isDark, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()));
+                  }),
+                  _buildSettingsItem(context, Icons.monetization_on_outlined, 'Mata Uang', 'IDR (Rp)', isDark, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const CurrencySettingsScreen()));
+                  }),
                   _buildThemeSwitch(settings, isDark),
                 ], isDark),
                 const SizedBox(height: 30),

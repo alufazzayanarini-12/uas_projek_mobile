@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'add_transaction_screen.dart';
 import '../models/account.dart';
 import '../models/transaction_model.dart';
 import '../providers/account_provider.dart';
-import '../providers/category_provider.dart';
+import '../providers/settings_provider.dart';
 
 class AccountDetailScreen extends StatefulWidget {
   final Account account;
@@ -17,9 +18,6 @@ class AccountDetailScreen extends StatefulWidget {
 
 class _AccountDetailScreenState extends State<AccountDetailScreen> {
   late Future<List<TransactionModel>> _transactionsFuture;
-  final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _noteController = TextEditingController();
-  bool _isMenuOpen = false;
 
   @override
   void initState() {
@@ -29,13 +27,13 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
 
   void _loadTransactions() {
     _transactionsFuture = Provider.of<AccountProvider>(context, listen: false)
-        .getTransactionsForAccount(widget.account.id!);
+        .getTransactionsForAccount(widget.account.id ?? 1);
   }
-
-  void _toggleMenu() => setState(() => _isMenuOpen = !_isMenuOpen);
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
+    final isDark = settings.isDarkMode;
     final currentAccount = Provider.of<AccountProvider>(context).accounts.firstWhere(
       (a) => a.id == widget.account.id,
       orElse: () => widget.account,
@@ -43,259 +41,161 @@ class _AccountDetailScreenState extends State<AccountDetailScreen> {
     final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE),
       body: Column(
         children: [
-          _buildBlueHeader(currentAccount, fmt),
-          Expanded(child: _buildTransactionList(fmt)),
+          _buildHeader(currentAccount, fmt, isDark),
+          Expanded(child: _buildTransactionList(fmt, isDark)),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.push(
           context, 
           MaterialPageRoute(builder: (context) => AddTransactionScreen(account: currentAccount))
         ).then((_) => _loadTransactions()),
-        backgroundColor: const Color(0xFF00BCD4), // Cyan
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
+        backgroundColor: const Color(0xFF002B1D),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: Text('Transaksi', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     );
   }
 
-  Widget _buildBlueHeader(Account acc, NumberFormat fmt) {
+  Widget _buildHeader(Account acc, NumberFormat fmt, bool isDark) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 10, bottom: 30),
-      decoration: const BoxDecoration(
-        color: Color(0xFF2196F3), // Warna Biru sesuai gambar
+      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 10, bottom: 40, left: 25, right: 25),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFF002B1D),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
       ),
       child: Column(
         children: [
-          // Bar Atas: Tombol Back & Judul
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => Navigator.pop(context),
               ),
-              const Expanded(
-                child: Center(
-                  child: Text(
-                    'Buku Tabungan',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
+              Text(
+                'Buku Tabungan',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(width: 48), // Spacer agar judul tetap di tengah
+              const SizedBox(width: 48),
             ],
           ),
-          const SizedBox(height: 20),
-          // Ikon Akun
+          const SizedBox(height: 30),
           Container(
-            padding: const EdgeInsets.all(15),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.account_balance_wallet, color: Colors.white, size: 35),
+            child: Icon(IconData(acc.iconCodePoint, fontFamily: 'MaterialIcons'), color: Colors.white, size: 40),
           ),
-          const SizedBox(height: 15),
-          // Nama Akun
+          const SizedBox(height: 20),
           Text(
-            acc.name.toLowerCase(),
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
+            acc.name,
+            style: GoogleFonts.outfit(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 5),
-          const Text(
+          Text(
             'Saldo Saat Ini',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
+            style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14),
           ),
-          const SizedBox(height: 10),
-          // Nominal Saldo
+          const SizedBox(height: 15),
           Text(
             fmt.format(acc.balance),
-            style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+            style: GoogleFonts.outfit(color: Colors.white, fontSize: 38, fontWeight: FontWeight.bold),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTransactionList(NumberFormat fmt) {
+  Widget _buildTransactionList(NumberFormat fmt, bool isDark) {
     return FutureBuilder<List<TransactionModel>>(
       future: _transactionsFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-        if (snapshot.data!.isEmpty) return const Center(child: Text('Belum ada riwayat transaksi.'));
         
         final txs = snapshot.data!;
-        return ListView.separated(
-          itemCount: txs.length,
-          padding: EdgeInsets.zero,
-          separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
-          itemBuilder: (context, index) {
-            final tx = txs[index];
-            final isDeposit = tx.type == 'deposit';
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isDeposit ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  isDeposit ? Icons.arrow_downward : Icons.arrow_upward,
-                  color: isDeposit ? Colors.green : Colors.red,
-                  size: 20,
-                ),
-              ),
-              title: Text(
-                tx.description,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              subtitle: Text(
-                DateFormat('dd MMM yyyy, HH:mm').format(tx.date),
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              trailing: Text(
-                '${isDeposit ? '+ ' : '- '}${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(tx.amount)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  color: isDeposit ? Colors.green : Colors.red,
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildModernFAB(Account acc) {
-    return InkWell(
-      onTap: _showQuickModal,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2196F3),
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.add, color: Colors.white, size: 20),
-            SizedBox(width: 8),
-            Text(
-              'Transaksi',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(25, 30, 25, 15),
+              child: Text(
+                'RIWAYAT TRANSAKSI',
+                style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2),
+              ),
+            ),
+            Expanded(
+              child: txs.isEmpty 
+                ? Center(child: Text('Belum ada riwayat', style: GoogleFonts.outfit(color: Colors.grey)))
+                : ListView.separated(
+                    itemCount: txs.length,
+                    padding: const EdgeInsets.symmetric(horizontal: 25),
+                    separatorBuilder: (context, index) => const SizedBox(height: 15),
+                    itemBuilder: (context, index) {
+                      final tx = txs[index];
+                      final isDeposit = tx.type == 'deposit';
+                      return Container(
+                        padding: const EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: isDeposit ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isDeposit ? Icons.arrow_downward : Icons.arrow_upward,
+                                color: isDeposit ? Colors.green : Colors.red,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 15),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    tx.description,
+                                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.white : Colors.black),
+                                  ),
+                                  Text(
+                                    DateFormat('dd MMM yyyy, HH:mm').format(tx.date),
+                                    style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              '${isDeposit ? '+ ' : '- '}${fmt.format(tx.amount)}',
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: isDeposit ? Colors.green : Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  void _showQuickModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-      builder: (context) => _QuickForm(
-        account: widget.account,
-        onSaved: () {
-          setState(() => _loadTransactions());
-        },
-      ),
-    );
-  }
-}
-
-class _QuickForm extends StatefulWidget {
-  final Account account;
-  final VoidCallback onSaved;
-  const _QuickForm({required this.account, required this.onSaved});
-
-  @override
-  State<_QuickForm> createState() => _QuickFormState();
-}
-
-class _QuickFormState extends State<_QuickForm> {
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
-  String _type = 'deposit';
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 20, top: 25, left: 25, right: 25),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('Catat Transaksi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ChoiceChip(
-                  label: const Center(child: Text('Setor')),
-                  selected: _type == 'deposit',
-                  onSelected: (s) => setState(() => _type = 'deposit'),
-                  selectedColor: Colors.green.withOpacity(0.2),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ChoiceChip(
-                  label: const Center(child: Text('Tarik')),
-                  selected: _type == 'withdrawal',
-                  onSelected: (s) => setState(() => _type = 'withdrawal'),
-                  selectedColor: Colors.red.withOpacity(0.2),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _amountController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Nominal', prefixText: 'Rp ', border: OutlineInputBorder()),
-          ),
-          const SizedBox(height: 15),
-          TextField(
-            controller: _noteController,
-            decoration: const InputDecoration(labelText: 'Keterangan', border: OutlineInputBorder()),
-          ),
-          const SizedBox(height: 25),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: () async {
-                double amount = double.tryParse(_amountController.text) ?? 0;
-                if (amount <= 0) return;
-                
-                final tx = TransactionModel(
-                  accountId: widget.account.id!,
-                  type: _type,
-                  amount: amount,
-                  description: _noteController.text.isEmpty ? 'Transaksi' : _noteController.text,
-                  date: DateTime.now(),
-                );
-                
-                await Provider.of<AccountProvider>(context, listen: false).addTransaction(tx);
-                widget.onSaved();
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2196F3)),
-              child: const Text('SIMPAN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
+        );
+      },
     );
   }
 }

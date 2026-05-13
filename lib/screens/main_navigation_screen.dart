@@ -5,6 +5,7 @@ import 'goals_screen.dart';
 import 'charts_screen.dart';
 import 'add_transaction_screen.dart';
 import 'profile_screen.dart';
+import 'debt_management_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -52,9 +53,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget _buildNavItem(int index, IconData icon, String label) {
     bool isActive = _currentIndex == index;
     return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
+      onTap: () {
+        if (index == 2) {
+          _showAddChoiceMenu(context);
+        } else {
+          setState(() => _currentIndex = index);
+        }
+      },
       behavior: HitTestBehavior.opaque,
-      child: Container(
+      child: SizedBox(
         width: 70,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -84,6 +91,79 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showAddChoiceMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(25),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Apa yang ingin Anda catat?',
+              style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D)),
+            ),
+            const SizedBox(height: 25),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildChoiceItem(
+                  context,
+                  Icons.savings_outlined,
+                  'Catat Tabungan',
+                  const Color(0xFF0D4D3B),
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AddTransactionScreen()));
+                  },
+                ),
+                _buildChoiceItem(
+                  context,
+                  Icons.money_off_csred_outlined,
+                  'Catat Hutang',
+                  Colors.red[700]!,
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const DebtManagementScreen()));
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChoiceItem(BuildContext context, IconData icon, String label, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(icon, color: color, size: 32),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            label,
+            style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: color),
+          ),
+        ],
       ),
     );
   }
