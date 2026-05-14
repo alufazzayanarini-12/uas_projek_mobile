@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'warung_detail_screen.dart';
+import 'wholesale_detail_screen.dart';
+import 'coffee_snack_detail_screen.dart';
 
 class SubCategoryScreen extends StatefulWidget {
   final String mainCategory;
@@ -121,7 +123,6 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
         _buildSubCard('Restoran', Icons.storefront_outlined),
         _buildSubCard('Grosir', Icons.shopping_cart_outlined),
         _buildSubCard('Kopi & Snack', Icons.coffee_outlined),
-        _buildSubCard('Warung', Icons.restaurant_menu_outlined),
       ],
     );
   }
@@ -131,10 +132,20 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     return GestureDetector(
       onTap: () {
         setState(() => _selectedSub = title);
-        if (title == 'Restoran' || title == 'Warung') {
+        if (title == 'Restoran') {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const WarungDetailScreen()),
+          );
+        } else if (title == 'Grosir') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const WholesaleDetailScreen()),
+          );
+        } else if (title == 'Kopi & Snack') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CoffeeSnackDetailScreen()),
           );
         }
       },
