@@ -22,13 +22,21 @@ class FixLogicScreen extends StatefulWidget {
 class _FixLogicScreenState extends State<FixLogicScreen> {
   late double _newLimit;
   bool _applyAutoLimit = true;
+  late TextEditingController _limitController;
 
   @override
   void initState() {
     super.initState();
     // Parse current limit string like "Rp 500.000" to double
-    String cleanLimit = widget.currentLimit.replaceAll('Rp ', '').replaceAll('.', '');
+    String cleanLimit = widget.currentLimit.replaceAll('Rp ', '').replaceAll('.', '').replaceAll(',', '');
     _newLimit = double.tryParse(cleanLimit) ?? 500000;
+    _limitController = TextEditingController(text: _newLimit.toInt().toString());
+  }
+
+  @override
+  void dispose() {
+    _limitController.dispose();
+    super.dispose();
   }
 
   @override
@@ -62,7 +70,7 @@ class _FixLogicScreenState extends State<FixLogicScreen> {
                 _buildStatusCard(isDark, textColor, cardColor),
                 const SizedBox(height: 30),
                 Text(
-                  'SOLUSI REKOMENDASI',
+                  'KETIK MANUAL',
                   style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1),
                 ),
                 const SizedBox(height: 15),
@@ -113,7 +121,7 @@ class _FixLogicScreenState extends State<FixLogicScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildStatItem('Sekarang', widget.currentAmount, Colors.red[700]!),
-              _buildStatItem('Batas', widget.currentLimit, textColor),
+              _buildStatItem('Uang Keluar', widget.currentLimit, textColor),
             ],
           ),
         ],
@@ -142,25 +150,34 @@ class _FixLogicScreenState extends State<FixLogicScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Sesuaikan Batas Pengeluaran', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
+          Text('Sesuaikan Uang Keluar', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
           const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Batas Baru', style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey)),
-              Text('Rp ${_newLimit.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}', 
-                style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D))),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Slider(
-            value: _newLimit,
-            min: 100000,
-            max: 2000000,
-            divisions: 19,
-            activeColor: const Color(0xFF002B1D),
-            inactiveColor: isDark ? Colors.white10 : const Color(0xFFE8F0FE),
-            onChanged: (v) => setState(() => _newLimit = v),
+          TextField(
+            controller: _limitController,
+            keyboardType: TextInputType.number,
+            style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+            onChanged: (val) {
+              double? parsed = double.tryParse(val);
+              if (parsed != null) {
+                setState(() {
+                  _newLimit = parsed;
+                });
+              }
+            },
+            decoration: InputDecoration(
+              prefixText: 'Rp ',
+              prefixStyle: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D)),
+              labelText: 'Uang Keluar Baru',
+              labelStyle: GoogleFonts.outfit(color: const Color(0xFF0D9488)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: const BorderSide(color: Color(0xFF0D9488), width: 2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+              ),
+            ),
           ),
         ],
       ),
@@ -199,8 +216,15 @@ class _FixLogicScreenState extends State<FixLogicScreen> {
   }
 
   Widget _buildApplyButton(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
     return ElevatedButton(
       onPressed: () {
+        double finalLimit = double.tryParse(_limitController.text) ?? _newLimit;
+        if (widget.category == 'Makan dan Minum') {
+          settings.setFoodLimit(finalLimit);
+        } else if (widget.category == 'Transportasi & Pengiriman') {
+          settings.setTransportLimit(finalLimit);
+        }
         _showSuccessDialog(context);
       },
       style: ElevatedButton.styleFrom(

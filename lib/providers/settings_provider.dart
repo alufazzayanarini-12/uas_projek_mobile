@@ -10,6 +10,8 @@ class SettingsProvider with ChangeNotifier {
   String _userName = 'Arini'; 
   String? _profileImagePath;
   double _dailyPocketMoney = 50000.0; // Uang saku harian default
+  double _foodLimit = 500000.0; // Limit Makan dan Minum
+  double _transportLimit = 150000.0; // Limit Transportasi & Pengiriman
 
   bool get isBalanceHidden => _isBalanceHidden;
   bool get isAppLockEnabled => _isAppLockEnabled;
@@ -18,6 +20,8 @@ class SettingsProvider with ChangeNotifier {
   String get userName => _userName;
   String? get profileImagePath => _profileImagePath;
   double get dailyPocketMoney => _dailyPocketMoney;
+  double get foodLimit => _foodLimit;
+  double get transportLimit => _transportLimit;
   
   bool get isPinEnabled => _isAppLockEnabled;
 
@@ -34,6 +38,8 @@ class SettingsProvider with ChangeNotifier {
     _userName = prefs.getString('user_name') ?? 'Arini';
     _profileImagePath = prefs.getString('profile_image_path');
     _dailyPocketMoney = prefs.getDouble('daily_pocket_money') ?? 50000.0;
+    _foodLimit = prefs.getDouble('food_limit') ?? 500000.0;
+    _transportLimit = prefs.getDouble('transport_limit') ?? 150000.0;
     notifyListeners();
   }
 
@@ -48,6 +54,20 @@ class SettingsProvider with ChangeNotifier {
     _dailyPocketMoney = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('daily_pocket_money', value);
+    notifyListeners();
+  }
+
+  Future<void> setFoodLimit(double value) async {
+    _foodLimit = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('food_limit', value);
+    notifyListeners();
+  }
+
+  Future<void> setTransportLimit(double value) async {
+    _transportLimit = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('transport_limit', value);
     notifyListeners();
   }
 

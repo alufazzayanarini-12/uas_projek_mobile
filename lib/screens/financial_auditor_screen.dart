@@ -63,19 +63,22 @@ class FinancialAuditorScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 25),
-                _buildCriticalWarningCard(isDark, textColor, cardColor),
+                _buildCriticalWarningCard(context, settings, isDark, textColor, cardColor),
                 const SizedBox(height: 25),
                 _buildAuditItemCard(
                   context: context,
                   icon: Icons.restaurant_rounded,
-                  title: 'Makan & Sosial',
+                  title: 'Makan dan Minum',
                   amount: 'Rp 850.000',
-                  limit: 'Rp 500.000',
-                  badge: 'Kritis',
-                  badgeColor: const Color(0xFFFEE2E2),
-                  textColor: const Color(0xFF991B1B),
-                  cardColor: isDark ? const Color(0xFF2D1A1A) : const Color(0xFFFFF8F8),
+                  limit: NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(settings.foodLimit),
+                  badge: 850000 > settings.foodLimit ? 'Kritis' : 'Aman',
+                  badgeColor: 850000 > settings.foodLimit ? const Color(0xFFFEE2E2) : const Color(0xFFD1FAE5),
+                  textColor: 850000 > settings.foodLimit ? const Color(0xFF991B1B) : const Color(0xFF065F46),
+                  cardColor: isDark 
+                      ? (850000 > settings.foodLimit ? const Color(0xFF2D1A1A) : const Color(0xFF1A2D23)) 
+                      : (850000 > settings.foodLimit ? const Color(0xFFFFF8F8) : const Color(0xFFF8FFF9)),
                   isDark: isDark,
+                  progressValue: 850000 / settings.foodLimit,
                 ),
                 const SizedBox(height: 20),
                 _buildAuditItemCard(
@@ -83,12 +86,15 @@ class FinancialAuditorScreen extends StatelessWidget {
                   icon: Icons.local_shipping_rounded,
                   title: 'Transportasi & Pengiriman',
                   amount: 'Rp 270.000',
-                  limit: 'Rp 150.000',
-                  badge: 'Waspada',
-                  badgeColor: const Color(0xFFFFEDD5),
-                  textColor: const Color(0xFF9A3412),
-                  cardColor: isDark ? const Color(0xFF2D251A) : const Color(0xFFFFF8F8),
+                  limit: NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(settings.transportLimit),
+                  badge: 270000 > settings.transportLimit ? 'Waspada' : 'Aman',
+                  badgeColor: 270000 > settings.transportLimit ? const Color(0xFFFFEDD5) : const Color(0xFFD1FAE5),
+                  textColor: 270000 > settings.transportLimit ? const Color(0xFF9A3412) : const Color(0xFF065F46),
+                  cardColor: isDark 
+                      ? (270000 > settings.transportLimit ? const Color(0xFF2D251A) : const Color(0xFF1A2D23)) 
+                      : (270000 > settings.transportLimit ? const Color(0xFFFFF8F8) : const Color(0xFFF8FFF9)),
                   isDark: isDark,
+                  progressValue: 270000 / settings.transportLimit,
                 ),
                 const SizedBox(height: 50),
               ],
@@ -268,7 +274,11 @@ class FinancialAuditorScreen extends StatelessWidget {
     required Color textColor,
     required Color cardColor,
     required bool isDark,
+    required double progressValue,
   }) {
+    Color progressColor = progressValue > 1.0
+        ? (isDark ? Colors.red[400]! : const Color(0xFFB91C1C))
+        : (isDark ? Colors.green[400]! : const Color(0xFF059669));
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -284,8 +294,12 @@ class FinancialAuditorScreen extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: isDark ? Colors.red.withOpacity(0.1) : const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(12)),
-                child: Icon(icon, color: isDark ? Colors.red[300] : const Color(0xFF991B1B), size: 24),
+                decoration: BoxDecoration(
+                    color: isDark
+                        ? (progressValue > 1.0 ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1))
+                        : (progressValue > 1.0 ? const Color(0xFFFEE2E2) : const Color(0xFFD1FAE5)),
+                    borderRadius: BorderRadius.circular(12)),
+                child: Icon(icon, color: isDark ? (progressValue > 1.0 ? Colors.red[300] : Colors.green[300]) : textColor, size: 24),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -299,18 +313,18 @@ class FinancialAuditorScreen extends StatelessWidget {
           const SizedBox(height: 5),
           Row(
             children: [
-              Text(amount, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.red[300] : const Color(0xFFB91C1C))),
-              Text(' / Batas $limit', style: GoogleFonts.outfit(fontSize: 14, color: isDark ? Colors.white70 : Colors.grey[600])),
+              Text(amount, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? (progressValue > 1.0 ? Colors.red[300] : Colors.green[300]) : textColor)),
+              Text(' / Uang Keluar $limit', style: GoogleFonts.outfit(fontSize: 14, color: isDark ? Colors.white70 : Colors.grey[600])),
             ],
           ),
           const SizedBox(height: 15),
           ClipRRect(
             borderRadius: BorderRadius.circular(5),
             child: LinearProgressIndicator(
-              value: 1.0, 
+              value: progressValue > 1.0 ? 1.0 : progressValue, 
               minHeight: 8,
               backgroundColor: isDark ? Colors.white10 : const Color(0xFFE5E7EB),
-              valueColor: AlwaysStoppedAnimation<Color>(isDark ? Colors.red[400]! : const Color(0xFFB91C1C)),
+              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
             ),
           ),
           const SizedBox(height: 20),
@@ -329,7 +343,7 @@ class FinancialAuditorScreen extends StatelessWidget {
               minimumSize: const Size(double.infinity, 50),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
             ),
-            child: Text('Perbaiki Logika', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text('Klik Menu', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

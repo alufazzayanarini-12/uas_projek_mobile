@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/transaction_provider.dart';
+import '../models/transaction_model.dart';
 import 'financial_auditor_screen.dart';
 import 'settings_screen.dart';
 import 'personal_savings_screen.dart';
@@ -18,12 +20,21 @@ class _ChartsScreenState extends State<ChartsScreen> {
   int _selectedPeriod = 0; // 0: Mingguan, 1: Bulanan, 2: Tahunan
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<TransactionProvider>(context, listen: false).loadTransactions();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Consumer<SettingsProvider>(
-      builder: (context, settings, child) {
+    return Consumer2<SettingsProvider, TransactionProvider>(
+      builder: (context, settings, txProvider, child) {
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
         final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+        final txs = txProvider.transactions;
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE),
@@ -74,7 +85,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
                 const SizedBox(height: 20),
                 _buildPeriodToggle(isDark),
                 const SizedBox(height: 25),
-                _buildDailyExpenseCard(isDark, textColor, cardColor),
+                _buildDailyExpenseCard(isDark, textColor, cardColor, txs),
                 const SizedBox(height: 20),
                 GestureDetector(
                   onTap: () {
@@ -140,7 +151,31 @@ class _ChartsScreenState extends State<ChartsScreen> {
     );
   }
 
-  Widget _buildDailyExpenseCard(bool isDark, Color textColor, Color cardColor) {
+  Widget _buildDailyExpenseCard(bool isDark, Color textColor, Color cardColor, List<TransactionModel> txs) {
+    final double totalExpenses = txs
+        .where((t) => t.type == 'withdrawal')
+        .fold(0.0, (sum, t) => sum + t.amount);
+
+    final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
+    List<double> points = [];
+    double current = 100000.0;
+    points.add(current);
+
+    List<TransactionModel> sortedTxs = List.from(txs)..sort((a, b) => a.date.compareTo(b.date));
+    for (var tx in sortedTxs) {
+      if (tx.type == 'deposit') {
+        current += tx.amount;
+      } else {
+        current -= tx.amount;
+      }
+      points.add(current);
+    }
+
+    if (points.length < 3) {
+      points = [100000.0, 150000.0, 120000.0, 200000.0, 180000.0, 250000.0, 220000.0, 300000.0];
+    }
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -158,7 +193,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('Rp 4.280.500', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor)),
+                  Text(fmt.format(totalExpenses), style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor)),
                   Text('Total aliran-logika', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey[600])),
                 ],
               ),
@@ -166,13 +201,19 @@ class _ChartsScreenState extends State<ChartsScreen> {
           ),
           const SizedBox(height: 20),
           Container(
-            height: 60,
+            height: 80,
             width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
               color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF8F9FE),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(child: Icon(Icons.show_chart, color: isDark ? Colors.white24 : Colors.grey[300], size: 40)),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: CustomPaint(
+                painter: SparklinePainter(points, isDark: isDark),
+              ),
+            ),
           ),
         ],
       ),
@@ -280,4 +321,72 @@ class _ChartsScreenState extends State<ChartsScreen> {
       ),
     );
   }
+}
+
+class SparklinePainter extends CustomPainter {
+  final List<double> data;
+  final bool isDark;
+
+  SparklinePainter(this.data, {required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (data.length < 2) return;
+
+    final paint = Paint()
+      ..color = const Color(0xFF0D9488)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    final double stepX = size.width / (data.length - 1);
+    
+    double minVal = data.reduce((a, b) => a < b ? a : b);
+    double maxVal = data.reduce((a, b) => a > b ? a : b);
+    double range = maxVal - minVal;
+    if (range == 0) range = 1.0;
+
+    double getY(double val) {
+      double pct = (val - minVal) / range;
+      return size.height - (pct * (size.height - 20) + 10);
+    }
+
+    path.moveTo(0, getY(data[0]));
+
+    for (int i = 0; i < data.length - 1; i++) {
+      double x1 = i * stepX;
+      double y1 = getY(data[i]);
+      double x2 = (i + 1) * stepX;
+      double y2 = getY(data[i + 1]);
+
+      double cx1 = x1 + stepX / 2;
+      double cy1 = y1;
+      double cx2 = x1 + stepX / 2;
+      double cy2 = y2;
+
+      path.cubicTo(cx1, cy1, cx2, cy2, x2, y2);
+    }
+
+    final fillPath = Path.from(path)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          const Color(0xFF0D9488).withOpacity(isDark ? 0.3 : 0.15),
+          const Color(0xFF0D9488).withOpacity(0.0),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    canvas.drawPath(fillPath, fillPaint);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

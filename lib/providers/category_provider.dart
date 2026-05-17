@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/category_model.dart';
 import '../database/db_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class CategoryProvider with ChangeNotifier {
   List<CategoryModel> _categories = [];
@@ -14,6 +16,60 @@ class CategoryProvider with ChangeNotifier {
   
   double monthlyBudget = 3000000;
   double monthlySpent = 1200000;
+
+  List<Map<String, dynamic>> _savingsHistory = [];
+  List<Map<String, dynamic>> get savingsHistory => _savingsHistory;
+
+  CategoryProvider() {
+    loadCategories();
+    _loadSavingsHistory();
+  }
+
+  Future<void> _loadSavingsHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final historyStr = prefs.getString('savings_history');
+      if (historyStr != null) {
+        final List<dynamic> decoded = json.decode(historyStr);
+        _savingsHistory = decoded.map((item) => Map<String, dynamic>.from(item)).toList();
+      } else {
+        _savingsHistory = [
+          {
+            'title': 'Saldo Awal Tabungan',
+            'amount': 1500000.0,
+            'date': DateTime.now().toIso8601String(),
+            'status': 'Berhasil',
+          }
+        ];
+      }
+      savingsCurrent = prefs.getDouble('savings_current') ?? 1500000.0;
+      notifyListeners();
+    } catch (e) {
+      print("Error loading savings history: $e");
+    }
+  }
+
+  Future<void> _saveSavingsHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('savings_history', json.encode(_savingsHistory));
+      await prefs.setDouble('savings_current', savingsCurrent);
+    } catch (e) {
+      print("Error saving savings history: $e");
+    }
+  }
+
+  void addSavingsTransaction(String title, double amount) {
+    savingsCurrent += amount;
+    _savingsHistory.insert(0, {
+      'title': title,
+      'amount': amount,
+      'date': DateTime.now().toIso8601String(),
+      'status': 'Berhasil',
+    });
+    _saveSavingsHistory();
+    notifyListeners();
+  }
 
   // Getter hanya untuk kategori yang tidak diarsip
   List<CategoryModel> get categories => _categories.where((c) => !c.isArchived).toList();
