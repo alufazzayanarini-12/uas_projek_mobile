@@ -7,6 +7,10 @@ class GoalProvider with ChangeNotifier {
   List<Goal> _goals = [];
   bool _isLoading = false;
 
+  GoalProvider() {
+    loadGoals();
+  }
+
   List<Goal> get goals => _goals;
   bool get isLoading => _isLoading;
 

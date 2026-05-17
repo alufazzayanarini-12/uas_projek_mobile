@@ -3,9 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/settings_provider.dart';
+import '../providers/goal_provider.dart';
+import '../models/goal.dart';
 
 class AddGoalScreen extends StatefulWidget {
-  const AddGoalScreen({super.key});
+  final Goal? goalToEdit;
+  const AddGoalScreen({super.key, this.goalToEdit});
 
   @override
   State<AddGoalScreen> createState() => _AddGoalScreenState();
@@ -15,7 +18,90 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   String _selectedCategory = 'Tabungan';
-  DateTime _selectedDate = DateTime(2025, 12, 1);
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.goalToEdit != null) {
+      _nameController.text = widget.goalToEdit!.name;
+      _amountController.text = widget.goalToEdit!.targetAmount.toInt().toString();
+      _selectedCategory = widget.goalToEdit!.category;
+      _selectedDate = widget.goalToEdit!.deadline;
+    } else {
+      _selectedDate = DateTime.now().add(const Duration(days: 30));
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final now = DateTime.now();
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate.isBefore(now) ? now : _selectedDate,
+      firstDate: now,
+      lastDate: DateTime(2101),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF002B1D),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF002B1D),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  int _calculateMonths(DateTime targetDate) {
+    final now = DateTime.now();
+    int months = (targetDate.year - now.year) * 12 + targetDate.month - now.month;
+    return months > 0 ? months : 0;
+  }
+
+  void _saveGoal() {
+    if (_nameController.text.isEmpty || _amountController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Nama dan Nominal harus diisi', style: GoogleFonts.outfit()), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    final double targetAmount = double.tryParse(_amountController.text) ?? 0.0;
+    if (targetAmount <= 0) return;
+
+    int colorValue = const Color(0xFF002B1D).value;
+    int iconCode = Icons.flag.codePoint;
+    if (_selectedCategory == 'Tabungan') { colorValue = 0xFF002B1D; iconCode = Icons.account_balance_wallet_outlined.codePoint; }
+    else if (_selectedCategory == 'Investasi') { colorValue = 0xFF4CAF50; iconCode = Icons.trending_up.codePoint; }
+    else if (_selectedCategory == 'Pembelian') { colorValue = 0xFF2196F3; iconCode = Icons.shopping_cart_outlined.codePoint; }
+    else if (_selectedCategory == 'Darurat') { colorValue = 0xFFE91E63; iconCode = Icons.ac_unit.codePoint; }
+
+    final goal = Goal(
+      id: widget.goalToEdit?.id,
+      name: _nameController.text,
+      targetAmount: targetAmount,
+      currentAmount: widget.goalToEdit?.currentAmount ?? 0.0,
+      deadline: _selectedDate,
+      color: colorValue,
+      icon: iconCode,
+      category: _selectedCategory,
+    );
+
+    if (widget.goalToEdit != null) {
+      Provider.of<GoalProvider>(context, listen: false).updateGoal(goal);
+    } else {
+      Provider.of<GoalProvider>(context, listen: false).addGoal(goal);
+    }
+    Navigator.pop(context);
+  }
 
   @override
   void dispose() {
@@ -42,7 +128,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Buat Target Baru',
+          widget.goalToEdit != null ? 'Edit Target' : 'Buat Target Baru',
           style: GoogleFonts.outfit(color: const Color(0xFF002B1D), fontWeight: FontWeight.bold, fontSize: 22),
         ),
         actions: [
@@ -123,18 +209,30 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           const SizedBox(height: 25),
           Text('Target Waktu', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
           const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  DateFormat('--------- yyyy').format(_selectedDate).replaceAll(RegExp(r'[a-zA-Z]'), '-'), // Placeholder style from image
-                  style: GoogleFonts.outfit(fontSize: 18, letterSpacing: 2, color: Colors.grey),
-                ),
+          InkWell(
+            onTap: () => _selectDate(context),
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.withOpacity(0.2)),
               ),
-              const Icon(Icons.calendar_month_outlined, color: Colors.grey),
-            ],
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      DateFormat('dd MMMM yyyy').format(_selectedDate),
+                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D)),
+                    ),
+                  ),
+                  const Icon(Icons.calendar_month_outlined, color: Color(0xFF002B1D)),
+                ],
+              ),
+            ),
           ),
-          const Divider(height: 20, color: Color(0xFFE5E7EB)),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -231,8 +329,8 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             children: [
               Text('Estimasi Selesai', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
               const SizedBox(height: 5),
-              Text('Desember 2025', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
-              Text('Dalam 18 Bulan', style: GoogleFonts.outfit(fontSize: 14, color: const Color(0xFF10B981), fontWeight: FontWeight.w500)),
+              Text(DateFormat('MMMM yyyy').format(_selectedDate), style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
+              Text('Dalam ${_calculateMonths(_selectedDate)} Bulan', style: GoogleFonts.outfit(fontSize: 14, color: const Color(0xFF10B981), fontWeight: FontWeight.w500)),
             ],
           ),
           const Icon(Icons.calendar_today_outlined, color: Colors.grey, size: 30),
@@ -245,7 +343,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: ElevatedButton.icon(
-        onPressed: () => Navigator.pop(context),
+        onPressed: _saveGoal,
         icon: const Icon(Icons.check_circle_outline, size: 20),
         label: Text('Simpan Target', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
         style: ElevatedButton.styleFrom(

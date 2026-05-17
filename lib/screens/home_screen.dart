@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/goal_provider.dart';
 import 'goal_detail_screen.dart';
 import 'add_goal_screen.dart';
 import 'settings_screen.dart';
@@ -20,6 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Consumer<SettingsProvider>(
       builder: (context, settings, child) {
+        final goalProvider = Provider.of<GoalProvider>(context);
+        final goals = goalProvider.goals;
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
         final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
@@ -71,26 +74,58 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor),
                 ),
                 const SizedBox(height: 15),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(
-                          goalId: 1, // Fallback ID
-                        ))),
-                        child: _buildGoalProgressCard('Laptop Baru', 0.75, 'Rp 11.250.000', isDark),
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(
-                          goalId: 2, // Fallback ID
-                        ))),
-                        child: _buildGoalProgressCard('Books NW', 0.45, 'Rp 3.600.000', isDark),
-                      ),
-                    ),
-                  ],
+                Wrap(
+                  spacing: 20,
+                  runSpacing: 20,
+                  children: goals.isEmpty 
+                    ? [
+                        SizedBox(
+                          width: (MediaQuery.of(context).size.width - 60) / 2, // 40 padding + 20 spacing
+                          child: GestureDetector(
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(goalId: 1))),
+                            child: _buildGoalProgressCard(
+                              'Laptop Baru', 0.75, 'Rp 11.250.000', isDark,
+                              onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ini hanya contoh. Tambahkan target asli Anda.', style: GoogleFonts.outfit()))),
+                              onDelete: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ini hanya contoh. Tambahkan target asli Anda.', style: GoogleFonts.outfit()))),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: (MediaQuery.of(context).size.width - 60) / 2,
+                          child: GestureDetector(
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(goalId: 2))),
+                            child: _buildGoalProgressCard(
+                              'Books NW', 0.45, 'Rp 3.600.000', isDark,
+                              onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ini hanya contoh. Tambahkan target asli Anda.', style: GoogleFonts.outfit()))),
+                              onDelete: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ini hanya contoh. Tambahkan target asli Anda.', style: GoogleFonts.outfit()))),
+                            ),
+                          ),
+                        ),
+                      ]
+                    : goals.map((goal) {
+                        double progress = goal.targetAmount > 0 ? goal.currentAmount / goal.targetAmount : 0;
+                        if (progress > 1.0) progress = 1.0;
+                        return SizedBox(
+                          width: (MediaQuery.of(context).size.width - 60) / 2,
+                          child: GestureDetector(
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => GoalDetailScreen(goalId: goal.id ?? 1))),
+                            child: _buildGoalProgressCard(
+                              goal.name, 
+                              progress, 
+                              fmt.format(goal.targetAmount), 
+                              isDark,
+                              onEdit: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => AddGoalScreen(goalToEdit: goal)));
+                              },
+                              onDelete: () {
+                                if (goal.id != null) {
+                                  Provider.of<GoalProvider>(context, listen: false).deleteGoal(goal.id!);
+                                }
+                              },
+                            ),
+                          ),
+                        );
+                      }).toList(),
                 ),
                 const SizedBox(height: 25),
                 GestureDetector(
@@ -170,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildGoalProgressCard(String title, double progress, String amount, bool isDark) {
+  Widget _buildGoalProgressCard(String title, double progress, String amount, bool isDark, {VoidCallback? onEdit, VoidCallback? onDelete}) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -182,7 +217,47 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.white : const Color(0xFF002B1D))),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: Text(title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.white : const Color(0xFF002B1D)), maxLines: 2, overflow: TextOverflow.ellipsis)),
+              SizedBox(
+                height: 24,
+                width: 24,
+                child: PopupMenuButton<String>(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(Icons.more_vert, size: 20, color: isDark ? Colors.white70 : Colors.black54),
+                  onSelected: (value) {
+                    if (value == 'edit' && onEdit != null) onEdit();
+                    if (value == 'delete' && onDelete != null) onDelete();
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.edit_outlined, size: 18),
+                          const SizedBox(width: 8),
+                          Text('Edit', style: GoogleFonts.outfit()),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.delete_outline, color: Colors.red, size: 18),
+                          const SizedBox(width: 8),
+                          Text('Hapus', style: GoogleFonts.outfit(color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
           LinearProgressIndicator(value: progress, backgroundColor: isDark ? Colors.white10 : const Color(0xFFF1F4F9), valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF002B1D)), minHeight: 6),
           const SizedBox(height: 12),
