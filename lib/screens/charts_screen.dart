@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import 'financial_auditor_screen.dart';
 import 'settings_screen.dart';
+import 'personal_savings_screen.dart';
 
 class ChartsScreen extends StatefulWidget {
   const ChartsScreen({super.key});
@@ -75,9 +76,15 @@ class _ChartsScreenState extends State<ChartsScreen> {
                 const SizedBox(height: 25),
                 _buildDailyExpenseCard(isDark, textColor, cardColor),
                 const SizedBox(height: 20),
-                _buildRecursiveCostsCard(isDark, textColor, cardColor),
-                const SizedBox(height: 20),
-                _buildSavingsProgressCard(isDark),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PersonalSavingsScreen()),
+                    );
+                  },
+                  child: _buildSavingsProgressCard(isDark),
+                ),
                 const SizedBox(height: 20),
                 _buildForecastCard(isDark),
                 const SizedBox(height: 120),
@@ -172,69 +179,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
     );
   }
 
-  Widget _buildRecursiveCostsCard(bool isDark, Color textColor, Color cardColor) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.auto_fix_high_rounded, color: Color(0xFF76C893), size: 28),
-              const SizedBox(width: 12),
-              Text('Biaya Tetap', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildRecursiveItem(Icons.business_center_rounded, 'Sewa/KPR', 'Rp 2,1jt', 0.8, const Color(0xFF002B1D), isDark),
-          const SizedBox(height: 15),
-          _buildRecursiveItem(Icons.directions_car_rounded, 'Biaya Komuter', 'Rp 340rb', 0.4, const Color(0xFF76C893), isDark),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildRecursiveItem(IconData icon, String title, String amount, double progress, Color color, bool isDark) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: isDark ? Colors.white10 : const Color(0xFFE8EEF9), borderRadius: BorderRadius.circular(12)),
-          child: Icon(icon, color: isDark ? Colors.white70 : const Color(0xFF002B1D), size: 22),
-        ),
-        const SizedBox(width: 15),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF002B1D))),
-                  Text(amount, style: GoogleFonts.outfit(color: Colors.grey[600])),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: LinearProgressIndicator(
-                  value: progress, 
-                  minHeight: 6, 
-                  backgroundColor: isDark ? Colors.white10 : const Color(0xFFF1F4F9), 
-                  valueColor: AlwaysStoppedAnimation<Color>(isDark ? Colors.green[400]! : color)
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildSavingsProgressCard(bool isDark) {
     return Container(
@@ -312,9 +257,9 @@ class _ChartsScreenState extends State<ChartsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Perkiraan', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text('Uang Saku', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 5),
-          Text('Prediksi modal akhir bulan berdasarkan pola saat ini.', style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.6))),
+          Text('Kelola alokasi dan pengeluaran uang saku bulanan Anda.', style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.6))),
           const SizedBox(height: 20),
           Text('Rp 12.450.000', style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 20),
@@ -329,7 +274,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
               minimumSize: const Size(double.infinity, 50),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
             ),
-            child: Text('Sesuaikan Parameter', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text('Atur Uang Saku', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

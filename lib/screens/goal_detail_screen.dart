@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/settings_provider.dart';
+import '../providers/goal_provider.dart';
+import '../models/goal.dart';
 import 'edit_goal_screen.dart';
 import 'settings_screen.dart';
 import 'automation_settings_screen.dart';

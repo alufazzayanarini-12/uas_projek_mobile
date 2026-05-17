@@ -9,6 +9,7 @@ class SettingsProvider with ChangeNotifier {
   bool _isDarkMode = false;
   String _userName = 'Arini'; 
   String? _profileImagePath;
+  double _dailyPocketMoney = 50000.0; // Uang saku harian default
 
   bool get isBalanceHidden => _isBalanceHidden;
   bool get isAppLockEnabled => _isAppLockEnabled;
@@ -16,6 +17,7 @@ class SettingsProvider with ChangeNotifier {
   bool get isDarkMode => _isDarkMode;
   String get userName => _userName;
   String? get profileImagePath => _profileImagePath;
+  double get dailyPocketMoney => _dailyPocketMoney;
   
   bool get isPinEnabled => _isAppLockEnabled;
 
@@ -31,6 +33,7 @@ class SettingsProvider with ChangeNotifier {
     _isDarkMode = prefs.getBool('dark_mode') ?? false;
     _userName = prefs.getString('user_name') ?? 'Arini';
     _profileImagePath = prefs.getString('profile_image_path');
+    _dailyPocketMoney = prefs.getDouble('daily_pocket_money') ?? 50000.0;
     notifyListeners();
   }
 
@@ -38,6 +41,13 @@ class SettingsProvider with ChangeNotifier {
     _userName = name;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', name);
+    notifyListeners();
+  }
+
+  Future<void> setDailyPocketMoney(double value) async {
+    _dailyPocketMoney = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('daily_pocket_money', value);
     notifyListeners();
   }
 

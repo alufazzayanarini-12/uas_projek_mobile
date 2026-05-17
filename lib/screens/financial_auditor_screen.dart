@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/settings_provider.dart';
 import 'settings_screen.dart';
 import 'fix_logic_screen.dart';
@@ -99,67 +100,159 @@ class FinancialAuditorScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCriticalWarningCard(bool isDark, Color textColor, Color cardColor) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.power_settings_new_rounded, color: Color(0xFFB91C1C), size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'PERINGATAN KRITIS',
-                          style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFFB91C1C), letterSpacing: 1),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Rp 1.240.50',
-                      style: GoogleFonts.outfit(fontSize: 36, fontWeight: FontWeight.bold, color: textColor),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(color: isDark ? Colors.white10 : const Color(0xFFF1F4F9), shape: BoxShape.circle),
-                child: const Icon(Icons.priority_high_rounded, color: Colors.white, size: 40), 
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF311010) : const Color(0xFFFFF1F2),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: const Color(0xFFFECDD3).withOpacity(0.3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildCriticalWarningCard(BuildContext context, SettingsProvider settings, bool isDark, Color textColor, Color cardColor) {
+    final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    return GestureDetector(
+      onTap: () => _showEditPocketMoneyBottomSheet(context, settings),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
+        ),
+        child: Column(
+          children: [
+            Row(
               children: [
-                Text('Kebocoran Tertinggi', style: GoogleFonts.outfit(fontSize: 12, color: isDark ? Colors.red[200] : const Color(0xFF991B1B))),
-                const SizedBox(height: 4),
-                Text('Makan & Sosial', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.red[200] : const Color(0xFF991B1B))),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.monetization_on_outlined, color: Color(0xFF0D9488), size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'UANG SAKU HARIAN',
+                            style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF0D9488), letterSpacing: 1),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(Icons.edit_rounded, size: 14, color: Colors.grey[600]),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        fmt.format(settings.dailyPocketMoney),
+                        style: GoogleFonts.outfit(fontSize: 36, fontWeight: FontWeight.bold, color: textColor),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(color: isDark ? Colors.white10 : const Color(0xFFE6F4EA), shape: BoxShape.circle),
+                  child: Icon(Icons.wallet_rounded, color: isDark ? Colors.white : const Color(0xFF137333), size: 30), 
+                ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1D352F) : const Color(0xFFE6F4EA),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: const Color(0xFF34A853).withOpacity(0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Pengeluaran Uang Saku', style: GoogleFonts.outfit(fontSize: 12, color: isDark ? Colors.green[200] : const Color(0xFF137333))),
+                  const SizedBox(height: 4),
+                  Text('Makanan & Transportasi (Rp 25.000)', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.green[200] : const Color(0xFF137333))),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditPocketMoneyBottomSheet(BuildContext context, SettingsProvider settings) {
+    final controller = TextEditingController(text: settings.dailyPocketMoney.toInt().toString());
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 30,
+          top: 25,
+          left: 25,
+          right: 25,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            const SizedBox(height: 25),
+            Text(
+              'Ubah Uang Saku Harian',
+              style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D)),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Masukkan nominal uang saku harian baru Anda.',
+              style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 25),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                prefixText: 'Rp ',
+                prefixStyle: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D)),
+                labelText: 'Nominal Baru',
+                labelStyle: GoogleFonts.outfit(color: const Color(0xFF0D9488)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: const BorderSide(color: Color(0xFF0D9488), width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+                ),
+              ),
+            ),
+            const SizedBox(height: 25),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: () {
+                  double? newAmount = double.tryParse(controller.text);
+                  if (newAmount != null) {
+                    settings.setDailyPocketMoney(newAmount);
+                  }
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF002B1D),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+                child: Text(
+                  'SIMPAN PERUBAHAN',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
