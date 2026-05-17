@@ -3,7 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import 'goal_detail_screen.dart';
+import 'add_goal_screen.dart';
 import 'settings_screen.dart';
+import 'emergency_fund_screen.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,8 +16,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _isAutoSaveEnabled = true;
-
   @override
   Widget build(BuildContext context) {
     return Consumer<SettingsProvider>(
@@ -65,11 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const SizedBox(height: 25),
                 _buildTotalBalanceCard(isDark),
-                const SizedBox(height: 25),
-                _buildAutoSaveProtocol(isDark),
                 const SizedBox(height: 30),
                 Text(
-                  'Target Aktif',
+                  'Target Anda',
                   style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor),
                 ),
                 const SizedBox(height: 15),
@@ -95,12 +93,30 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 25),
-                _buildEmergencyFundCard(45000000, 50000000, 0.92, fmt, isDark),
-                const SizedBox(height: 25),
-                _buildGrowthAnalysisCard(isDark),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const EmergencyFundScreen()),
+                    );
+                  },
+                  child: _buildEmergencyFundCard(45000000, 50000000, 0.92, fmt, isDark),
+                ),
                 const SizedBox(height: 120),
               ],
             ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: const Color(0xFF002B1D),
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AddGoalScreen()),
+              );
+            },
+            child: const Icon(Icons.add, color: Colors.white, size: 28),
           ),
         );
       },
@@ -149,25 +165,6 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(label, style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.5), fontSize: 13)),
           const SizedBox(height: 5),
           Text(amount, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAutoSaveProtocol(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
-      ),
-      child: Row(
-        children: [
-          Container(padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFE8F0FE), borderRadius: BorderRadius.circular(15)), child: Icon(Icons.code_rounded, color: isDark ? Colors.white : const Color(0xFF002B1D), size: 26)),
-          const SizedBox(width: 20),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Protokol Simpan-Otomatis', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? Colors.white : const Color(0xFF002B1D))), const SizedBox(height: 4), Text('Pembulatan & aturan berbasis logika', style: GoogleFonts.outfit(color: isDark ? Colors.white70 : Colors.grey[600], fontSize: 14))])),
-          Switch(value: _isAutoSaveEnabled, onChanged: (val) => setState(() => _isAutoSaveEnabled = val), activeColor: isDark ? Colors.green : const Color(0xFF002B1D)),
         ],
       ),
     );
@@ -223,28 +220,6 @@ class _HomeScreenState extends State<HomeScreen> {
           LinearProgressIndicator(value: progress, backgroundColor: isDark ? Colors.white10 : const Color(0xFFF1F4F9), valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF98D8B6)), minHeight: 10),
           const SizedBox(height: 15),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(fmt.format(current), style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)), Text('Target: ${fmt.format(target)}', style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12))]),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGrowthAnalysisCard(bool isDark) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: isDark ? [const Color(0xFF1E1E1E), const Color(0xFF2D2D2D)] : [const Color(0xFFF1F4F9), Colors.white], begin: Alignment.topLeft, end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7), decoration: BoxDecoration(color: Colors.black.withOpacity(0.08), borderRadius: BorderRadius.circular(20)), child: Text('Analisis Pertumbuhan', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black))),
-          const SizedBox(height: 20),
-          Text('Efisiensi Modal naik 12%', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF002B1D))),
-          const SizedBox(height: 20),
-          Row(children: [Text('Lihat Laporan Detail', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: isDark ? Colors.green[200] : const Color(0xFF002B1D))), const SizedBox(width: 12), Icon(Icons.arrow_forward, size: 20, color: isDark ? Colors.green[200] : const Color(0xFF002B1D))]),
         ],
       ),
     );
