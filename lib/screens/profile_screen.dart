@@ -44,7 +44,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Icon(Icons.analytics_outlined, color: isDark ? Colors.white : const Color(0xFF002B1D), size: 28),
                 const SizedBox(width: 12),
                 Text(
-                  'Daily Savings',
+                  'Tabunganku',
                   style: GoogleFonts.outfit(
                     color: isDark ? Colors.white : const Color(0xFF002B1D),
                     fontWeight: FontWeight.bold,
@@ -254,7 +254,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 10),
           _buildSupportCard(Icons.security_outlined, 'Kebijakan Privasi', isDark),
           const SizedBox(height: 10),
-          _buildSupportCard(Icons.info_outline, 'Tentang Daily Savings', isDark),
+          _buildSupportCard(Icons.info_outline, 'Tentang Tabunganku', isDark),
         ],
       ),
     );

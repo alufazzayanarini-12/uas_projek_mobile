@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
     return Consumer<SettingsProvider>(
       builder: (context, settings, _) {
         return MaterialApp(
-          title: 'Daily Savings',
+          title: 'Tabunganku',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,

@@ -11,7 +11,7 @@ class SettingsProvider with ChangeNotifier {
   String? _profileImagePath;
   double _dailyPocketMoney = 50000.0; // Uang saku harian default
   double _foodLimit = 500000.0; // Limit Makan dan Minum
-  double _transportLimit = 150000.0; // Limit Transportasi & Pengiriman
+  double _transportLimit = 150000.0; // Limit Transportasi dan Bensin
 
   bool get isBalanceHidden => _isBalanceHidden;
   bool get isAppLockEnabled => _isAppLockEnabled;

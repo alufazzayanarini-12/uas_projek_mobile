@@ -28,7 +28,7 @@ class FinancialAuditorScreen extends StatelessWidget {
             title: Row(
               children: [
                 Text(
-                  'Daily Savings',
+                  'Tabunganku',
                   style: GoogleFonts.outfit(
                     color: isDark ? Colors.white : const Color(0xFF002B1D),
                     fontWeight: FontWeight.bold,
@@ -83,8 +83,8 @@ class FinancialAuditorScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 _buildAuditItemCard(
                   context: context,
-                  icon: Icons.local_shipping_rounded,
-                  title: 'Transportasi & Pengiriman',
+                  icon: Icons.local_gas_station_rounded,
+                  title: 'Transportasi dan Bensin',
                   amount: 'Rp 270.000',
                   limit: NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(settings.transportLimit),
                   badge: 270000 > settings.transportLimit ? 'Waspada' : 'Aman',

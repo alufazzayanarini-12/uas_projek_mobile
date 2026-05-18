@@ -32,7 +32,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
             title: Row(
               children: [
                 Text(
-                  'Daily Savings',
+                  'Tabunganku',
                   style: GoogleFonts.outfit(
                     color: isDark ? Colors.white : const Color(0xFF002B1D),
                     fontWeight: FontWeight.bold,

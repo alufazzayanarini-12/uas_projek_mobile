@@ -222,7 +222,7 @@ class _FixLogicScreenState extends State<FixLogicScreen> {
         double finalLimit = double.tryParse(_limitController.text) ?? _newLimit;
         if (widget.category == 'Makan dan Minum') {
           settings.setFoodLimit(finalLimit);
-        } else if (widget.category == 'Transportasi & Pengiriman') {
+        } else if (widget.category == 'Transportasi dan Bensin') {
           settings.setTransportLimit(finalLimit);
         }
         _showSuccessDialog(context);
