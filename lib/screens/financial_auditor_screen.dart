@@ -514,7 +514,7 @@ class FinancialAuditorScreen extends StatelessWidget {
           _buildNavItem(Icons.home_outlined, 'Beranda', isDark),
           _buildNavItem(Icons.analytics_outlined, 'Wawasan', isDark, isActive: true),
           _buildNavItem(Icons.add_circle_outline_rounded, 'Tambah', isDark),
-          _buildNavItem(Icons.terminal_rounded, 'Aturan', isDark),
+          _buildNavItem(Icons.description_rounded, 'Laporan', isDark),
           _buildNavItem(Icons.person_outline_rounded, 'Profil', isDark),
         ],
       ),

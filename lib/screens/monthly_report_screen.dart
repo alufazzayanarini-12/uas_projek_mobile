@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/settings_provider.dart';
+import '../providers/category_provider.dart';
 import 'settings_screen.dart';
 
 class MonthlyReportScreen extends StatefulWidget {
@@ -17,8 +18,8 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SettingsProvider>(
-      builder: (context, settings, child) {
+    return Consumer2<SettingsProvider, CategoryProvider>(
+      builder: (context, settings, categoryProvider, child) {
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
         final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
@@ -26,6 +27,11 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
 
         // Format currency helper
         final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
+        // Calculate dynamic total sisa saldo from all savings/funding features
+        double totalSisaSaldo = categoryProvider.savingsCurrent + 
+                               categoryProvider.emergencyCurrent + 
+                               categoryProvider.educationCurrent;
 
         return Scaffold(
           backgroundColor: bgColor,
@@ -98,7 +104,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
 
                 // 2. Summary Overview Cards
                 Text(
-                  'Ikhtisar Keuangan',
+                  'Laporan Keuangan',
                   style: GoogleFonts.outfit(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -173,7 +179,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                 ),
                 const SizedBox(height: 15),
 
-                // Net Balance Card (Full Width)
+                // Net Balance Card (Full Width - Linked dynamically to all savings)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(22),
@@ -206,7 +212,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            fmt.format(2600000),
+                            fmt.format(totalSisaSaldo),
                             style: GoogleFonts.outfit(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -307,14 +313,13 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                             Text(
                               'Analisis Bulanan',
                               style: GoogleFonts.outfit(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? const Color(0xFFF59E0B) : const Color(0xFFB45309),
-                              ),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? const Color(0xFFF59E0B) : const Color(0xFFB45309)),
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Hebat! Pengeluaran Anda di bulan ini turun 15% lebih rendah dibandingkan rata-rata bulan lalu. Sisa saldo Rp 2.600.000 sangat ideal dialokasikan langsung ke Tabunganku.',
+                              'Hebat! Pengeluaran Anda di bulan ini turun 15% lebih rendah dibandingkan rata-rata bulan lalu. Sisa saldo ${fmt.format(totalSisaSaldo)} sangat ideal dialokasikan langsung ke Tabunganku.',
                               style: GoogleFonts.outfit(
                                 fontSize: 13,
                                 color: isDark ? Colors.white70 : Colors.grey[800],

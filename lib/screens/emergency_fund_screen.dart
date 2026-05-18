@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/category_provider.dart';
 import 'package:intl/intl.dart';
 
 class EmergencyFundScreen extends StatefulWidget {
@@ -13,8 +14,6 @@ class EmergencyFundScreen extends StatefulWidget {
 
 class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
   final TextEditingController _amountController = TextEditingController();
-  double currentAmount = 45000000;
-  double targetAmount = 50000000;
 
   @override
   void dispose() {
@@ -25,13 +24,17 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
+    final catProvider = Provider.of<CategoryProvider>(context);
     final isDark = settings.isDarkMode;
     final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
     final bgColor = isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE);
     final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
     final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-    double progress = currentAmount / targetAmount;
+    double currentAmount = catProvider.emergencyCurrent;
+    double targetAmount = catProvider.emergencyTarget;
+
+    double progress = targetAmount > 0 ? (currentAmount / targetAmount) : 0.0;
     if (progress > 1.0) progress = 1.0;
 
     return Scaffold(
@@ -120,16 +123,17 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (_amountController.text.isNotEmpty) {
-                          setState(() {
-                            currentAmount += double.parse(_amountController.text);
+                          double amount = double.tryParse(_amountController.text) ?? 0.0;
+                          if (amount > 0) {
+                            catProvider.topUpEmergency(amount);
                             _amountController.clear();
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Berhasil menambah dana darurat!', style: GoogleFonts.outfit()),
-                              backgroundColor: const Color(0xFF0D4D3B),
-                            )
-                          );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Berhasil menambah dana darurat!', style: GoogleFonts.outfit()),
+                                backgroundColor: const Color(0xFF0D4D3B),
+                              )
+                            );
+                          }
                         }
                       },
                       style: ElevatedButton.styleFrom(

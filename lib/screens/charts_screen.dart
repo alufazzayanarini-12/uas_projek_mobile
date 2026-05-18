@@ -35,6 +35,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
         final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
         final txs = txProvider.transactions;
+        final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE),
@@ -97,7 +98,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
                   child: _buildSavingsProgressCard(isDark),
                 ),
                 const SizedBox(height: 20),
-                _buildForecastCard(isDark),
+                _buildForecastCard(settings, fmt),
                 const SizedBox(height: 120),
               ],
             ),
@@ -288,8 +289,117 @@ class _ChartsScreenState extends State<ChartsScreen> {
     );
   }
 
-  Widget _buildForecastCard(bool isDark) {
+  void _showPocketMoneyDialog(BuildContext context, SettingsProvider settings, NumberFormat fmt) {
+    final controller = TextEditingController(text: settings.dailyPocketMoney.toInt().toString());
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 30,
+          top: 25,
+          left: 25,
+          right: 25,
+        ),
+        decoration: BoxDecoration(
+          color: settings.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            const SizedBox(height: 25),
+            Text(
+              'Atur Uang Saku Harian',
+              style: GoogleFonts.outfit(
+                fontSize: 22, 
+                fontWeight: FontWeight.bold, 
+                color: settings.isDarkMode ? Colors.white : const Color(0xFF002B1D)
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Konfigurasikan nominal uang saku harian baru Anda.',
+              style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 25),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              style: GoogleFonts.outfit(
+                fontSize: 18, 
+                fontWeight: FontWeight.bold,
+                color: settings.isDarkMode ? Colors.white : const Color(0xFF002B1D)
+              ),
+              decoration: InputDecoration(
+                prefixText: 'Rp ',
+                prefixStyle: GoogleFonts.outfit(
+                  fontSize: 18, 
+                  fontWeight: FontWeight.bold, 
+                  color: const Color(0xFF002B1D)
+                ),
+                labelText: 'Nominal Baru',
+                labelStyle: GoogleFonts.outfit(color: const Color(0xFF0D9488)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: const BorderSide(color: Color(0xFF0D9488), width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+                ),
+              ),
+            ),
+            const SizedBox(height: 25),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: () {
+                  double amount = double.tryParse(controller.text) ?? 0.0;
+                  if (amount > 0) {
+                    settings.setDailyPocketMoney(amount);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Uang saku harian diperbarui ke ${fmt.format(amount)}!', style: GoogleFonts.outfit(color: Colors.white)),
+                        backgroundColor: const Color(0xFF0D4D3B),
+                      ),
+                    );
+                    Navigator.pop(context);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF002B1D),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+                child: Text(
+                  'Simpan Uang Saku',
+                  style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForecastCard(SettingsProvider settings, NumberFormat fmt) {
+    double daily = settings.dailyPocketMoney;
+    double monthly = daily * 30; // Estimasi bulanan
+
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: const Color(0xFF002B1D),
@@ -300,14 +410,14 @@ class _ChartsScreenState extends State<ChartsScreen> {
         children: [
           Text('Uang Saku', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 5),
-          Text('Kelola alokasi dan pengeluaran uang saku bulanan Anda.', style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.6))),
+          Text('Estimasi alokasi bulanan berdasarkan uang saku harian Anda.', style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.6))),
           const SizedBox(height: 20),
-          Text('Rp 12.450.000', style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(fmt.format(monthly), style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+          const SizedBox(height: 4),
+          Text('Harian: ${fmt.format(daily)}', style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.7))),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const FinancialAuditorScreen()));
-            },
+            onPressed: () => _showPocketMoneyDialog(context, settings, fmt),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFB7E4C7),
               foregroundColor: const Color(0xFF002B1D),

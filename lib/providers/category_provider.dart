@@ -13,6 +13,9 @@ class CategoryProvider with ChangeNotifier {
   
   double educationCurrent = 45000000;
   double educationTarget = 150000000;
+
+  double emergencyCurrent = 45000000;
+  double emergencyTarget = 50000000;
   
   double monthlyBudget = 3000000;
   double monthlySpent = 1200000;
@@ -43,6 +46,8 @@ class CategoryProvider with ChangeNotifier {
         ];
       }
       savingsCurrent = prefs.getDouble('savings_current') ?? 1500000.0;
+      emergencyCurrent = prefs.getDouble('emergency_current') ?? 45000000.0;
+      educationCurrent = prefs.getDouble('education_current') ?? 45000000.0;
       notifyListeners();
     } catch (e) {
       print("Error loading savings history: $e");
@@ -54,6 +59,8 @@ class CategoryProvider with ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('savings_history', json.encode(_savingsHistory));
       await prefs.setDouble('savings_current', savingsCurrent);
+      await prefs.setDouble('emergency_current', emergencyCurrent);
+      await prefs.setDouble('education_current', educationCurrent);
     } catch (e) {
       print("Error saving savings history: $e");
     }
@@ -67,6 +74,18 @@ class CategoryProvider with ChangeNotifier {
       'date': DateTime.now().toIso8601String(),
       'status': 'Berhasil',
     });
+    _saveSavingsHistory();
+    notifyListeners();
+  }
+
+  void topUpEmergency(double amount) {
+    emergencyCurrent += amount;
+    _saveSavingsHistory();
+    notifyListeners();
+  }
+
+  void topUpEducation(double amount) {
+    educationCurrent += amount;
     _saveSavingsHistory();
     notifyListeners();
   }
@@ -96,11 +115,15 @@ class CategoryProvider with ChangeNotifier {
     } else if (name.contains('pendidikan')) {
       if (type == 'deposit') educationCurrent += amount;
       if (type == 'withdrawal') educationCurrent -= amount;
+    } else if (name.contains('darurat') || name.contains('emergency')) {
+      if (type == 'deposit') emergencyCurrent += amount;
+      if (type == 'withdrawal') emergencyCurrent -= amount;
     } else if (name.contains('bulanan')) {
       if (type == 'withdrawal') monthlySpent += amount;
       if (type == 'deposit') monthlySpent -= amount;
     }
     
+    _saveSavingsHistory();
     notifyListeners();
   }
 

@@ -49,7 +49,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             _buildNavItem(0, Icons.home_outlined, 'Beranda'),
             _buildNavItem(1, Icons.analytics_outlined, 'Statistik'),
             _buildNavItem(2, Icons.add_circle_outline_rounded, 'Tambah', isSpecial: true),
-            _buildNavItem(3, Icons.terminal_rounded, 'Aturan'),
+            _buildNavItem(3, Icons.description_rounded, 'Laporan'),
             _buildNavItem(4, Icons.person_outline_rounded, 'Profil'),
           ],
         ),
@@ -183,7 +183,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         ),
                         const SizedBox(height: 35),
                         
-                        // Three premium cards
+                        // Two premium cards
                         _buildListFeatureCard(
                           context,
                           'Audit Finansial',
@@ -197,24 +197,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         ),
                         _buildListFeatureCard(
                           context,
-                          'Mesin Aturan',
-                          'Kelola otomatisasi tabungan.',
-                          Icons.terminal_outlined,
+                          'Manajemen Utang',
+                          'Kelola catatan hutang & piutang Anda.',
+                          Icons.handshake_outlined,
                           isDark,
                           () {
                             Navigator.pop(context);
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const AutomationSettingsScreen()));
-                          },
-                        ),
-                        _buildListFeatureCard(
-                          context,
-                          'Riwayat Aktivitas',
-                          'Lihat log transaksi terakhir.',
-                          Icons.history,
-                          isDark,
-                          () {
-                            Navigator.pop(context);
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddTransactionScreen()));
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const DebtManagementScreen()));
                           },
                         ),
                         
