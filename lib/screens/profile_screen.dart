@@ -103,29 +103,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildListTile('Metode Pembayaran', textColor),
                   ],
                 ),
-                const SizedBox(height: 20),
-                _buildSection(
-                  title: 'Preferensi',
-                  icon: Icons.settings_outlined,
-                  isDark: isDark,
-                  textColor: textColor,
-                  cardColor: cardColor,
-                  items: [
-                    _buildSwitchTile('Notifikasi', _isNotificationEnabled, (v) => setState(() => _isNotificationEnabled = v), textColor, isDark),
-                    _buildListTile(
-                      'Bahasa', 
-                      textColor, 
-                      subtitle: 'Indonesia',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()),
-                        );
-                      },
-                    ),
-                    _buildSwitchTile('Mode Gelap', settings.isDarkMode, (v) => settings.toggleDarkMode(v), textColor, isDark),
-                  ],
-                ),
+
                 const SizedBox(height: 20),
                 _buildSection(
                   title: 'Finansial',

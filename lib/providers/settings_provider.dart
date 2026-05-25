@@ -12,6 +12,7 @@ class SettingsProvider with ChangeNotifier {
   double _dailyPocketMoney = 50000.0; // Uang saku harian default
   double _foodLimit = 500000.0; // Limit Makan dan Minum
   double _transportLimit = 150000.0; // Limit Transportasi dan Bensin
+  double _monthlyTransactionLimit = 50000000.0; // Limit Transaksi Bulanan
 
   bool get isBalanceHidden => _isBalanceHidden;
   bool get isAppLockEnabled => _isAppLockEnabled;
@@ -22,6 +23,7 @@ class SettingsProvider with ChangeNotifier {
   double get dailyPocketMoney => _dailyPocketMoney;
   double get foodLimit => _foodLimit;
   double get transportLimit => _transportLimit;
+  double get monthlyTransactionLimit => _monthlyTransactionLimit;
   
   bool get isPinEnabled => _isAppLockEnabled;
 
@@ -40,6 +42,7 @@ class SettingsProvider with ChangeNotifier {
     _dailyPocketMoney = prefs.getDouble('daily_pocket_money') ?? 50000.0;
     _foodLimit = prefs.getDouble('food_limit') ?? 500000.0;
     _transportLimit = prefs.getDouble('transport_limit') ?? 150000.0;
+    _monthlyTransactionLimit = prefs.getDouble('monthly_transaction_limit') ?? 50000000.0;
     notifyListeners();
   }
 
@@ -103,6 +106,13 @@ class SettingsProvider with ChangeNotifier {
     _isDarkMode = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('dark_mode', _isDarkMode);
+    notifyListeners();
+  }
+
+  Future<void> setMonthlyTransactionLimit(double value) async {
+    _monthlyTransactionLimit = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('monthly_transaction_limit', value);
     notifyListeners();
   }
 
