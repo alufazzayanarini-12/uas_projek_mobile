@@ -4,6 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import 'dart:io';
+import 'account_settings_screen.dart';
+import 'security_settings_screen.dart';
+import 'language_settings_screen.dart';
+import 'about_app_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -75,8 +79,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   textColor: textColor,
                   cardColor: cardColor,
                   items: [
-                    _buildListTile('Pengaturan Akun', textColor),
-                    _buildListTile('Keamanan', textColor, subtitle: 'Autentikasi Dua Faktor Aktif'),
+                    _buildListTile(
+                      'Pengaturan Akun', 
+                      textColor,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
+                        );
+                      },
+                    ),
+                    _buildListTile(
+                      'Keamanan', 
+                      textColor, 
+                      subtitle: 'Autentikasi Dua Faktor Aktif',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()),
+                        );
+                      },
+                    ),
                     _buildListTile('Metode Pembayaran', textColor),
                   ],
                 ),
@@ -89,7 +112,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   cardColor: cardColor,
                   items: [
                     _buildSwitchTile('Notifikasi', _isNotificationEnabled, (v) => setState(() => _isNotificationEnabled = v), textColor, isDark),
-                    _buildListTile('Bahasa', textColor, subtitle: 'Indonesia'),
+                    _buildListTile(
+                      'Bahasa', 
+                      textColor, 
+                      subtitle: 'Indonesia',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()),
+                        );
+                      },
+                    ),
                     _buildSwitchTile('Mode Gelap', settings.isDarkMode, (v) => settings.toggleDarkMode(v), textColor, isDark),
                   ],
                 ),
@@ -108,8 +141,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 20),
                 _buildSupportSection(isDark, textColor, cardColor),
-                const SizedBox(height: 20),
-                _buildLogoutCard(isDark),
                 const SizedBox(height: 120),
               ],
             ),
@@ -210,13 +241,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildListTile(String title, Color textColor, {String? subtitle, Widget? trailing}) {
+  Widget _buildListTile(String title, Color textColor, {String? subtitle, Widget? trailing, VoidCallback? onTap}) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(title, style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w500, color: textColor)),
       subtitle: subtitle != null ? Text(subtitle, style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)) : null,
       trailing: trailing ?? const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
-      onTap: () {},
+      onTap: onTap,
     );
   }
 
@@ -250,65 +281,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildSupportCard(Icons.headset_mic_outlined, 'Pusat Bantuan', isDark),
-          const SizedBox(height: 10),
           _buildSupportCard(Icons.security_outlined, 'Kebijakan Privasi', isDark),
           const SizedBox(height: 10),
-          _buildSupportCard(Icons.info_outline, 'Tentang Tabunganku', isDark),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSupportCard(IconData icon, String label, bool isDark) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 15),
-      decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F4F9), borderRadius: BorderRadius.circular(15)),
-      child: Column(
-        children: [
-          Icon(icon, color: isDark ? Colors.white : const Color(0xFF002B1D), size: 24),
-          const SizedBox(height: 8),
-          Text(label, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w500, color: isDark ? Colors.white : const Color(0xFF002B1D))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLogoutCard(bool isDark) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF311010) : const Color(0xFFFFF8F8),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFFEE2E2).withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(color: Color(0xFFFEE2E2), shape: BoxShape.circle),
-            child: const Icon(Icons.logout, color: Color(0xFFB91C1C), size: 24),
-          ),
-          const SizedBox(height: 15),
-          Text('Keluar Sesi', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.red[300] : const Color(0xFFB91C1C))),
-          const SizedBox(height: 4),
-          Text('Selesaikan aktivitas finansial Anda', style: GoogleFonts.outfit(fontSize: 12, color: isDark ? Colors.white70 : Colors.grey[600])),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFB91C1C),
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              elevation: 0,
-            ),
-            child: Text('Keluar', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          _buildSupportCard(
+            Icons.info_outline, 
+            'Tentang Tabunganku', 
+            isDark,
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutAppScreen()));
+            },
           ),
         ],
       ),
     );
   }
+
+  Widget _buildSupportCard(IconData icon, String label, bool isDark, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F4F9), borderRadius: BorderRadius.circular(15)),
+        child: Column(
+          children: [
+            Icon(icon, color: isDark ? Colors.white : const Color(0xFF002B1D), size: 24),
+            const SizedBox(height: 8),
+            Text(label, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w500, color: isDark ? Colors.white : const Color(0xFF002B1D))),
+          ],
+        ),
+      ),
+    );
+  }
+
+
 }

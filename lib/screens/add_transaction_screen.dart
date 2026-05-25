@@ -337,7 +337,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           elevation: 0,
         ),
-      ),
+       ),
     );
   }
 }

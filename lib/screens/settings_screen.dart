@@ -8,6 +8,7 @@ import 'notification_settings_screen.dart';
 import 'bank_management_screen.dart';
 import 'language_settings_screen.dart';
 import 'currency_settings_screen.dart';
+import 'about_app_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -39,20 +40,6 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader('AKUN & KEAMANAN', isDark),
-                const SizedBox(height: 15),
-                _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(context, Icons.person_outline, 'Informasi Pribadi', 'Nama, Email, Telepon', isDark, onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountSettingsScreen()));
-                  }),
-                  _buildSettingsItem(context, Icons.lock_outline, 'Kata Sandi & Keamanan', 'PIN, Sidik Jari', isDark, onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()));
-                  }),
-                  _buildSettingsItem(context, Icons.account_balance_outlined, 'Manajemen Rekening', '2 Rekening Terhubung', isDark, onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const BankManagementScreen()));
-                  }),
-                ], isDark),
-                const SizedBox(height: 30),
                 _buildSectionHeader('PREFERENSI APLIKASI', isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
@@ -71,11 +58,17 @@ class SettingsScreen extends StatelessWidget {
                 _buildSectionHeader('LAINNYA', isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(context, Icons.help_outline, 'Pusat Bantuan', 'FAQ & Kontak Dukungan', isDark),
-                  _buildSettingsItem(context, Icons.info_outline, 'Tentang Aplikasi', 'Versi 2.1.0', isDark),
+                  _buildSettingsItem(
+                    context, 
+                    Icons.info_outline, 
+                    'Tentang Aplikasi', 
+                    'Versi 2.1.0', 
+                    isDark,
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutAppScreen()));
+                    },
+                  ),
                 ], isDark),
-                const SizedBox(height: 40),
-                _buildLogoutButton(),
                 const SizedBox(height: 50),
               ],
             ),
@@ -140,15 +133,5 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton() {
-    return Center(
-      child: TextButton(
-        onPressed: () {},
-        child: Text(
-          'Keluar dari Akun',
-          style: GoogleFonts.outfit(color: Colors.red[700], fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-      ),
-    );
-  }
+
 }
