@@ -409,7 +409,7 @@ class FinancialAuditorScreen extends StatelessWidget {
               ],
             ),
           ),
-          bottomNavigationBar: _buildSimpleBottomNav(isDark),
+          bottomNavigationBar: _buildSimpleBottomNav(context, isDark),
         );
       },
     );
@@ -501,7 +501,8 @@ class FinancialAuditorScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSimpleBottomNav(bool isDark) {
+  Widget _buildSimpleBottomNav(BuildContext context, bool isDark) {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
     return Container(
       height: 85,
       decoration: BoxDecoration(
@@ -511,11 +512,11 @@ class FinancialAuditorScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildNavItem(Icons.home_outlined, 'Beranda', isDark),
-          _buildNavItem(Icons.analytics_outlined, 'Wawasan', isDark, isActive: true),
-          _buildNavItem(Icons.add_circle_outline_rounded, 'Tambah', isDark),
-          _buildNavItem(Icons.description_rounded, 'Laporan', isDark),
-          _buildNavItem(Icons.person_outline_rounded, 'Profil', isDark),
+          _buildNavItem(Icons.home_outlined, settings.translate('beranda'), isDark),
+          _buildNavItem(Icons.analytics_outlined, settings.translate('statistik'), isDark, isActive: true),
+          _buildNavItem(Icons.add_circle_outline_rounded, settings.translate('tambah'), isDark),
+          _buildNavItem(Icons.description_rounded, settings.translate('laporan'), isDark),
+          _buildNavItem(Icons.person_outline_rounded, settings.translate('profil'), isDark),
         ],
       ),
     );

@@ -34,6 +34,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
       body: _screens[_currentIndex],
@@ -46,11 +47,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildNavItem(0, Icons.home_outlined, 'Beranda'),
-            _buildNavItem(1, Icons.analytics_outlined, 'Statistik'),
-            _buildNavItem(2, Icons.add_circle_outline_rounded, 'Tambah', isSpecial: true),
-            _buildNavItem(3, Icons.description_rounded, 'Laporan'),
-            _buildNavItem(4, Icons.person_outline_rounded, 'Profil'),
+            _buildNavItem(0, Icons.home_outlined, settings.translate('beranda')),
+            _buildNavItem(1, Icons.analytics_outlined, settings.translate('statistik')),
+            _buildNavItem(2, Icons.add_circle_outline_rounded, settings.translate('tambah'), isSpecial: true),
+            _buildNavItem(3, Icons.description_rounded, settings.translate('laporan')),
+            _buildNavItem(4, Icons.person_outline_rounded, settings.translate('profil')),
           ],
         ),
       ),
@@ -133,8 +134,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   ),
                   child: Row(
                     children: [
-                      Text(
-                        'Tabunganku',
+                        Text(
+                          settings.translate('tabunganku'),
                         style: GoogleFonts.outfit(
                           color: textColor,
                           fontWeight: FontWeight.bold,
@@ -166,7 +167,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Pilih Aksi',
+                          settings.translate('pilih_aksi'),
                           style: GoogleFonts.outfit(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -175,7 +176,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Kelola keuangan Anda dengan kontrol penuh.',
+                          settings.translate('pilih_aksi_subtitle'),
                           style: GoogleFonts.outfit(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -186,8 +187,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         // Two premium cards
                         _buildListFeatureCard(
                           context,
-                          'Audit Finansial',
-                          'Cek kesehatan keuangan Anda.',
+                          settings.translate('audit_financial'),
+                          settings.translate('audit_financial_subtitle'),
                           Icons.search,
                           isDark,
                           () {
@@ -197,8 +198,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         ),
                         _buildListFeatureCard(
                           context,
-                          'Manajemen Utang',
-                          'Kelola catatan hutang & piutang Anda.',
+                          settings.translate('debt_management'),
+                          settings.translate('debt_management_subtitle'),
                           Icons.handshake_outlined,
                           isDark,
                           () {
@@ -248,7 +249,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   ) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+        child: Container(
         margin: const EdgeInsets.only(bottom: 20),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         decoration: BoxDecoration(

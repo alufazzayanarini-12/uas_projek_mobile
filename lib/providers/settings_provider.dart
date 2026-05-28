@@ -16,6 +16,7 @@ class SettingsProvider with ChangeNotifier {
   double _monthlyTransactionLimit = 50000000.0; // Limit Transaksi Bulanan
   String _selectedLanguage = 'Bahasa Indonesia';
   String _selectedCurrency = 'Rupiah Indonesia';
+  Locale _locale = const Locale('id');
 
   bool get isBalanceHidden => _isBalanceHidden;
   bool get isAppLockEnabled => _isAppLockEnabled;
@@ -29,6 +30,7 @@ class SettingsProvider with ChangeNotifier {
   double get monthlyTransactionLimit => _monthlyTransactionLimit;
   String get selectedLanguage => _selectedLanguage;
   String get selectedCurrency => _selectedCurrency;
+  Locale get locale => _locale;
   
   bool get isPinEnabled => _isAppLockEnabled;
 
@@ -49,6 +51,13 @@ class SettingsProvider with ChangeNotifier {
     _transportLimit = prefs.getDouble('transport_limit') ?? 150000.0;
     _monthlyTransactionLimit = prefs.getDouble('monthly_transaction_limit') ?? 50000000.0;
     _selectedLanguage = prefs.getString('selected_language') ?? 'Bahasa Indonesia';
+    final localeCode = prefs.getString('locale_code');
+    if (localeCode != null && localeCode.isNotEmpty) {
+      _locale = Locale(localeCode);
+    } else {
+      // set locale based on selected language if no saved locale
+      _locale = _languageToLocale(_selectedLanguage);
+    }
     _selectedCurrency = prefs.getString('selected_currency') ?? 'Rupiah Indonesia';
     notifyListeners();
   }
@@ -125,9 +134,47 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> setSelectedLanguage(String val) async {
     _selectedLanguage = val;
+    _locale = _languageToLocale(val);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selected_language', val);
+    await prefs.setString('locale_code', _locale.languageCode);
     notifyListeners();
+  }
+
+  Future<void> setLocale(Locale locale) async {
+    _locale = locale;
+    // also update selectedLanguage to keep UI in sync
+    switch (locale.languageCode) {
+      case 'en':
+        _selectedLanguage = 'English';
+        break;
+      case 'ja':
+        _selectedLanguage = '日本語';
+        break;
+      case 'ar':
+        _selectedLanguage = 'العربية';
+        break;
+      default:
+        _selectedLanguage = 'Bahasa Indonesia';
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_language', _selectedLanguage);
+    await prefs.setString('locale_code', _locale.languageCode);
+    notifyListeners();
+  }
+
+  Locale _languageToLocale(String language) {
+    switch (language) {
+      case 'English':
+        return const Locale('en');
+      case '日本語':
+        return const Locale('ja');
+      case 'العربية':
+        return const Locale('ar');
+      case 'Bahasa Indonesia':
+      default:
+        return const Locale('id');
+    }
   }
 
   Future<void> setSelectedCurrency(String val) async {
@@ -185,6 +232,25 @@ class SettingsProvider with ChangeNotifier {
       'edit': 'Edit',
       'hapus': 'Hapus',
       'target_label': 'Target',
+      'beranda': 'Beranda',
+      'statistik': 'Statistik',
+      'tambah': 'Tambah',
+      'laporan': 'Laporan',
+      'tabunganku': 'Tabunganku',
+      'pilih_aksi': 'Pilih Aksi',
+      'pilih_aksi_subtitle': 'Kelola keuangan Anda dengan kontrol penuh.',
+      'audit_financial': 'Audit Finansial',
+      'audit_financial_subtitle': 'Cek kesehatan keuangan Anda.',
+      'debt_management': 'Manajemen Utang',
+      'debt_management_subtitle': 'Kelola catatan hutang & piutang Anda.',
+      'tips_text': 'Tips: Mengatur otomatisasi membantu Anda berhemat 15% lebih banyak setiap bulan.',
+      'akun': 'Akun',
+      'pengaturan_akun': 'Pengaturan Akun',
+      'keamanan': 'Keamanan',
+      'metode_pembayaran': 'Metode Pembayaran',
+      'dikembangkan_oleh': 'Dikembangkan oleh:',
+      'versi_aplikasi': 'Versi Aplikasi 2.1.0',
+      'hak_cipta': 'Hak Cipta © 2026 Tabunganku.\nSemua Hak Dilindungi.',
     },
     'English': {
       'sisa_saldo': 'Remaining Balance',
@@ -225,6 +291,25 @@ class SettingsProvider with ChangeNotifier {
       'edit': 'Edit',
       'hapus': 'Delete',
       'target_label': 'Target',
+      'beranda': 'Home',
+      'statistik': 'Statistics',
+      'tambah': 'Add',
+      'laporan': 'Reports',
+      'tabunganku': 'My Savings',
+      'pilih_aksi': 'Choose Action',
+      'pilih_aksi_subtitle': 'Manage your finances with full control.',
+      'audit_financial': 'Financial Audit',
+      'audit_financial_subtitle': 'Check your financial health.',
+      'debt_management': 'Debt Management',
+      'debt_management_subtitle': 'Manage your debt & receivables records.',
+      'tips_text': 'Tip: Automating savings can help you save 15% more monthly.',
+      'akun': 'Account',
+      'pengaturan_akun': 'Account Settings',
+      'keamanan': 'Security',
+      'metode_pembayaran': 'Payment Methods',
+      'dikembangkan_oleh': 'Developed by:',
+      'versi_aplikasi': 'App Version 2.1.0',
+      'hak_cipta': 'Copyright © 2026 Tabunganku.\nAll Rights Reserved.',
     },
     '日本語': {
       'sisa_saldo': '残高',
@@ -265,6 +350,25 @@ class SettingsProvider with ChangeNotifier {
       'edit': '編集',
       'hapus': '削除',
       'target_label': '目標',
+      'beranda': 'ホーム',
+      'statistik': '統計',
+      'tambah': '追加',
+      'laporan': 'レポート',
+      'tabunganku': '私の貯金',
+      'pilih_aksi': 'アクションを選択',
+      'pilih_aksi_subtitle': '完全なコントロールで財務を管理します。',
+      'audit_financial': '財務監査',
+      'audit_financial_subtitle': 'あなたの財務状況をチェックします。',
+      'debt_management': '債務管理',
+      'debt_management_subtitle': '債務と債権の管理。',
+      'tips_text': 'ヒント: 自動化により毎月15%多く節約できます。',
+      'akun': 'アカウント',
+      'pengaturan_akun': 'アカウント設定',
+      'keamanan': 'セキュリティ',
+      'metode_pembayaran': '支払い方法',
+      'dikembangkan_oleh': '開発者:',
+      'versi_aplikasi': 'アプリバージョン 2.1.0',
+      'hak_cipta': '著作権 © 2026 Tabunganku。\n全著作権所有。',
     },
     'العربية': {
       'sisa_saldo': 'الرصيد المتبقي',
@@ -306,6 +410,25 @@ class SettingsProvider with ChangeNotifier {
       'edit': 'تعديل',
       'hapus': 'حذف',
       'target_label': 'الهدف',
+      'beranda': 'الصفحة الرئيسية',
+      'statistik': 'الإحصائيات',
+      'tambah': 'إضافة',
+      'laporan': 'التقارير',
+      'tabunganku': 'مدخراتي',
+      'pilih_aksi': 'اختر إجراء',
+      'pilih_aksi_subtitle': 'قم بإدارة مواردك المالية بتحكم كامل.',
+      'audit_financial': 'تدقيق مالي',
+      'audit_financial_subtitle': 'تحقق من صحة وضعك المالي.',
+      'debt_management': 'إدارة الديون',
+      'debt_management_subtitle': 'إدارة سجلات الديون والمستحقات.',
+      'tips_text': 'نصيحة: التلقائية تساعدك على الادخار بنسبة 15% أكثر شهريًا.',
+      'akun': 'الحساب',
+      'pengaturan_akun': 'إعدادات الحساب',
+      'keamanan': 'الأمان',
+      'metode_pembayaran': 'طرق الدفع',
+      'dikembangkan_oleh': 'تم التطوير بواسطة:',
+      'versi_aplikasi': 'إصدار التطبيق 2.1.0',
+      'hak_cipta': 'حقوق النشر © 2026 Tabunganku.\nجميع الحقوق محفوظة.',
     }
   };
 

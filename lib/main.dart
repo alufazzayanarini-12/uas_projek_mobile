@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+// Import the generated localizations from the package's l10n folder
+import 'package:uasnw_projek/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'providers/account_provider.dart';
 import 'providers/goal_provider.dart';
@@ -39,10 +42,18 @@ class MyApp extends StatelessWidget {
     return Consumer<SettingsProvider>(
       builder: (context, settings, _) {
         return MaterialApp(
-          title: 'Tabunganku',
+          title: settings.translate('tabunganku'),
           theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
+          darkTheme: AppTheme.darkTheme, 
           themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          locale: settings.locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
           home: settings.isAppLockEnabled ? const PinScreen() : const MainNavigationScreen(),
           debugShowCheckedModeBanner: false,
         );

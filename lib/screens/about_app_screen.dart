@@ -25,7 +25,7 @@ class AboutAppScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'Tentang Aplikasi',
+              settings.translate('tentang_aplikasi'),
               style: GoogleFonts.outfit(color: textColor, fontWeight: FontWeight.bold, fontSize: 22),
             ),
             centerTitle: true,
@@ -64,7 +64,7 @@ class AboutAppScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 25),
                 Text(
-                  'Tabunganku',
+                  settings.translate('tabunganku'),
                   style: GoogleFonts.outfit(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -95,7 +95,7 @@ class AboutAppScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Apa itu Tabunganku?',
+                        '${settings.translate('tentang_aplikasi')} ${settings.translate('tabunganku')}',
                         style: GoogleFonts.outfit(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

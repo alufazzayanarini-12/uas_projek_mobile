@@ -20,7 +20,7 @@ class CoffeeSnackDetailScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Tabunganku',
+          settings.translate('tabunganku'),
           style: GoogleFonts.outfit(color: const Color(0xFF002B1D), fontWeight: FontWeight.bold),
         ),
         actions: [

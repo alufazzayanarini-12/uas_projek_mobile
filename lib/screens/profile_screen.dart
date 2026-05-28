@@ -50,7 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Icon(Icons.analytics_outlined, color: isDark ? Colors.white : const Color(0xFF002B1D), size: 28),
                 const SizedBox(width: 12),
                 Text(
-                  'Tabunganku',
+                  settings.translate('tabunganku'),
                   style: GoogleFonts.outfit(
                     color: isDark ? Colors.white : const Color(0xFF002B1D),
                     fontWeight: FontWeight.bold,
@@ -75,14 +75,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildProfileHeader(settings, isDark, textColor, cardColor),
                 const SizedBox(height: 25),
                 _buildSection(
-                  title: 'Akun',
+                  title: settings.translate('akun'),
                   icon: Icons.account_circle_outlined,
                   isDark: isDark,
                   textColor: textColor,
                   cardColor: cardColor,
                   items: [
                     _buildListTile(
-                      'Pengaturan Akun', 
+                      settings.translate('pengaturan_akun'), 
                       textColor,
                       onTap: () {
                         Navigator.push(
@@ -92,9 +92,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       },
                     ),
                     _buildListTile(
-                      'Keamanan', 
+                      settings.translate('keamanan'), 
                       textColor, 
-                      subtitle: 'Autentikasi Dua Faktor Aktif',
+                      subtitle: settings.translate('keamanan'),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -102,13 +102,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                     ),
-                    _buildListTile('Metode Pembayaran', textColor),
+                    _buildListTile(settings.translate('metode_pembayaran'), textColor),
                   ],
                 ),
 
 
                 const SizedBox(height: 20),
-                _buildSupportSection(isDark, textColor, cardColor),
+                _buildSupportSection(settings, isDark, textColor, cardColor),
                 const SizedBox(height: 120),
               ],
             ),
@@ -228,7 +228,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSupportSection(bool isDark, Color textColor, Color cardColor) {
+  Widget _buildSupportSection(SettingsProvider settings, bool isDark, Color textColor, Color cardColor) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -248,17 +248,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 20),
           _buildSupportCard(
-            Icons.security_outlined, 
-            'Kebijakan Privasi', 
+            Icons.security_outlined,
+            settings.translate('kebijakan_privasi'),
             isDark,
-            onTap: () {
-              _showPrivacyPolicyBottomSheet(context, isDark, textColor);
-            },
+            onTap: () => _showPrivacyPolicyBottomSheet(context, isDark, textColor),
           ),
           const SizedBox(height: 10),
           _buildSupportCard(
-            Icons.info_outline, 
-            'Tentang Tabunganku', 
+            Icons.info_outline,
+            settings.translate('tentang_aplikasi'),
             isDark,
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutAppScreen()));
@@ -275,7 +273,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F4F9), borderRadius: BorderRadius.circular(15)),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F4F9),
+          borderRadius: BorderRadius.circular(15),
+        ),
         child: Column(
           children: [
             Icon(icon, color: isDark ? Colors.white : const Color(0xFF002B1D), size: 24),
