@@ -166,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildBadge('Anggota Premium', const Color(0xFFBDCECA), const Color(0xFF002B1D)),
+              _buildBadge(settings.translate('anggota_premium'), const Color(0xFFBDCECA), const Color(0xFF002B1D)),
             ],
           ),
         ],

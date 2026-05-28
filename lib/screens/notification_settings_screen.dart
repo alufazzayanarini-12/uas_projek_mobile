@@ -68,7 +68,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'Pengaturan Notifikasi',
+              settings.translate('pengaturan_notifikasi'),
               style: GoogleFonts.outfit(color: textColor, fontWeight: FontWeight.bold, fontSize: 22),
             ),
           ),
@@ -77,13 +77,13 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildNotificationToggle('Notifikasi Push', 'Terima pembaruan transaksi secara instan', _pushNotifications, (v) => setState(() => _pushNotifications = v), isDark, cardColor),
+                _buildNotificationToggle(settings.translate('notifikasi_push'), 'Terima pembaruan transaksi secara instan', _pushNotifications, (v) => setState(() => _pushNotifications = v), isDark, cardColor),
                 const SizedBox(height: 20),
-                _buildNotificationToggle('Pengingat Harian', 'Simpan uang setiap hari secara otomatis', _dailyReminder, (v) => setState(() => _dailyReminder = v), isDark, cardColor),
+                _buildNotificationToggle(settings.translate('pengingat_harian'), 'Simpan uang setiap hari secara otomatis', _dailyReminder, (v) => setState(() => _dailyReminder = v), isDark, cardColor),
                 const SizedBox(height: 20),
-                _buildNotificationToggle('Laporan Bulanan', 'Ringkasan kesehatan finansial Anda', _monthlyReport, (v) => setState(() => _monthlyReport = v), isDark, cardColor),
+                _buildNotificationToggle(settings.translate('laporan_bulanan'), 'Ringkasan kesehatan finansial Anda', _monthlyReport, (v) => setState(() => _monthlyReport = v), isDark, cardColor),
                 const SizedBox(height: 20),
-                _buildNotificationToggle('Peringatan Anggaran', 'Beri tahu jika pengeluaran melebihi limit', _budgetWarning, (v) => setState(() => _budgetWarning = v), isDark, cardColor),
+                _buildNotificationToggle(settings.translate('peringatan_anggaran'), 'Beri tahu jika pengeluaran melebihi limit', _budgetWarning, (v) => setState(() => _budgetWarning = v), isDark, cardColor),
                 const SizedBox(height: 40),
                 _buildQuietModeCard(isDark, cardColor),
               ],

@@ -76,7 +76,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
               children: [
                 const SizedBox(height: 20),
                 Text(
-                  'Pola Pengeluaran',
+                  settings.translate('pola_pengeluaran'),
                   style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -86,7 +86,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
                 const SizedBox(height: 20),
                 _buildPeriodToggle(isDark),
                 const SizedBox(height: 25),
-                _buildDailyExpenseCard(isDark, textColor, cardColor, txs),
+                _buildDailyExpenseCard(settings, isDark, textColor, cardColor, txs),
                 const SizedBox(height: 20),
                 GestureDetector(
                   onTap: () {
@@ -152,7 +152,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
     );
   }
 
-  Widget _buildDailyExpenseCard(bool isDark, Color textColor, Color cardColor, List<TransactionModel> txs) {
+  Widget _buildDailyExpenseCard(SettingsProvider settings, bool isDark, Color textColor, Color cardColor, List<TransactionModel> txs) {
     final double totalExpenses = txs
         .where((t) => t.type == 'withdrawal')
         .fold(0.0, (sum, t) => sum + t.amount);
@@ -190,12 +190,12 @@ class _ChartsScreenState extends State<ChartsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Pengeluaran harian', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+              Text(settings.translate('pengeluaran_harian'), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(fmt.format(totalExpenses), style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor)),
-                  Text('Total aliran-logika', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey[600])),
+                  Text(settings.translate('total_aliran_logika'), style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey[600])),
                 ],
               ),
             ],
@@ -320,7 +320,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
             ),
             const SizedBox(height: 25),
             Text(
-              'Atur Uang Saku Harian',
+              settings.translate('atur_uang_saku_harian'),
               style: GoogleFonts.outfit(
                 fontSize: 22, 
                 fontWeight: FontWeight.bold, 
@@ -329,7 +329,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Konfigurasikan nominal uang saku harian baru Anda.',
+              settings.translate('konfig_uang_saku_deskripsi'),
               style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 25),
@@ -348,7 +348,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
                   fontWeight: FontWeight.bold, 
                   color: const Color(0xFF002B1D)
                 ),
-                labelText: 'Nominal Baru',
+                labelText: settings.translate('nominal_baru'),
                 labelStyle: GoogleFonts.outfit(color: const Color(0xFF0D9488)),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -371,7 +371,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
                     settings.setDailyPocketMoney(amount);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Uang saku harian diperbarui ke ${fmt.format(amount)}!', style: GoogleFonts.outfit(color: Colors.white)),
+                        content: Text(settings.translate('uang_saku_diperbarui').replaceAll('{amount}', fmt.format(amount)), style: GoogleFonts.outfit(color: Colors.white)),
                         backgroundColor: const Color(0xFF0D4D3B),
                       ),
                     );
@@ -383,7 +383,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
                 child: Text(
-                  'Simpan Uang Saku',
+                  settings.translate('simpan_uang_saku'),
                   style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
@@ -408,9 +408,9 @@ class _ChartsScreenState extends State<ChartsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Uang Saku', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(settings.translate('uang_saku'), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 5),
-          Text('Estimasi alokasi bulanan berdasarkan uang saku harian Anda.', style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.6))),
+          Text(settings.translate('estimasi_alokasi_bulanan'), style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.6))),
           const SizedBox(height: 20),
           Text(fmt.format(monthly), style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 4),
@@ -425,7 +425,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
               minimumSize: const Size(double.infinity, 50),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
             ),
-            child: Text('Atur Uang Saku', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text(settings.translate('atur_uang_saku_harian'), style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

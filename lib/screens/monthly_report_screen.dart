@@ -14,7 +14,13 @@ class MonthlyReportScreen extends StatefulWidget {
 }
 
 class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
-  String selectedMonth = "Mei 2026";
+  DateTime selectedMonth = DateTime.now();
+
+  void _changeMonth(int delta) {
+    setState(() {
+      selectedMonth = DateTime(selectedMonth.year, selectedMonth.month + delta, 1);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +32,8 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
         final bgColor = isDark ? const Color(0xFF121212) : const Color(0xFFF8FAFC);
 
         // Format currency helper
-        final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+        final fmt = NumberFormat.currency(locale: settings.locale.toString(), symbol: 'Rp ', decimalDigits: 0);
+        final currentMonthLabel = DateFormat('MMMM yyyy', settings.locale.toString()).format(selectedMonth);
 
         // Calculate dynamic total sisa saldo from all savings/funding features
         double totalSisaSaldo = categoryProvider.savingsCurrent + 
@@ -40,7 +47,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
             elevation: 0,
             centerTitle: true,
             title: Text(
-              'Laporan Bulanan',
+              settings.translate('laporan_bulanan'),
               style: GoogleFonts.outfit(
                 color: textColor,
                 fontWeight: FontWeight.bold,
@@ -75,14 +82,10 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                     children: [
                       IconButton(
                         icon: Icon(Icons.chevron_left, color: textColor),
-                        onPressed: () {
-                          setState(() {
-                            selectedMonth = "April 2026";
-                          });
-                        },
+                        onPressed: () => _changeMonth(-1),
                       ),
                       Text(
-                        selectedMonth,
+                        currentMonthLabel,
                         style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -91,11 +94,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                       ),
                       IconButton(
                         icon: Icon(Icons.chevron_right, color: textColor),
-                        onPressed: () {
-                          setState(() {
-                            selectedMonth = "Mei 2026";
-                          });
-                        },
+                        onPressed: () => _changeMonth(1),
                       ),
                     ],
                   ),
@@ -104,7 +103,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
 
                 // 2. Summary Overview Cards
                 Text(
-                  'Laporan Keuangan',
+                  settings.translate('laporan_keuangan'),
                   style: GoogleFonts.outfit(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -133,7 +132,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                             const Icon(Icons.arrow_upward_rounded, color: Colors.white, size: 24),
                             const SizedBox(height: 15),
                             Text(
-                              'Pemasukan',
+                              settings.translate('pemasukan'),
                               style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(height: 4),
@@ -163,7 +162,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                             const Icon(Icons.arrow_downward_rounded, color: Colors.white, size: 24),
                             const SizedBox(height: 15),
                             Text(
-                              'Pengeluaran',
+                              settings.translate('pengeluaran'),
                               style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(height: 4),
@@ -203,7 +202,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Sisa Saldo Bersih',
+                            settings.translate('sisa_saldo_bersih'),
                             style: GoogleFonts.outfit(
                               fontSize: 13,
                               color: Colors.grey[500],
@@ -231,7 +230,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Rincian Pengeluaran',
+                      settings.translate('rincian_pengeluaran'),
                       style: GoogleFonts.outfit(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -239,7 +238,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                       ),
                     ),
                     Text(
-                      'Total: Rp 2.4jt',
+                      '${settings.translate('total_label')}: Rp 2.4jt',
                       style: GoogleFonts.outfit(
                         fontSize: 13,
                         color: Colors.grey[500],
@@ -261,7 +260,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                     children: [
                       _buildBreakdownItem(
                         context,
-                        'Makan dan Minum',
+                        settings.translate('makan_dan_minum'),
                         1200000,
                         2400000,
                         const Color(0xFF3B82F6),
@@ -271,7 +270,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                       const Divider(height: 30),
                       _buildBreakdownItem(
                         context,
-                        'Transportasi dan Bensin',
+                        settings.translate('transportasi_dan_bensin'),
                         800000,
                         2400000,
                         const Color(0xFFF59E0B),
@@ -281,7 +280,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                       const Divider(height: 30),
                       _buildBreakdownItem(
                         context,
-                        'Lain-lain',
+                        settings.translate('lain_lain'),
                         400000,
                         2400000,
                         const Color(0xFF8B5CF6),
@@ -311,7 +310,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Analisis Bulanan',
+                              settings.translate('analisis_bulanan'),
                               style: GoogleFonts.outfit(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -319,7 +318,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Hebat! Pengeluaran Anda di bulan ini turun 15% lebih rendah dibandingkan rata-rata bulan lalu. Sisa saldo ${fmt.format(totalSisaSaldo)} sangat ideal dialokasikan langsung ke Tabunganku.',
+                              settings.translate('analisis_bulanan_deskripsi').replaceAll('{balance}', fmt.format(totalSisaSaldo)),
                               style: GoogleFonts.outfit(
                                 fontSize: 13,
                                 color: isDark ? Colors.white70 : Colors.grey[800],
@@ -342,14 +341,14 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Laporan $selectedMonth berhasil diunduh sebagai PDF!'),
+                          content: Text(settings.translate('laporan_berhasil_unduh').replaceAll('{month}', currentMonthLabel)),
                           backgroundColor: const Color(0xFF0F5132),
                         ),
                       );
                     },
                     icon: const Icon(Icons.download_rounded, color: Colors.white),
                     label: Text(
-                      'Unduh Laporan (PDF)',
+                      settings.translate('unduh_laporan_pdf'),
                       style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     style: ElevatedButton.styleFrom(

@@ -31,7 +31,7 @@ class SettingsScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'Pengaturan',
+              settings.translate('pengaturan'),
               style: GoogleFonts.outfit(color: textColor, fontWeight: FontWeight.bold, fontSize: 24),
             ),
           ),
@@ -40,19 +40,19 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader('PREFERENSI APLIKASI', isDark),
+                _buildSectionHeader(settings.translate('preferensi'), isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(context, Icons.notifications_none_outlined, 'Notifikasi', 'Pengingat Harian Aktif', isDark, onTap: () {
+                  _buildSettingsItem(context, Icons.notifications_none_outlined, settings.translate('notifikasi'), 'Pengingat Harian Aktif', isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()));
                   }),
-                  _buildSettingsItem(context, Icons.language_outlined, 'Bahasa', settings.selectedLanguage, isDark, onTap: () {
+                  _buildSettingsItem(context, Icons.language_outlined, settings.translate('bahasa'), settings.selectedLanguage, isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()));
                   }),
                   _buildSettingsItem(
                     context, 
                     Icons.monetization_on_outlined, 
-                    'Mata Uang', 
+                    settings.translate('mata_uang'), 
                     settings.selectedCurrency == 'Rupiah Indonesia' ? 'IDR (Rp)' :
                     settings.selectedCurrency == 'US Dollar' ? 'USD (\$)' :
                     settings.selectedCurrency == 'Euro' ? 'EUR (€)' :

@@ -92,7 +92,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                   ),
                   child: Column(
                     children: [
-                      Text('Total Saldo Anda', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14)),
+                      Text(settings.translate('total_saldo_anda'), style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14)),
                       const SizedBox(height: 10),
                       Text(fmt.format(currentAmount), style: GoogleFonts.outfit(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 25),
@@ -128,7 +128,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                             const SizedBox(height: 8),
                             Align(
                               alignment: Alignment.centerRight,
-                              child: Text('Target: ${fmt.format(targetAmount)}', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+                              child: Text('${settings.translate('target_label')}: ${fmt.format(targetAmount)}', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
                             ),
                           ],
                         ),
@@ -150,7 +150,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Catat Setoran', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.grey[600])),
+                      Text(settings.translate('catat_setoran'), style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.grey[600])), 
                       const SizedBox(height: 30),
                       
                       // Tanggal field
@@ -181,7 +181,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                             child: Container(
                               color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                               padding: const EdgeInsets.symmetric(horizontal: 4),
-                              child: Text('Tanggal', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0D9488))),
+                              child: Text(settings.translate('tanggal'), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0D9488))),
                             ),
                           ),
                         ],
@@ -211,7 +211,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                             child: Container(
                               color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                               padding: const EdgeInsets.symmetric(horizontal: 4),
-                              child: Text('Nominal', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey[600])),
+                              child: Text(settings.translate('nominal'), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey[600])),
                             ),
                           ),
                         ],
@@ -240,7 +240,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                             child: Container(
                               color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                               padding: const EdgeInsets.symmetric(horizontal: 4),
-                              child: Text('Keterangan', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0BACD4))),
+                              child: Text(settings.translate('keterangan'), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0BACD4))),
                             ),
                           ),
                         ],
@@ -250,18 +250,17 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                       ElevatedButton(
                         onPressed: () {
                           if (_amountController.text.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nominal harus diisi')));
-                            return;
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('nominal_harus_diisi'))));
                           }
                           
                           if (goal != null && goal.id != null) {
                             double amount = double.tryParse(_amountController.text) ?? 0;
                             // Assume accountId 1 for now
                             Provider.of<GoalProvider>(context, listen: false).addSavingsToGoal(goal.id!, amount, 1);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Setoran berhasil dicatat!', style: GoogleFonts.outfit()), backgroundColor: const Color(0xFF4CAF50)));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('setoran_berhasil_dicatat'), style: GoogleFonts.outfit()), backgroundColor: const Color(0xFF4CAF50)));
                             Navigator.pop(context);
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ini hanya contoh. Setoran tidak dapat disimpan.', style: GoogleFonts.outfit())));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('contoh_setoran_tidak_disimpan'), style: GoogleFonts.outfit())));
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -270,7 +269,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 0,
                         ),
-                        child: Text('SIMPAN', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.5)),
+                        child: Text(settings.translate('simpan'), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.5)),
                       ),
                       const SizedBox(height: 100), // padding for scroll
                     ],

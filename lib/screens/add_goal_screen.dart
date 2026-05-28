@@ -20,6 +20,8 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   String _selectedCategory = 'Tabungan';
   late DateTime _selectedDate;
 
+  SettingsProvider get settings => Provider.of<SettingsProvider>(context, listen: false);
+
   @override
   void initState() {
     super.initState();
@@ -69,7 +71,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   void _saveGoal() {
     if (_nameController.text.isEmpty || _amountController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Nama dan Nominal harus diisi', style: GoogleFonts.outfit()), backgroundColor: Colors.red),
+        SnackBar(content: Text(settings.translate('nama_dan_nominal_harus_diisi'), style: GoogleFonts.outfit()), backgroundColor: Colors.red),
       );
       return;
     }
@@ -128,7 +130,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          widget.goalToEdit != null ? 'Edit Target' : 'Buat Target Baru',
+          widget.goalToEdit != null ? settings.translate('edit_target') : settings.translate('buat_target_baru'),
           style: GoogleFonts.outfit(color: const Color(0xFF002B1D), fontWeight: FontWeight.bold, fontSize: 22),
         ),
         actions: [
@@ -168,19 +170,19 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Nama Target', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+          Text(settings.translate('nama_target'), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
           TextField(
             controller: _nameController,
             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
-              hintText: 'Contoh: Beli Laptop Baru',
+              hintText: settings.translate('contoh_nama_target'),
               hintStyle: GoogleFonts.outfit(color: Colors.grey.withOpacity(0.5)),
               border: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFE5E7EB))),
               enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFE5E7EB))),
             ),
           ),
           const SizedBox(height: 25),
-          Text('Nominal Target (Rp)', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+          Text(settings.translate('nominal_target'), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
           TextField(
             controller: _amountController,
             keyboardType: TextInputType.number,
@@ -194,20 +196,20 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             ),
           ),
           const SizedBox(height: 25),
-          Text('Kategori Target', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+          Text(settings.translate('kategori_target'), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
           const SizedBox(height: 15),
           Wrap(
             spacing: 12,
             runSpacing: 12,
             children: [
-              _buildCategoryChip('Tabungan', Icons.account_balance_wallet_outlined),
-              _buildCategoryChip('Investasi', Icons.trending_up),
-              _buildCategoryChip('Pembelian', Icons.shopping_cart_outlined),
-              _buildCategoryChip('Darurat', Icons.ac_unit),
+              _buildCategoryChip('Tabungan', Icons.account_balance_wallet_outlined, settings.translate('kategori_tabungan')),
+              _buildCategoryChip('Investasi', Icons.trending_up, settings.translate('kategori_investasi')),
+              _buildCategoryChip('Pembelian', Icons.shopping_cart_outlined, settings.translate('kategori_pembelian')),
+              _buildCategoryChip('Darurat', Icons.ac_unit, settings.translate('kategori_darurat')),
             ],
           ),
           const SizedBox(height: 25),
-          Text('Target Waktu', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+          Text(settings.translate('target_waktu'), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
           const SizedBox(height: 10),
           InkWell(
             onTap: () => _selectDate(context),
@@ -238,10 +240,10 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     );
   }
 
-  Widget _buildCategoryChip(String label, IconData icon) {
-    bool isSelected = _selectedCategory == label;
+  Widget _buildCategoryChip(String value, IconData icon, String label) {
+    bool isSelected = _selectedCategory == value;
     return GestureDetector(
-      onTap: () => setState(() => _selectedCategory = label),
+      onTap: () => setState(() => _selectedCategory = value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
@@ -290,7 +292,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Proyeksi Bulanan', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
+                  Text(settings.translate('proyeksi_bulanan'), style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
                   Text('Rp 2.500.000', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D))),
                 ],
               ),
@@ -307,7 +309,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             ),
           ),
           const SizedBox(height: 15),
-          Text('Berdasarkan target 12 bulan.', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
+          Text(settings.translate('berdasarkan_target_12_bulan'), style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
         ],
       ),
     );
@@ -327,10 +329,10 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Estimasi Selesai', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
+              Text(settings.translate('estimasi_selesai'), style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
               const SizedBox(height: 5),
               Text(DateFormat('MMMM yyyy').format(_selectedDate), style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
-              Text('Dalam ${_calculateMonths(_selectedDate)} Bulan', style: GoogleFonts.outfit(fontSize: 14, color: const Color(0xFF10B981), fontWeight: FontWeight.w500)),
+              Text(settings.translate('dalam_bulan').replaceAll('{months}', _calculateMonths(_selectedDate).toString()), style: GoogleFonts.outfit(fontSize: 14, color: const Color(0xFF10B981), fontWeight: FontWeight.w500)),
             ],
           ),
           const Icon(Icons.calendar_today_outlined, color: Colors.grey, size: 30),
@@ -345,7 +347,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       child: ElevatedButton.icon(
         onPressed: _saveGoal,
         icon: const Icon(Icons.check_circle_outline, size: 20),
-        label: Text('Simpan Target', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+        label: Text(settings.translate('simpan_target'), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF002B1D),
           foregroundColor: Colors.white,
