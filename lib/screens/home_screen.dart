@@ -7,7 +7,6 @@ import 'goal_detail_screen.dart';
 import 'add_goal_screen.dart';
 import 'settings_screen.dart';
 import 'emergency_fund_screen.dart';
-import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,7 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
         final goals = goalProvider.goals;
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
-        final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE),
@@ -67,10 +65,10 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 25),
-                _buildTotalBalanceCard(isDark),
+                _buildTotalBalanceCard(settings, isDark),
                 const SizedBox(height: 30),
                 Text(
-                  'Target Anda',
+                  settings.translate('target_anda'),
                   style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor),
                 ),
                 const SizedBox(height: 15),
@@ -84,9 +82,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: GestureDetector(
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(goalId: 1))),
                             child: _buildGoalProgressCard(
-                              'Laptop Baru', 0.75, 'Rp 11.250.000', isDark,
-                              onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ini hanya contoh. Tambahkan target asli Anda.', style: GoogleFonts.outfit()))),
-                              onDelete: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ini hanya contoh. Tambahkan target asli Anda.', style: GoogleFonts.outfit()))),
+                              settings.translate('laptop_baru'), 0.75, settings.formatCurrency(11250000), isDark, settings,
+                              onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
+                              onDelete: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
                             ),
                           ),
                         ),
@@ -95,9 +93,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: GestureDetector(
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(goalId: 2))),
                             child: _buildGoalProgressCard(
-                              'Books NW', 0.45, 'Rp 3.600.000', isDark,
-                              onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ini hanya contoh. Tambahkan target asli Anda.', style: GoogleFonts.outfit()))),
-                              onDelete: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ini hanya contoh. Tambahkan target asli Anda.', style: GoogleFonts.outfit()))),
+                              settings.translate('buku_nw'), 0.45, settings.formatCurrency(3600000), isDark, settings,
+                              onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
+                              onDelete: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
                             ),
                           ),
                         ),
@@ -112,8 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: _buildGoalProgressCard(
                               goal.name, 
                               progress, 
-                              fmt.format(goal.targetAmount), 
+                              settings.formatCurrency(goal.targetAmount), 
                               isDark,
+                              settings,
                               onEdit: () {
                                 Navigator.push(context, MaterialPageRoute(builder: (context) => AddGoalScreen(goalToEdit: goal)));
                               },
@@ -135,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       MaterialPageRoute(builder: (context) => const EmergencyFundScreen()),
                     );
                   },
-                  child: _buildEmergencyFundCard(45000000, 50000000, 0.92, fmt, isDark),
+                  child: _buildEmergencyFundCard(45000000, 50000000, 0.92, settings, isDark),
                 ),
                 const SizedBox(height: 120),
               ],
@@ -158,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTotalBalanceCard(bool isDark) {
+  Widget _buildTotalBalanceCard(SettingsProvider settings, bool isDark) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(28),
@@ -173,18 +172,24 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('TOTAL SALDO BERSIH', style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+              Text(
+                settings.translate('sisa_saldo').toUpperCase(), 
+                style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+              ),
               const Icon(Icons.info_outline, color: Colors.white54, size: 20),
             ],
           ),
           const SizedBox(height: 12),
-          Text('Rp 12.500.000', style: GoogleFonts.outfit(color: Colors.white, fontSize: 38, fontWeight: FontWeight.bold)),
+          Text(
+            settings.formatCurrency(12500000), 
+            style: GoogleFonts.outfit(color: Colors.white, fontSize: 38, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 30),
           Row(
             children: [
-              _buildBalanceSubItem('Pemasukan', '+ Rp 18M'),
+              _buildBalanceSubItem(settings.translate('pemasukan'), '+ ' + settings.formatCurrency(18000000)),
               Container(width: 1, height: 40, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 25)),
-              _buildBalanceSubItem('Dialokasikan', '- Rp 5.5M'),
+              _buildBalanceSubItem(settings.translate('dialokasikan'), '- ' + settings.formatCurrency(5500000)),
             ],
           ),
         ],
@@ -205,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildGoalProgressCard(String title, double progress, String amount, bool isDark, {VoidCallback? onEdit, VoidCallback? onDelete}) {
+  Widget _buildGoalProgressCard(String title, double progress, String amount, bool isDark, SettingsProvider settings, {VoidCallback? onEdit, VoidCallback? onDelete}) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -239,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           const Icon(Icons.edit_outlined, size: 18),
                           const SizedBox(width: 8),
-                          Text('Edit', style: GoogleFonts.outfit()),
+                          Text(settings.translate('edit'), style: GoogleFonts.outfit()),
                         ],
                       ),
                     ),
@@ -249,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           const Icon(Icons.delete_outline, color: Colors.red, size: 18),
                           const SizedBox(width: 8),
-                          Text('Hapus', style: GoogleFonts.outfit(color: Colors.red)),
+                          Text(settings.translate('hapus'), style: GoogleFonts.outfit(color: Colors.red)),
                         ],
                       ),
                     ),
@@ -273,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildEmergencyFundCard(double current, double target, double progress, NumberFormat fmt, bool isDark) {
+  Widget _buildEmergencyFundCard(double current, double target, double progress, SettingsProvider settings, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -287,14 +292,38 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Dana Darurat', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 20, color: isDark ? Colors.white : const Color(0xFF002B1D))), Text('Jaring Pengaman Finansial', style: GoogleFonts.outfit(color: isDark ? Colors.white70 : Colors.grey[600], fontSize: 14))]),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start, 
+                children: [
+                  Text(
+                    settings.translate('dana_darurat'), 
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 20, color: isDark ? Colors.white : const Color(0xFF002B1D)),
+                  ), 
+                  Text(
+                    settings.translate('jaring_pengaman'), 
+                    style: GoogleFonts.outfit(color: isDark ? Colors.white70 : Colors.grey[600], fontSize: 14),
+                  ),
+                ],
+              ),
               Text('${(progress * 100).toInt()}%', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 28, color: isDark ? Colors.white : const Color(0xFF002B1D))),
             ],
           ),
           const SizedBox(height: 20),
           LinearProgressIndicator(value: progress, backgroundColor: isDark ? Colors.white10 : const Color(0xFFF1F4F9), valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF98D8B6)), minHeight: 10),
           const SizedBox(height: 15),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(fmt.format(current), style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)), Text('Target: ${fmt.format(target)}', style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12))]),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+            children: [
+              Text(
+                settings.formatCurrency(current), 
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
+              ), 
+              Text(
+                '${settings.translate('target_label')}: ${settings.formatCurrency(target)}', 
+                style: GoogleFonts.outfit(color: Colors.grey, fontSize: 12),
+              ),
+            ],
+          ),
         ],
       ),
     );

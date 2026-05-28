@@ -38,13 +38,13 @@ class LanguageSettingsScreen extends StatelessWidget {
                   style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2),
                 ),
                 const SizedBox(height: 15),
-                _buildLanguageCard('Bahasa Indonesia', 'Default Sistem', true, isDark, cardColor),
+                _buildLanguageCard(context, settings, 'Bahasa Indonesia', 'Default Sistem', isDark, cardColor),
                 const SizedBox(height: 15),
-                _buildLanguageCard('English', 'United States', false, isDark, cardColor),
+                _buildLanguageCard(context, settings, 'English', 'United States', isDark, cardColor),
                 const SizedBox(height: 15),
-                _buildLanguageCard('日本語', 'Japan', false, isDark, cardColor),
+                _buildLanguageCard(context, settings, '日本語', 'Japan', isDark, cardColor),
                 const SizedBox(height: 15),
-                _buildLanguageCard('العربية', 'Arabic', false, isDark, cardColor),
+                _buildLanguageCard(context, settings, 'العربية', 'Arabic', isDark, cardColor),
               ],
             ),
           ),
@@ -53,30 +53,47 @@ class LanguageSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLanguageCard(String language, String region, bool isSelected, bool isDark, Color cardColor) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isSelected ? const Color(0xFF002B1D) : (isDark ? Colors.white10 : Colors.black.withOpacity(0.04))),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(language, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
-                Text(region, style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
-              ],
+  Widget _buildLanguageCard(BuildContext context, SettingsProvider settings, String language, String region, bool isDark, Color cardColor) {
+    final isSelected = settings.selectedLanguage == language;
+
+    return GestureDetector(
+      onTap: () {
+        settings.setSelectedLanguage(language);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Bahasa diubah ke $language!',
+              style: GoogleFonts.outfit(),
             ),
+            backgroundColor: const Color(0xFF002B1D),
+            duration: const Duration(seconds: 2),
           ),
-          if (isSelected)
-            const Icon(Icons.check_circle, color: Color(0xFF002B1D))
-          else
-            Icon(Icons.circle_outlined, color: Colors.grey.withOpacity(0.3)),
-        ],
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? const Color(0xFF0D9488) : (isDark ? Colors.white10 : Colors.black.withOpacity(0.04)), width: isSelected ? 2 : 1),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(language, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                  Text(region, style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: Color(0xFF0D9488))
+            else
+              Icon(Icons.circle_outlined, color: Colors.grey.withOpacity(0.3)),
+          ],
+        ),
       ),
     );
   }

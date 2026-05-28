@@ -38,15 +38,17 @@ class CurrencySettingsScreen extends StatelessWidget {
                   style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2),
                 ),
                 const SizedBox(height: 15),
-                _buildCurrencyCard('Rupiah Indonesia', 'IDR (Rp)', true, isDark, cardColor),
+                _buildCurrencyCard(context, settings, 'Rupiah Indonesia', 'IDR (Rp)', isDark, cardColor),
                 const SizedBox(height: 15),
-                _buildCurrencyCard('US Dollar', 'USD (\$)', false, isDark, cardColor),
+                _buildCurrencyCard(context, settings, 'US Dollar', 'USD (\$)', isDark, cardColor),
                 const SizedBox(height: 15),
-                _buildCurrencyCard('Euro', 'EUR (€)', false, isDark, cardColor),
+                _buildCurrencyCard(context, settings, 'Euro', 'EUR (€)', isDark, cardColor),
                 const SizedBox(height: 15),
-                _buildCurrencyCard('Japanese Yen', 'JPY (¥)', false, isDark, cardColor),
+                _buildCurrencyCard(context, settings, 'Japanese Yen', 'JPY (¥)', isDark, cardColor),
                 const SizedBox(height: 15),
-                _buildCurrencyCard('Saudi Riyal', 'SAR (﷼)', false, isDark, cardColor),
+                _buildCurrencyCard(context, settings, 'Saudi Riyal', 'SAR (﷼)', isDark, cardColor),
+                const SizedBox(height: 15),
+                _buildCurrencyCard(context, settings, 'Ringgit Malaysia', 'MYR (RM)', isDark, cardColor),
               ],
             ),
           ),
@@ -55,38 +57,55 @@ class CurrencySettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCurrencyCard(String name, String symbol, bool isSelected, bool isDark, Color cardColor) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isSelected ? const Color(0xFF002B1D) : (isDark ? Colors.white10 : Colors.black.withOpacity(0.04))),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F4F9), borderRadius: BorderRadius.circular(15)),
-            alignment: Alignment.center,
-            child: Text(symbol.split(' ').last.replaceAll('(', '').replaceAll(')', ''), style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : const Color(0xFF002B1D))),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
-                Text(symbol, style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
-              ],
+  Widget _buildCurrencyCard(BuildContext context, SettingsProvider settings, String name, String symbol, bool isDark, Color cardColor) {
+    final isSelected = settings.selectedCurrency == name;
+
+    return GestureDetector(
+      onTap: () {
+        settings.setSelectedCurrency(name);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Mata uang diubah ke $name!',
+              style: GoogleFonts.outfit(),
             ),
+            backgroundColor: const Color(0xFF002B1D),
+            duration: const Duration(seconds: 2),
           ),
-          if (isSelected)
-            const Icon(Icons.check_circle, color: Color(0xFF002B1D))
-          else
-            Icon(Icons.circle_outlined, color: Colors.grey.withOpacity(0.3)),
-        ],
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? const Color(0xFF0D9488) : (isDark ? Colors.white10 : Colors.black.withOpacity(0.04)), width: isSelected ? 2 : 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F4F9), borderRadius: BorderRadius.circular(15)),
+              alignment: Alignment.center,
+              child: Text(symbol.split(' ').last.replaceAll('(', '').replaceAll(')', ''), style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : const Color(0xFF002B1D))),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                  Text(symbol, style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: Color(0xFF0D9488))
+            else
+              Icon(Icons.circle_outlined, color: Colors.grey.withOpacity(0.3)),
+          ],
+        ),
       ),
     );
   }

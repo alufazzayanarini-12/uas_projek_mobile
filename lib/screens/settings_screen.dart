@@ -46,12 +46,23 @@ class SettingsScreen extends StatelessWidget {
                   _buildSettingsItem(context, Icons.notifications_none_outlined, 'Notifikasi', 'Pengingat Harian Aktif', isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()));
                   }),
-                  _buildSettingsItem(context, Icons.language_outlined, 'Bahasa', 'Bahasa Indonesia', isDark, onTap: () {
+                  _buildSettingsItem(context, Icons.language_outlined, 'Bahasa', settings.selectedLanguage, isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()));
                   }),
-                  _buildSettingsItem(context, Icons.monetization_on_outlined, 'Mata Uang', 'IDR (Rp)', isDark, onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const CurrencySettingsScreen()));
-                  }),
+                  _buildSettingsItem(
+                    context, 
+                    Icons.monetization_on_outlined, 
+                    'Mata Uang', 
+                    settings.selectedCurrency == 'Rupiah Indonesia' ? 'IDR (Rp)' :
+                    settings.selectedCurrency == 'US Dollar' ? 'USD (\$)' :
+                    settings.selectedCurrency == 'Euro' ? 'EUR (€)' :
+                    settings.selectedCurrency == 'Japanese Yen' ? 'JPY (¥)' :
+                    settings.selectedCurrency == 'Saudi Riyal' ? 'SAR (﷼)' : settings.selectedCurrency, 
+                    isDark, 
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const CurrencySettingsScreen()));
+                    },
+                  ),
                   _buildThemeSwitch(settings, isDark),
                 ], isDark),
                 const SizedBox(height: 30),
