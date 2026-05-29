@@ -41,7 +41,12 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Kategori Tabungan', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Consumer<SettingsProvider>(
+          builder: (context, settings, _) => Text(
+            settings.translate('kategori_tabungan_title'),
+            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+        ),
         centerTitle: true,
       ),
       body: Consumer<CategoryProvider>(
@@ -55,10 +60,17 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 children: [
                   const Icon(Icons.category_outlined, size: 80, color: Colors.grey),
                   const SizedBox(height: 15),
-                  const Text('Belum ada kategori.', style: TextStyle(color: Colors.grey)),
-                  ElevatedButton(
-                    onPressed: () => catProvider.loadCategories(),
-                    child: const Text('Refresh Data'),
+                  Consumer<SettingsProvider>(
+                    builder: (context, settings, _) => Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(settings.translate('belum_ada_kategori'), style: const TextStyle(color: Colors.grey)),
+                        ElevatedButton(
+                          onPressed: () => catProvider.loadCategories(),
+                          child: Text(settings.translate('refresh_data')),
+                        ),
+                      ],
+                    ),
                   )
                 ],
               ),
@@ -80,7 +92,12 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
         onPressed: () => _showAddCategoryDialog(),
         backgroundColor: Colors.black,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Kategori Kustom', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: Consumer<SettingsProvider>(
+          builder: (context, settings, _) => Text(
+            settings.translate('kategori_kustom'),
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
@@ -126,18 +143,20 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(cat.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1A237E))),
-                      if (cat.budgetLimit > 0) Text('Anggaran: ${fmt.format(cat.budgetLimit)}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                      if (cat.budgetLimit > 0) Text('${settings.translate('anggaran_prefix')}${fmt.format(cat.budgetLimit)}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
                     ],
                   ),
                 ),
               ),
               PopupMenuButton(
                 icon: const Icon(Icons.more_vert, color: Colors.grey),
-                itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                  const PopupMenuItem(value: 'archive', child: Text('Arsip')),
-                  const PopupMenuItem(value: 'delete', child: Text('Hapus', style: TextStyle(color: Colors.red))),
-                ],
+                itemBuilder: (context) => Consumer<SettingsProvider>(
+                  builder: (context, settings, _) => [
+                    PopupMenuItem(value: 'edit', child: Text(settings.translate('edit'))),
+                    PopupMenuItem(value: 'archive', child: Text(settings.translate('arsip'))),
+                    PopupMenuItem(value: 'delete', child: Text(settings.translate('hapus'), style: const TextStyle(color: Colors.red))),
+                  ],
+                ).build(context),
                 onSelected: (val) {
                   if (val == 'archive') Provider.of<CategoryProvider>(context, listen: false).toggleArchive(cat);
                   if (val == 'edit') _showAddCategoryDialog(category: cat);
@@ -161,19 +180,24 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   void _showDeleteConfirmation(CategoryModel cat) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Hapus Kategori?'),
-        content: Text('Apakah Anda yakin ingin menghapus "${cat.name}"?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          TextButton(
-            onPressed: () {
-              Provider.of<CategoryProvider>(context, listen: false).deleteCategory(cat.id!);
-              Navigator.pop(context);
-            },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
-          ),
-        ],
+      builder: (context) => Consumer<SettingsProvider>(
+        builder: (context, settings, _) => AlertDialog(
+          title: Text(settings.translate('hapus_kategori')),
+          content: Text(settings.translate('yakin_hapus_kategori').replaceAll('{name}', cat.name)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(settings.translate('batal')),
+            ),
+            TextButton(
+              onPressed: () {
+                Provider.of<CategoryProvider>(context, listen: false).deleteCategory(cat.id!);
+                Navigator.pop(context);
+              },
+              child: Text(settings.translate('hapus'), style: const TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -198,13 +222,18 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               children: [
                 Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)))),
                 const SizedBox(height: 20),
-                Text(category == null ? 'Tambah Kategori Baru' : 'Edit Kategori', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Consumer<SettingsProvider>(
+                  builder: (context, settings, _) => Text(
+                    category == null ? settings.translate('tambah_kategori_baru') : settings.translate('edit_kategori'),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
                 const SizedBox(height: 20),
-                TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Kategori', border: OutlineInputBorder())),
+                TextField(controller: nameController, decoration: InputDecoration(labelText: SettingsProvider().translate('nama_kategori'), border: const OutlineInputBorder())),
                 const SizedBox(height: 20),
-                TextField(controller: budgetController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Batas Anggaran Bulanan', prefixText: 'Rp ', border: OutlineInputBorder())),
+                TextField(controller: budgetController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: SettingsProvider().translate('batas_anggaran_bulanan'), prefixText: 'Rp ', border: const OutlineInputBorder())),
                 const SizedBox(height: 25),
-                const Text('Pilih Ikon', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(SettingsProvider().translate('pilih_ikon'), style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 50,
@@ -223,7 +252,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   ),
                 ),
                 const SizedBox(height: 25),
-                const Text('Pilih Warna', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(SettingsProvider().translate('pilih_warna'), style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 40,
@@ -264,7 +293,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
-                    child: const Text('SIMPAN KATEGORI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: Text(SettingsProvider().translate('simpan_kategori'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],

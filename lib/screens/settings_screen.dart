@@ -43,7 +43,7 @@ class SettingsScreen extends StatelessWidget {
                 _buildSectionHeader(settings.translate('preferensi'), isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(context, Icons.notifications_none_outlined, settings.translate('notifikasi'), 'Pengingat Harian Aktif', isDark, onTap: () {
+                  _buildSettingsItem(context, Icons.notifications_none_outlined, settings.translate('notifikasi'), settings.translate('pengingat_harian_aktif'), isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()));
                   }),
                   _buildSettingsItem(context, Icons.language_outlined, settings.translate('bahasa'), settings.selectedLanguage, isDark, onTap: () {
@@ -66,14 +66,14 @@ class SettingsScreen extends StatelessWidget {
                   _buildThemeSwitch(settings, isDark),
                 ], isDark),
                 const SizedBox(height: 30),
-                _buildSectionHeader('LAINNYA', isDark),
+                _buildSectionHeader(settings.translate('lainnya'), isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
                   _buildSettingsItem(
                     context, 
                     Icons.info_outline, 
-                    'Tentang Aplikasi', 
-                    'Versi 2.1.0', 
+                    settings.translate('tentang_aplikasi'), 
+                    settings.translate('versi_aplikasi'), 
                     isDark,
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutAppScreen()));
@@ -108,6 +108,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildSettingsItem(BuildContext context, IconData icon, String title, String subtitle, bool isDark, {VoidCallback? onTap}) {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       leading: Container(
@@ -120,7 +121,7 @@ class SettingsScreen extends StatelessWidget {
       trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
       onTap: onTap ?? () {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Membuka rincian: $title'), duration: const Duration(seconds: 1)),
+          SnackBar(content: Text(settings.translate('membuka_rincian').replaceAll('{title}', title)), duration: const Duration(seconds: 1)),
         );
       },
     );
@@ -134,8 +135,8 @@ class SettingsScreen extends StatelessWidget {
         decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F4F9), borderRadius: BorderRadius.circular(12)),
         child: Icon(isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined, color: isDark ? Colors.amber[400] : const Color(0xFF002B1D), size: 22),
       ),
-      title: Text('Mode Gelap', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
-      subtitle: Text(isDark ? 'Tema Gelap Aktif' : 'Tema Terang Aktif', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
+      title: Text(settings.translate('mode_gelap'), style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+      subtitle: Text(isDark ? settings.translate('tema_gelap_aktif') : settings.translate('tema_terang_aktif'), style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
       trailing: Switch(
         value: isDark,
         onChanged: (v) => settings.toggleDarkMode(v),

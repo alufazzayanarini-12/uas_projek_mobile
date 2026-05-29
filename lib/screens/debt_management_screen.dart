@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../providers/settings_provider.dart';
 
 class DebtManagementScreen extends StatefulWidget {
   const DebtManagementScreen({super.key});
@@ -14,6 +16,8 @@ class _DebtManagementScreenState extends State<DebtManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
@@ -23,17 +27,17 @@ class _DebtManagementScreenState extends State<DebtManagementScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('Hutang', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(settings.translate('debt_management'), style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: Column(
         children: [
-          _buildMainHeader(),
+          _buildMainHeader(settings),
           const SizedBox(height: 20),
-          _buildSummaryCards(),
+          _buildSummaryCards(settings),
           const SizedBox(height: 30),
-          _buildContactListHeader(),
-          Expanded(child: _buildContactList()),
+          _buildContactListHeader(settings),
+          Expanded(child: _buildContactList(settings)),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -44,7 +48,7 @@ class _DebtManagementScreenState extends State<DebtManagementScreen> {
     );
   }
 
-  Widget _buildMainHeader() {
+  Widget _buildMainHeader(SettingsProvider settings) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(bottom: 40, top: 20),
@@ -55,7 +59,7 @@ class _DebtManagementScreenState extends State<DebtManagementScreen> {
       child: Column(
         children: [
           Text(
-            'Status Penggunaan',
+            settings.translate('usage_status'),
             style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 10),
@@ -68,17 +72,17 @@ class _DebtManagementScreenState extends State<DebtManagementScreen> {
     );
   }
 
-  Widget _buildSummaryCards() {
+  Widget _buildSummaryCards(SettingsProvider settings) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
           Expanded(
-            child: _buildSummaryCard('Hutang Saya', 'Rp 100k', Colors.red[50]!, Colors.red[700]!),
+            child: _buildSummaryCard(settings.translate('my_debt'), 'Rp 100k', Colors.red[50]!, Colors.red[700]!),
           ),
           const SizedBox(width: 15),
           Expanded(
-            child: _buildSummaryCard('Piutang', 'Rp 1M', Colors.green[50]!, Colors.green[700]!),
+            child: _buildSummaryCard(settings.translate('receivables'), 'Rp 1M', Colors.green[50]!, Colors.green[700]!),
           ),
         ],
       ),
@@ -103,25 +107,25 @@ class _DebtManagementScreenState extends State<DebtManagementScreen> {
     );
   }
 
-  Widget _buildContactListHeader() {
+  Widget _buildContactListHeader(SettingsProvider settings) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
-          'Daftar Kontak (Klik Nama)',
+          settings.translate('contact_list_title'),
           style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700]),
         ),
       ),
     );
   }
 
-  Widget _buildContactList() {
+  Widget _buildContactList(SettingsProvider settings) {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       children: [
-        _buildContactTile('Nia', 'Hutang', 'Rp 100.000', Colors.red),
-        _buildContactTile('Wulan', 'Piutang', 'Rp 1.000.000', Colors.green),
+        _buildContactTile('Nia', settings.translate('hutang'), 'Rp 100.000', Colors.red),
+        _buildContactTile('Wulan', settings.translate('piutang'), 'Rp 1.000.000', Colors.green),
       ],
     );
   }
@@ -166,7 +170,10 @@ class _DebtManagementScreenState extends State<DebtManagementScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Detail: $name ($type)',
+                  Provider.of<SettingsProvider>(context, listen: false)
+                      .translate('detail_title')
+                      .replaceAll('{name}', name)
+                      .replaceAll('{type}', type),
                   style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey[800]),
                 ),
                 IconButton(
@@ -177,7 +184,7 @@ class _DebtManagementScreenState extends State<DebtManagementScreen> {
             ),
             const Divider(),
             const SizedBox(height: 15),
-            Text('Sisa Saldo:', style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 14)),
+            Text(Provider.of<SettingsProvider>(context, listen: false).translate('sisa_saldo'), style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 14)),
             const SizedBox(height: 5),
             Text(
               amount,
@@ -186,7 +193,7 @@ class _DebtManagementScreenState extends State<DebtManagementScreen> {
             const SizedBox(height: 25),
             TextField(
               decoration: InputDecoration(
-                hintText: 'Nominal Bayar / Cicil',
+                hintText: Provider.of<SettingsProvider>(context, listen: false).translate('nominal_bayar_cicil'),
                 hintStyle: GoogleFonts.outfit(color: Colors.grey),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -203,11 +210,11 @@ class _DebtManagementScreenState extends State<DebtManagementScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 elevation: 0,
               ),
-              child: Text('BAYAR SEKARANG', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(Provider.of<SettingsProvider>(context, listen: false).translate('bayar_sekarang'), style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
             const SizedBox(height: 30),
             Text(
-              'Riwayat Cicilan',
+              Provider.of<SettingsProvider>(context, listen: false).translate('installment_history'),
               style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700]),
             ),
             const SizedBox(height: 15),

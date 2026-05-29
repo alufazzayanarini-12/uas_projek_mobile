@@ -30,7 +30,7 @@ class GeneralSettingsScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'Pengaturan Umum',
+              settings.translate('pengaturan_umum'),
               style: GoogleFonts.outfit(color: textColor, fontWeight: FontWeight.bold, fontSize: 24),
             ),
           ),
@@ -39,40 +39,40 @@ class GeneralSettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader('AKUN & KEAMANAN', isDark),
+                _buildSectionHeader(settings.translate('akun_dan_keamanan'), isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(context, Icons.person_outline, 'Informasi Pribadi', 'Nama, Email, Telepon', isDark, onTap: () {
+                  _buildSettingsItem(context, Icons.person_outline, settings.translate('informasi_pribadi'), settings.translate('nama_email_telepon'), isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountSettingsScreen()));
                   }),
-                  _buildSettingsItem(context, Icons.lock_outline, 'Kata Sandi & Keamanan', 'PIN, Sidik Jari', isDark, onTap: () {
+                  _buildSettingsItem(context, Icons.lock_outline, settings.translate('kata_sandi_keamanan'), settings.translate('pin_sidik_jari'), isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()));
                   }),
-                  _buildSettingsItem(context, Icons.account_balance_outlined, 'Manajemen Rekening', '2 Rekening Terhubung', isDark, onTap: () {
+                  _buildSettingsItem(context, Icons.account_balance_outlined, settings.translate('manajemen_rekening'), settings.translate('rekening_terhubung'), isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const BankManagementScreen()));
                   }),
                 ], isDark),
                 const SizedBox(height: 30),
-                _buildSectionHeader('PREFERENSI APLIKASI', isDark),
+                _buildSectionHeader(settings.translate('preferensi_aplikasi'), isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(context, Icons.notifications_none_outlined, 'Notifikasi', 'Pengingat Harian Aktif', isDark, onTap: () {
+                  _buildSettingsItem(context, Icons.notifications_none_outlined, settings.translate('notifikasi'), settings.translate('pengingat_harian_aktif'), isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()));
                   }),
-                  _buildSettingsItem(context, Icons.language_outlined, 'Bahasa', 'Bahasa Indonesia', isDark, onTap: () {
+                  _buildSettingsItem(context, Icons.language_outlined, settings.translate('bahasa'), settings.selectedLanguage, isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSettingsScreen()));
                   }),
-                  _buildSettingsItem(context, Icons.monetization_on_outlined, 'Mata Uang', 'IDR (Rp)', isDark, onTap: () {
+                  _buildSettingsItem(context, Icons.monetization_on_outlined, settings.translate('mata_uang'), settings.selectedCurrency, isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const CurrencySettingsScreen()));
                   }),
                   _buildThemeSwitch(settings, isDark),
                 ], isDark),
                 const SizedBox(height: 30),
-                _buildSectionHeader('LAINNYA', isDark),
+                _buildSectionHeader(settings.translate('lainnya'), isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(Icons.help_outline, 'Pusat Bantuan', 'FAQ & Kontak Dukungan', isDark),
-                  _buildSettingsItem(Icons.info_outline, 'Tentang Aplikasi', 'Versi 2.1.0', isDark),
+                  _buildSettingsItem(Icons.help_outline, settings.translate('pusat_bantuan'), settings.translate('faq_dan_kontak_dukung'), isDark),
+                  _buildSettingsItem(Icons.info_outline, settings.translate('tentang_aplikasi'), settings.translate('versi_aplikasi'), isDark),
                 ], isDark),
                 const SizedBox(height: 40),
                 _buildLogoutButton(),
@@ -126,8 +126,8 @@ class GeneralSettingsScreen extends StatelessWidget {
         decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF1F4F9), borderRadius: BorderRadius.circular(12)),
         child: Icon(isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined, color: isDark ? Colors.amber[400] : const Color(0xFF002B1D), size: 22),
       ),
-      title: Text('Mode Gelap', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
-      subtitle: Text(isDark ? 'Tema Gelap Aktif' : 'Tema Terang Aktif', style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
+      title: Text(settings.translate('mode_gelap'), style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+      subtitle: Text(isDark ? settings.translate('tema_gelap_aktif') : settings.translate('tema_terang_aktif'), style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey)),
       trailing: Switch(
         value: isDark,
         onChanged: (v) => settings.toggleDarkMode(v),
@@ -141,7 +141,7 @@ class GeneralSettingsScreen extends StatelessWidget {
       child: TextButton(
         onPressed: () {},
         child: Text(
-          'Keluar dari Akun',
+          settings.translate('keluar_dari_akun'),
           style: GoogleFonts.outfit(color: Colors.red[700], fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),

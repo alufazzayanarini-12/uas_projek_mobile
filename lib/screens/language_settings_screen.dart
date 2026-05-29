@@ -24,7 +24,7 @@ class LanguageSettingsScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'Pilih Bahasa',
+              settings.translate('pilih_bahasa'),
               style: GoogleFonts.outfit(color: textColor, fontWeight: FontWeight.bold, fontSize: 22),
             ),
           ),
@@ -34,7 +34,7 @@ class LanguageSettingsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'BAHASA TERSEDIA',
+                  settings.translate('bahasa_tersedia'),
                   style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2),
                 ),
                 const SizedBox(height: 15),
@@ -62,7 +62,7 @@ class LanguageSettingsScreen extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Bahasa diubah ke $language!',
+              settings.translate('bahasa_diubah_ke').replaceAll('{language}', language),
               style: GoogleFonts.outfit(),
             ),
             backgroundColor: const Color(0xFF002B1D),

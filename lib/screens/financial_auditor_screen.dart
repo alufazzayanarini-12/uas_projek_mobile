@@ -31,16 +31,16 @@ class FinancialAuditorScreen extends StatelessWidget {
 
         // Dynamic status based on savings target progress
         double percent = savingsProgress * 100;
-        String statusTabungan = 'Perlu Ditingkatkan';
+        String statusTabungan = settings.translate('status_need_improvement');
         Color statusColor = const Color(0xFFEF4444);
         if (percent >= 80) {
-          statusTabungan = 'Sangat Sehat';
+          statusTabungan = settings.translate('status_very_healthy');
           statusColor = const Color(0xFF10B981);
         } else if (percent >= 50) {
-          statusTabungan = 'Sehat';
+          statusTabungan = settings.translate('status_healthy');
           statusColor = const Color(0xFF3B82F6);
         } else if (percent >= 25) {
-          statusTabungan = 'Waspada';
+          statusTabungan = settings.translate('status_alert');
           statusColor = const Color(0xFFF59E0B);
         }
 
@@ -55,7 +55,7 @@ class FinancialAuditorScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'Financial Audit',
+              settings.translate('audit_financial'),
               style: GoogleFonts.outfit(
                 color: textColor,
                 fontWeight: FontWeight.bold,
@@ -69,7 +69,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                   // Show quick explanation snackbar
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Halaman ini mengevaluasi kesehatan finansial berdasarkan tabungan Rp ${fmt.format(categoryProvider.savingsTarget)} Anda.'),
+                      content: Text(settings.translate('financial_audit_snackbar').replaceAll('{target}', fmt.format(categoryProvider.savingsTarget))),
                       backgroundColor: const Color(0xFF0B3A2E),
                     ),
                   );
@@ -133,7 +133,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'TOTAL MENABUNG',
+                                  settings.translate('total_savings').toUpperCase(),
                                   style: GoogleFonts.outfit(
                                     fontSize: 9,
                                     color: Colors.grey[500],
@@ -148,7 +148,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 25),
                       Text(
-                        'Skor Kesehatan Keuangan',
+                        settings.translate('financial_health_score'),
                         style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -189,7 +189,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                  'Kebocoran Anggaran',
+                                  settings.translate('budget_leakage'),
                                   style: GoogleFonts.outfit(
                                     fontSize: 12,
                                     color: Colors.grey[500],
@@ -237,7 +237,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Efisiensi',
+                              settings.translate('efficiency'),
                               style: GoogleFonts.outfit(
                                   fontSize: 12, color: Colors.grey[500], fontWeight: FontWeight.bold),
                             ),
@@ -266,7 +266,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Skor Kredit',
+                              settings.translate('credit_score'),
                               style: GoogleFonts.outfit(
                                   fontSize: 12, color: Colors.grey[500], fontWeight: FontWeight.bold),
                             ),
@@ -288,7 +288,7 @@ class FinancialAuditorScreen extends StatelessWidget {
 
                 // 4. Rekomendasi Cerdas Section
                 Text(
-                  'Rekomendasi Cerdas',
+                  settings.translate('smart_recommendation'),
                   style: GoogleFonts.outfit(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -308,18 +308,12 @@ class FinancialAuditorScreen extends StatelessWidget {
                     children: [
                       const Icon(Icons.lightbulb_outline, color: Colors.white, size: 28),
                       const SizedBox(height: 16),
-                      RichText(
-                        text: TextSpan(
-                          style: GoogleFonts.outfit(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.9),
-                            height: 1.5,
-                          ),
-                          children: const [
-                            TextSpan(text: 'Pindahkan '),
-                            TextSpan(text: 'Rp 500.000 ', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF34D399))),
-                            TextSpan(text: 'ke Tabungan Berjangka untuk bunga lebih tinggi.'),
-                          ],
+                      Text(
+                        settings.translate('move_to_fixed_savings').replaceAll('{amount}', fmt.format(500000)),
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          color: Colors.white.withOpacity(0.9),
+                          height: 1.5,
                         ),
                       ),
                       const SizedBox(height: 25),
@@ -331,7 +325,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                               backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                               title: Text(
-                                'Tabungan Berjangka',
+                                settings.translate('fixed_savings'),
                                 style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.bold,
                                   color: textColor,
@@ -342,7 +336,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Tabungan Berjangka adalah produk simpanan berjangka waktu tertentu dengan penawaran suku bunga yang lebih tinggi daripada tabungan reguler.',
+                                    settings.translate('fixed_savings_description'),
                                     style: GoogleFonts.outfit(
                                       fontSize: 14,
                                       color: isDark ? Colors.white70 : Colors.grey[700],
@@ -351,7 +345,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 15),
                                   Text(
-                                    'Keunggulan:',
+                                    settings.translate('advantages'),
                                     style: GoogleFonts.outfit(
                                       fontWeight: FontWeight.bold,
                                       color: textColor,
@@ -359,7 +353,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    '• Bunga tinggi hingga 5.5% per tahun.\n• Melatih disiplin rutin menabung.\n• Simpanan aman & terjamin.',
+                                    settings.translate('advantages_list'),
                                     style: GoogleFonts.outfit(
                                       fontSize: 13,
                                       color: isDark ? Colors.white70 : Colors.grey[700],
@@ -372,7 +366,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                                 TextButton(
                                   onPressed: () => Navigator.pop(context),
                                   child: Text(
-                                    'Mengerti',
+                                    settings.translate('understood'),
                                     style: GoogleFonts.outfit(
                                       fontWeight: FontWeight.bold,
                                       color: const Color(0xFF0B3A2E),
@@ -394,7 +388,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Pelajari Selengkapnya',
+                              settings.translate('learn_more'),
                               style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                             const SizedBox(width: 8),
@@ -445,12 +439,12 @@ class FinancialAuditorScreen extends StatelessWidget {
             ),
             const SizedBox(height: 25),
             Text(
-              'Ubah Uang Saku Harian',
+              settings.translate('edit_daily_pocket_money'),
               style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D)),
             ),
             const SizedBox(height: 8),
             Text(
-              'Masukkan nominal uang saku harian baru Anda.',
+              settings.translate('enter_daily_pocket'),
               style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 25),
@@ -461,7 +455,7 @@ class FinancialAuditorScreen extends StatelessWidget {
               decoration: InputDecoration(
                 prefixText: 'Rp ',
                 prefixStyle: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D)),
-                labelText: 'Nominal Baru',
+                labelText: settings.translate('new_amount'),
                 labelStyle: GoogleFonts.outfit(color: const Color(0xFF0D9488)),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -490,7 +484,7 @@ class FinancialAuditorScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
                 child: Text(
-                  'SIMPAN PERUBAHAN',
+                  settings.translate('save_changes'),
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
                 ),
               ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/category_provider.dart';
+import '../providers/settings_provider.dart';
 
 class PersonalSavingsScreen extends StatefulWidget {
   const PersonalSavingsScreen({super.key});
@@ -21,6 +22,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
   Widget build(BuildContext context) {
     // SINKRONISASI DATA DARI PROVIDER
     final catProvider = Provider.of<CategoryProvider>(context);
+    final settings = Provider.of<SettingsProvider>(context);
     double currentSaved = catProvider.savingsCurrent;
 
     return Scaffold(
@@ -29,7 +31,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.black), onPressed: () => Navigator.pop(context)),
-        title: const Text('Tabungan Saya', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(settings.translate('tabungan_saya'), style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -43,15 +45,15 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
                 children: [
                   const Icon(Icons.savings_outlined, size: 80, color: Colors.pink),
                   const SizedBox(height: 15),
-                  const Text('Uang Hasil Tabungan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+                  Text(settings.translate('uang_hasil_tabungan'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
                   const SizedBox(height: 10),
                   Text(fmt.format(currentSaved), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.green)),
                 ],
               ),
             ),
             const SizedBox(height: 25),
-            _buildClickableTile(Icons.auto_awesome, 'Uang Tabungan Bulanan', 'Ketik manual / Pilih nominal', Colors.pink, () => _showMonthlySavingsSettings(catProvider)),
-            _buildClickableTile(Icons.history, 'Riwayat Menabung', 'Lihat detail transaksi', Colors.pink, () => _showSavingHistory(catProvider)),
+            _buildClickableTile(Icons.auto_awesome, settings.translate('uang_tabungan_bulanan'), settings.translate('uang_tabungan_bulanan_desc'), Colors.pink, () => _showMonthlySavingsSettings(catProvider)),
+            _buildClickableTile(Icons.history, settings.translate('riwayat_menabung'), settings.translate('riwayat_menabung_desc'), Colors.pink, () => _showSavingHistory(catProvider)),
             const SizedBox(height: 30),
             SizedBox(
               width: double.infinity,
@@ -59,7 +61,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
               child: ElevatedButton(
                 onPressed: () => _showTopUpDialog(catProvider),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.pink, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
-                child: const Text('TAMBAH SALDO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(settings.translate('tambah_saldo'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -69,6 +71,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
   }
 
   void _showTopUpDialog(CategoryProvider catProvider) {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
     final topUpController = TextEditingController();
     showModalBottomSheet(
       context: context,
@@ -79,12 +82,12 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Tambah Saldo Tabungan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(settings.translate('tambah_saldo_tabungan'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             TextField(
               controller: topUpController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Nominal Top Up', prefixText: 'Rp ', border: OutlineInputBorder()),
+              decoration: InputDecoration(labelText: settings.translate('nominal_top_up'), prefixText: 'Rp ', border: const OutlineInputBorder()),
             ),
             const SizedBox(height: 25),
             SizedBox(
@@ -97,7 +100,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
                     catProvider.addSavingsTransaction('Tambah Saldo Tabungan', amount);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Berhasil menambah saldo ${fmt.format(amount)}!'),
+                        content: Text(settings.translate('berhasil_menambah_saldo').replaceAll('{amount}', fmt.format(amount))),
                         backgroundColor: Colors.green,
                       ),
                     );
@@ -105,7 +108,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.pink, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
-                child: const Text('LANJUTKAN PEMBAYARAN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(settings.translate('lanjutkan_pembayaran'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -115,6 +118,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
   }
 
   void _showSavingHistory(CategoryProvider catProvider) {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
     final history = catProvider.savingsHistory;
     showModalBottomSheet(
       context: context,
@@ -123,11 +127,11 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
         padding: const EdgeInsets.all(25),
         child: Column(
           children: [
-            const Text('Riwayat Menabung', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(settings.translate('riwayat_menabung'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
             const Divider(height: 30),
             Expanded(
               child: history.isEmpty
-                  ? const Center(child: Text('Belum ada riwayat menabung', style: TextStyle(color: Colors.grey)))
+                  ? Center(child: Text(settings.translate('belum_ada_riwayat_menabung'), style: const TextStyle(color: Colors.grey)))
                   : ListView.builder(
                       itemCount: history.length,
                       itemBuilder: (context, index) {
@@ -143,7 +147,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
                           item['title'] ?? 'Top Up',
                           formattedDate,
                           fmt.format(amount),
-                          item['status'] ?? 'Berhasil',
+                          item['status'] ?? settings.translate('berhasil_menabung'),
                           Colors.green,
                         );
                       },
@@ -156,6 +160,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
   }
 
   void _showMonthlySavingsSettings(CategoryProvider catProvider) {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
     final controller = TextEditingController();
     showModalBottomSheet(
       context: context,
@@ -184,13 +189,13 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
               ),
             ),
             const SizedBox(height: 25),
-            const Text(
-              'Uang Tabungan Bulanan',
+            Text(
+              settings.translate('uang_tabungan_bulanan'),
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Ketik nominal tabungan Anda secara manual atau pilih nominal di bawah.',
+            Text(
+              settings.translate('uang_tabungan_bulanan_desc'),
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 20),
@@ -221,9 +226,9 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
             TextField(
               controller: controller,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixText: 'Rp ',
-                labelText: 'Nominal Tabungan',
+                labelText: settings.translate('nominal_tabungan'),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(15)),
                 ),
@@ -240,7 +245,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
                     catProvider.addSavingsTransaction('Uang Tabungan Bulanan', amount);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Berhasil menabung ${fmt.format(amount)}!'),
+                        content: Text(settings.translate('berhasil_menabung').replaceAll('{amount}', fmt.format(amount))),
                         backgroundColor: Colors.green,
                       ),
                     );
@@ -251,7 +256,7 @@ class _PersonalSavingsScreenState extends State<PersonalSavingsScreen> {
                   backgroundColor: Colors.pink,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
-                child: const Text('SIMPAN & NABUNG', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(settings.translate('simpan_dan_nabung'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
