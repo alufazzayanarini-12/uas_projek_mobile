@@ -6,6 +6,7 @@ class DebtModel {
   final DateTime? dueDate;
   final String type; // 'debt' (hutang) or 'credit' (piutang)
   final String status; // 'active' or 'paid'
+  final DateTime? reminderDateTime;
 
   DebtModel({
     this.id,
@@ -15,6 +16,7 @@ class DebtModel {
     this.dueDate,
     required this.type,
     this.status = 'active',
+    this.reminderDateTime,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +28,7 @@ class DebtModel {
       'due_date': dueDate?.toIso8601String(),
       'type': type,
       'status': status,
+      'reminder_date_time': reminderDateTime?.toIso8601String(),
     };
   }
 
@@ -38,6 +41,7 @@ class DebtModel {
       dueDate: map['due_date'] != null ? DateTime.parse(map['due_date']) : null,
       type: map['type'],
       status: map['status'],
+      reminderDateTime: map['reminder_date_time'] != null ? DateTime.parse(map['reminder_date_time']) : null,
     );
   }
 }

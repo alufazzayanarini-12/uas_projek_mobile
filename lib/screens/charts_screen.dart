@@ -57,7 +57,6 @@ class _ChartsScreenState extends State<ChartsScreen> {
               ],
             ),
             actions: [
-              IconButton(icon: Icon(Icons.search, color: isDark ? Colors.white : const Color(0xFF002B1D)), onPressed: () {}),
               CircleAvatar(
                 radius: 18,
                 backgroundImage: settings.getProfileImageProvider(),

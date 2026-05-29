@@ -11,6 +11,7 @@ class Goal {
   final double? autoDebitAmount;
   final int? autoDebitDate;
   final String category; // 'Gadget', 'Liburan', 'Pendidikan', 'Kendaraan', 'Dana Darurat', 'Lainnya'
+  final DateTime? reminderDateTime;
 
   Goal({
     this.id,
@@ -25,6 +26,7 @@ class Goal {
     this.autoDebitAmount,
     this.autoDebitDate,
     this.category = 'Lainnya',
+    this.reminderDateTime,
   });
 
   // ── Calculated Properties ──
@@ -68,6 +70,7 @@ class Goal {
       'auto_debit_amount': autoDebitAmount,
       'auto_debit_date': autoDebitDate,
       'category': category,
+      'reminder_date_time': reminderDateTime?.toIso8601String(),
     };
   }
 
@@ -87,6 +90,7 @@ class Goal {
           : null,
       autoDebitDate: map['auto_debit_date'],
       category: map['category'] ?? 'Lainnya',
+      reminderDateTime: map['reminder_date_time'] != null ? DateTime.parse(map['reminder_date_time']) : null,
     );
   }
 
@@ -103,6 +107,7 @@ class Goal {
     double? autoDebitAmount,
     int? autoDebitDate,
     String? category,
+    DateTime? reminderDateTime,
   }) {
     return Goal(
       id: id ?? this.id,
@@ -117,6 +122,7 @@ class Goal {
       autoDebitAmount: autoDebitAmount ?? this.autoDebitAmount,
       autoDebitDate: autoDebitDate ?? this.autoDebitDate,
       category: category ?? this.category,
+      reminderDateTime: reminderDateTime ?? this.reminderDateTime,
     );
   }
 
