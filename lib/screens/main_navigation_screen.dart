@@ -209,7 +209,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         ),
                         
                         const SizedBox(height: 20),
-                        _buildListTipsCard(isDark),
+                        _buildListTipsCard(settings, isDark),
                       ],
                     ),
                   ),
@@ -304,7 +304,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Widget _buildListTipsCard(bool isDark) {
+  Widget _buildListTipsCard(SettingsProvider settings, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -318,7 +318,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           const SizedBox(width: 15),
           Expanded(
             child: Text(
-              'Tips: Mengatur otomatisasi membantu Anda berhemat 15% lebih banyak setiap bulan.',
+              settings.translate('tips_text'),
               style: GoogleFonts.outfit(
                 fontSize: 13,
                 color: isDark ? Colors.white70 : const Color(0xFF1E40AF),

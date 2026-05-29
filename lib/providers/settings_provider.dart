@@ -301,6 +301,19 @@ class SettingsProvider with ChangeNotifier {
       'dikembangkan_oleh': 'Dikembangkan oleh:',
       'versi_aplikasi': 'Versi Aplikasi 2.1.0',
       'hak_cipta': 'Hak Cipta © 2026 Tabunganku.\nSemua Hak Dilindungi.',
+      'jumlah_nominal': 'Jumlah Nominal',
+      'kartu_kredit': 'Kartu Kredit',
+      'kategori': 'Kategori',
+      'simpan_transaksi': 'Simpan Transaksi',
+      'persentase_pengeluaran': '{percentage}% dari pengeluaran',
+      'mingguan': 'Mingguan',
+      'bulanan': 'Bulanan',
+      'tahunan': 'Tahunan',
+      'tren_signifikan': 'Tren Signifikan',
+      'sisa_tabungan': 'Sisa Tabungan',
+      'tabungan_sehat_desc': 'Tabungan Anda sehat. Capai 65% dari target bulanan.',
+      'target_tabungan': 'Target Tabungan',
+      'harian': 'Harian',
     },
     'English': {
       'sisa_saldo': 'Remaining Balance',
@@ -410,6 +423,19 @@ class SettingsProvider with ChangeNotifier {
       'dikembangkan_oleh': 'Developed by:',
       'versi_aplikasi': 'App Version 2.1.0',
       'hak_cipta': 'Copyright © 2026 Tabunganku.\nAll Rights Reserved.',
+      'jumlah_nominal': 'Amount',
+      'kartu_kredit': 'Credit Card',
+      'kategori': 'Category',
+      'simpan_transaksi': 'Save Transaction',
+      'persentase_pengeluaran': '{percentage}% of expenses',
+      'mingguan': 'Weekly',
+      'bulanan': 'Monthly',
+      'tahunan': 'Yearly',
+      'tren_signifikan': 'Significant Trend',
+      'sisa_tabungan': 'Remaining Savings',
+      'tabungan_sehat_desc': 'Your savings are healthy. Reach 65% of monthly target.',
+      'target_tabungan': 'Savings Target',
+      'harian': 'Daily',
     },
     '日本語': {
       'sisa_saldo': '残高',
@@ -519,6 +545,19 @@ class SettingsProvider with ChangeNotifier {
       'dikembangkan_oleh': '開発者:',
       'versi_aplikasi': 'アプリバージョン 2.1.0',
       'hak_cipta': '著作権 © 2026 Tabunganku。\n全著作権所有。',
+      'jumlah_nominal': '金額',
+      'kartu_kredit': 'クレジットカード',
+      'kategori': 'カテゴリ',
+      'simpan_transaksi': '取引を保存',
+      'persentase_pengeluaran': '支出の {percentage}%',
+      'mingguan': '週次',
+      'bulanan': '月次',
+      'tahunan': '年次',
+      'tren_signifikan': '顕著な傾向',
+      'sisa_tabungan': '貯金残高',
+      'tabungan_sehat_desc': '貯金は健全です。月目標の65%を達成。',
+      'target_tabungan': '貯金目標',
+      'harian': '日次',
     },
     'العربية': {
       'sisa_saldo': 'الرصيد المتبقي',
@@ -629,11 +668,26 @@ class SettingsProvider with ChangeNotifier {
       'dikembangkan_oleh': 'تم التطوير بواسطة:',
       'versi_aplikasi': 'إصدار التطبيق 2.1.0',
       'hak_cipta': 'حقوق النشر © 2026 Tabunganku.\nجميع الحقوق محفوظة.',
+      'jumlah_nominal': 'المبلغ',
+      'kartu_kredit': 'بطاقة الائتمان',
+      'kategori': 'الفئة',
+      'simpan_transaksi': 'حفظ المعاملة',
+      'persentase_pengeluaran': '{percentage}% من المصاريف',
+      'mingguan': 'أسبوعي',
+      'bulanan': 'شهري',
+      'tahunan': 'سنوي',
+      'tren_signifikan': 'اتجاه ملحوظ',
+      'sisa_tabungan': 'المدخرات المتبقية',
+      'tabungan_sehat_desc': 'مدخراتك بصحة جيدة. تم تحقيق 65٪ من الهدف الشهري.',
+      'target_tabungan': 'هدف الادخار',
+      'harian': 'يومي',
     }
   };
 
   String translate(String key) {
-    return _localizedValues[_selectedLanguage]?[key] ?? _localizedValues['Bahasa Indonesia']![key]!;
+    return _localizedValues[_selectedLanguage]?[key] ?? 
+           _localizedValues['Bahasa Indonesia']?[key] ?? 
+           key;
   }
 
   String formatCurrency(double amount) {

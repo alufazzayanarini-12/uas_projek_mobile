@@ -102,7 +102,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                     ),
-                    _buildListTile(settings.translate('metode_pembayaran'), textColor),
                   ],
                 ),
 
@@ -243,7 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Icon(Icons.help_outline, color: isDark ? Colors.white : const Color(0xFF002B1D), size: 22),
               const SizedBox(width: 12),
-              Text('Dukungan', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+              Text(settings.translate('dukungan'), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
             ],
           ),
           const SizedBox(height: 20),

@@ -137,7 +137,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              fmt.format(5000000),
+                              settings.formatCurrency(5000000),
                               style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -167,7 +167,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              fmt.format(2400000),
+                              settings.formatCurrency(2400000),
                               style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -211,7 +211,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            fmt.format(totalSisaSaldo),
+                            settings.formatCurrency(totalSisaSaldo),
                             style: GoogleFonts.outfit(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -238,7 +238,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                       ),
                     ),
                     Text(
-                      '${settings.translate('total_label')}: Rp 2.4jt',
+                      '${settings.translate('total_label')}: ${settings.formatCurrency(2400000)}',
                       style: GoogleFonts.outfit(
                         fontSize: 13,
                         color: Colors.grey[500],
@@ -260,6 +260,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                     children: [
                       _buildBreakdownItem(
                         context,
+                        settings,
                         settings.translate('makan_dan_minum'),
                         1200000,
                         2400000,
@@ -270,6 +271,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                       const Divider(height: 30),
                       _buildBreakdownItem(
                         context,
+                        settings,
                         settings.translate('transportasi_dan_bensin'),
                         800000,
                         2400000,
@@ -280,6 +282,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                       const Divider(height: 30),
                       _buildBreakdownItem(
                         context,
+                        settings,
                         settings.translate('lain_lain'),
                         400000,
                         2400000,
@@ -318,7 +321,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              settings.translate('analisis_bulanan_deskripsi').replaceAll('{balance}', fmt.format(totalSisaSaldo)),
+                              settings.translate('analisis_bulanan_deskripsi').replaceAll('{balance}', settings.formatCurrency(totalSisaSaldo)),
                               style: GoogleFonts.outfit(
                                 fontSize: 13,
                                 color: isDark ? Colors.white70 : Colors.grey[800],
@@ -368,6 +371,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
 
   Widget _buildBreakdownItem(
     BuildContext context,
+    SettingsProvider settings,
     String title,
     double spent,
     double total,
@@ -375,7 +379,6 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
     IconData icon,
     bool isDark,
   ) {
-    final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     double ratio = total > 0 ? (spent / total) : 0.0;
     int percentage = (ratio * 100).round();
 
@@ -406,7 +409,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                     ),
                   ),
                   Text(
-                    fmt.format(spent),
+                    settings.formatCurrency(spent),
                     style: GoogleFonts.outfit(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -440,7 +443,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                '$percentage% dari pengeluaran',
+                settings.translate('persentase_pengeluaran').replaceAll('{percentage}', percentage.toString()),
                 style: GoogleFonts.outfit(fontSize: 11, color: Colors.grey[500]),
               ),
             ],

@@ -84,7 +84,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                _buildPeriodToggle(isDark),
+                _buildPeriodToggle(settings, isDark),
                 const SizedBox(height: 25),
                 _buildDailyExpenseCard(settings, isDark, textColor, cardColor, txs),
                 const SizedBox(height: 20),
@@ -95,10 +95,10 @@ class _ChartsScreenState extends State<ChartsScreen> {
                       MaterialPageRoute(builder: (context) => const PersonalSavingsScreen()),
                     );
                   },
-                  child: _buildSavingsProgressCard(isDark),
+                  child: _buildSavingsProgressCard(settings, isDark),
                 ),
                 const SizedBox(height: 20),
-                _buildForecastCard(settings, fmt),
+                _buildForecastCard(settings),
                 const SizedBox(height: 120),
               ],
             ),
@@ -108,7 +108,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
     );
   }
 
-  Widget _buildPeriodToggle(bool isDark) {
+  Widget _buildPeriodToggle(SettingsProvider settings, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
@@ -117,9 +117,9 @@ class _ChartsScreenState extends State<ChartsScreen> {
       ),
       child: Row(
         children: [
-          _buildToggleItem(0, 'Mingguan', isDark),
-          _buildToggleItem(1, 'Bulanan', isDark),
-          _buildToggleItem(2, 'Tahunan', isDark),
+          _buildToggleItem(0, settings.translate('mingguan'), isDark),
+          _buildToggleItem(1, settings.translate('bulanan'), isDark),
+          _buildToggleItem(2, settings.translate('tahunan'), isDark),
         ],
       ),
     );
@@ -223,7 +223,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
 
 
 
-  Widget _buildSavingsProgressCard(bool isDark) {
+  Widget _buildSavingsProgressCard(SettingsProvider settings, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -245,14 +245,14 @@ class _ChartsScreenState extends State<ChartsScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(color: const Color(0xFFFEF3C7), borderRadius: BorderRadius.circular(20)),
-                child: Text('Tren Signifikan', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF92400E))),
+                child: Text(settings.translate('tren_signifikan'), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF92400E))),
               ),
             ],
           ),
           const SizedBox(height: 15),
-          Text('Sisa Tabungan', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.amber[100] : const Color(0xFF92400E))),
+          Text(settings.translate('sisa_tabungan'), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.amber[100] : const Color(0xFF92400E))),
           const SizedBox(height: 5),
-          Text('Tabungan Anda sehat. Capai 65% dari target bulanan.', style: GoogleFonts.outfit(fontSize: 13, color: isDark ? Colors.amber[50] : const Color(0xFFB45309))),
+          Text(settings.translate('tabungan_sehat_desc'), style: GoogleFonts.outfit(fontSize: 13, color: isDark ? Colors.amber[50] : const Color(0xFFB45309))),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(15),
@@ -267,7 +267,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('TARGET TABUNGAN', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.amber[100] : const Color(0xFF92400E))),
+                    Text(settings.translate('target_tabungan').toUpperCase(), style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.amber[100] : const Color(0xFF92400E))),
                     Text('65%', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.amber[100] : const Color(0xFF92400E))),
                   ],
                 ),
@@ -394,7 +394,7 @@ class _ChartsScreenState extends State<ChartsScreen> {
     );
   }
 
-  Widget _buildForecastCard(SettingsProvider settings, NumberFormat fmt) {
+  Widget _buildForecastCard(SettingsProvider settings) {
     double daily = settings.dailyPocketMoney;
     double monthly = daily * 30; // Estimasi bulanan
 
@@ -412,12 +412,15 @@ class _ChartsScreenState extends State<ChartsScreen> {
           const SizedBox(height: 5),
           Text(settings.translate('estimasi_alokasi_bulanan'), style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.6))),
           const SizedBox(height: 20),
-          Text(fmt.format(monthly), style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(settings.formatCurrency(monthly), style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 4),
-          Text('Harian: ${fmt.format(daily)}', style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.7))),
+          Text('${settings.translate('harian')}: ${settings.formatCurrency(daily)}', style: GoogleFonts.outfit(fontSize: 13, color: Colors.white.withOpacity(0.7))),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () => _showPocketMoneyDialog(context, settings, fmt),
+            onPressed: () {
+              final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+              _showPocketMoneyDialog(context, settings, fmt);
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFB7E4C7),
               foregroundColor: const Color(0xFF002B1D),
