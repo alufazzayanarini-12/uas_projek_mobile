@@ -3,6 +3,7 @@ import '../models/category_model.dart';
 import '../database/db_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../services/notification_service.dart';
 
 class CategoryProvider with ChangeNotifier {
   List<CategoryModel> _categories = [];
@@ -75,6 +76,18 @@ class CategoryProvider with ChangeNotifier {
       'status': 'Berhasil',
     });
     _saveSavingsHistory();
+    // Show immediate local notification for savings top-up
+    try {
+      final ns = NotificationService();
+      final nid = DateTime.now().millisecondsSinceEpoch % 100000;
+      ns.showImmediateNotification(
+        id: nid,
+        title: 'Tabungan diperbarui',
+        body: '$title: Rp ${amount.toStringAsFixed(0)} berhasil ditambahkan.',
+      );
+    } catch (e) {
+      // ignore notification errors
+    }
     notifyListeners();
   }
 

@@ -7,7 +7,6 @@ import 'providers/settings_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/transaction_provider.dart';
 import 'theme/app_theme.dart';
-import 'screens/pin_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/main_navigation_screen.dart';
 
@@ -56,7 +55,7 @@ class MyApp extends StatelessWidget {
             Locale('ja'),
             Locale('ar'),
           ],
-          home: settings.isAppLockEnabled ? const PinScreen() : const MainNavigationScreen(),
+          home: const MainNavigationScreen(),
           debugShowCheckedModeBanner: false,
         );
       },

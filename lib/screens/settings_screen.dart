@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import 'account_settings_screen.dart';
-import 'security_settings_screen.dart';
+// security settings removed
 import 'notification_settings_screen.dart';
 import 'bank_management_screen.dart';
 import 'language_settings_screen.dart';

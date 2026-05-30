@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../services/biometric_auth_service.dart';
 import 'main_navigation_screen.dart';
 
 class PinScreen extends StatefulWidget {
@@ -12,7 +13,46 @@ class PinScreen extends StatefulWidget {
 
 class _PinScreenState extends State<PinScreen> {
   String _pin = '';
+  bool _hasAttemptedBiometric = false;
   final String _correctPin = '1234'; // PIN Default Anda
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _attemptBiometric();
+    });
+  }
+
+  Future<void> _attemptBiometric() async {
+    if (_hasAttemptedBiometric) return;
+    _hasAttemptedBiometric = true;
+
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    if (!settings.isBiometricEnabled) return;
+
+    final biometricService = BiometricAuthService();
+    if (!await biometricService.canAuthenticate()) return;
+    if (!await biometricService.hasEnrolledBiometrics()) return;
+
+    final success = await biometricService.authenticate(
+      reason: 'Masuk dengan sidik jari',
+    );
+    if (!success || !mounted) {
+      final err = biometricService.lastError;
+      if (err != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Biometric error: $err', textAlign: TextAlign.center, style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red[800]),
+        );
+      }
+      return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+    );
+  }
 
   void _onKeypadTap(String val) {
     if (_pin.length < 4) {
@@ -30,13 +70,16 @@ class _PinScreenState extends State<PinScreen> {
   void _verifyPin() {
     if (_pin == _correctPin) {
       Navigator.pushReplacement(
-        context, 
-        MaterialPageRoute(builder: (context) => const MainNavigationScreen())
+        context,
+        MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('PIN Salah! Gunakan "1234"', textAlign: TextAlign.center), 
+          content: Text(
+            'PIN Salah! Gunakan "1234"',
+            textAlign: TextAlign.center,
+          ),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 1),
         ),
@@ -54,29 +97,77 @@ class _PinScreenState extends State<PinScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 60), // Menurunkan konten agar tidak terlalu ke atas
-            const Icon(Icons.lock_person_outlined, size: 80, color: Colors.white),
+            const SizedBox(
+              height: 60,
+            ), // Menurunkan konten agar tidak terlalu ke atas
+            const Icon(
+              Icons.lock_person_outlined,
+              size: 80,
+              color: Colors.white,
+            ),
             const SizedBox(height: 20),
             const Text(
               'Masukkan PIN Keamanan',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
             ),
             const SizedBox(height: 40),
-            
+
             // ── INDIKATOR TITIK PIN ──
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(4, (index) => Container(
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  color: index < _pin.length ? Colors.cyanAccent : Colors.white24,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white38),
+              children: List.generate(
+                4,
+                (index) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: index < _pin.length
+                        ? Colors.cyanAccent
+                        : Colors.white24,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white38),
+                  ),
                 ),
-              )),
+              ),
             ),
+            const SizedBox(height: 20),
+            Consumer<SettingsProvider>(
+              builder: (context, settings, child) {
+                if (!settings.isBiometricEnabled) {
+                  return const SizedBox.shrink();
+                }
+                return Column(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _attemptBiometric,
+                      icon: const Icon(Icons.fingerprint, color: Colors.white),
+                      label: const Text(
+                        'Gunakan Sidik Jari',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white12,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 20),
             const SizedBox(height: 60),
 
             // ── KEYPAD ANGKA ──
@@ -88,7 +179,8 @@ class _PinScreenState extends State<PinScreen> {
                   mainAxisSpacing: 20,
                   crossAxisSpacing: 20,
                   children: [
-                    for (var i = 1; i <= 9; i++) _buildKeypadButton(i.toString()),
+                    for (var i = 1; i <= 9; i++)
+                      _buildKeypadButton(i.toString()),
                     const SizedBox(), // Kosong di kiri nol
                     _buildKeypadButton('0'),
                     _buildBackspaceButton(),
@@ -118,7 +210,11 @@ class _PinScreenState extends State<PinScreen> {
           alignment: Alignment.center,
           child: Text(
             val,
-            style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w400),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ),
       ),
@@ -137,7 +233,11 @@ class _PinScreenState extends State<PinScreen> {
         borderRadius: BorderRadius.circular(100),
         child: Container(
           alignment: Alignment.center,
-          child: const Icon(Icons.backspace_outlined, color: Colors.white70, size: 28),
+          child: const Icon(
+            Icons.backspace_outlined,
+            color: Colors.white70,
+            size: 28,
+          ),
         ),
       ),
     );

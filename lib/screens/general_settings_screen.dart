@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import 'account_settings_screen.dart';
-import 'security_settings_screen.dart';
+// security settings removed
 import 'notification_settings_screen.dart';
 import 'bank_management_screen.dart';
 import 'language_settings_screen.dart';
@@ -45,9 +45,7 @@ class GeneralSettingsScreen extends StatelessWidget {
                   _buildSettingsItem(context, Icons.person_outline, settings.translate('informasi_pribadi'), settings.translate('nama_email_telepon'), isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountSettingsScreen()));
                   }),
-                  _buildSettingsItem(context, Icons.lock_outline, settings.translate('kata_sandi_keamanan'), settings.translate('pin_sidik_jari'), isDark, onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()));
-                  }),
+                  // security settings removed
                   _buildSettingsItem(context, Icons.account_balance_outlined, settings.translate('manajemen_rekening'), settings.translate('rekening_terhubung'), isDark, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const BankManagementScreen()));
                   }),

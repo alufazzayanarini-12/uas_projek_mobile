@@ -5,13 +5,14 @@ import 'package:timezone/data/latest.dart' as tz_data;
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  late final Future<void> _initialization;
 
   factory NotificationService() {
     return _instance;
   }
 
   NotificationService._internal() {
-    _initializeNotifications();
+    _initialization = _initializeNotifications();
   }
 
   Future<void> _initializeNotifications() async {
@@ -30,8 +31,6 @@ class NotificationService {
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
-      onDidReceiveLocalNotification:
-          (int id, String? title, String? body, String? payload) async {},
     );
 
     final InitializationSettings initializationSettings =
@@ -41,17 +40,11 @@ class NotificationService {
     );
 
     await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
         // Handle notification tap
       },
     );
-
-    // Request permissions for Android 12+
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationPermission();
   }
 
   /// Schedule a notification at a specific date and time
@@ -61,16 +54,17 @@ class NotificationService {
     required String body,
     required DateTime scheduledDateTime,
   }) async {
+    await _initialization;
     try {
       final tz.TZDateTime tzScheduledDateTime =
           tz.TZDateTime.from(scheduledDateTime, tz.local);
 
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id,
-        title,
-        body,
-        tzScheduledDateTime,
-        const NotificationDetails(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: tzScheduledDateTime,
+        notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'reminder_channel',
             'Reminder Notifications',
@@ -84,9 +78,7 @@ class NotificationService {
             presentSound: true,
           ),
         ),
-        androidAllowWhileIdle: true,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
     } catch (e) {
       print('Error scheduling notification: $e');
@@ -95,8 +87,9 @@ class NotificationService {
 
   /// Cancel a scheduled notification
   Future<void> cancelNotification(int id) async {
+    await _initialization;
     try {
-      await flutterLocalNotificationsPlugin.cancel(id);
+      await flutterLocalNotificationsPlugin.cancel(id: id);
     } catch (e) {
       print('Error canceling notification: $e');
     }
@@ -104,6 +97,7 @@ class NotificationService {
 
   /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
+    await _initialization;
     try {
       await flutterLocalNotificationsPlugin.cancelAll();
     } catch (e) {
@@ -117,6 +111,7 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
+    await _initialization;
     try {
       const AndroidNotificationDetails androidNotificationDetails =
           AndroidNotificationDetails(
@@ -134,10 +129,10 @@ class NotificationService {
       );
 
       await flutterLocalNotificationsPlugin.show(
-        id,
-        title,
-        body,
-        notificationDetails,
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: notificationDetails,
       );
     } catch (e) {
       print('Error showing immediate notification: $e');

@@ -6,7 +6,7 @@ import '../providers/settings_provider.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'account_settings_screen.dart';
-import 'security_settings_screen.dart';
+// security settings removed
 import 'language_settings_screen.dart';
 import 'about_app_screen.dart';
 import 'monthly_report_screen.dart';
@@ -91,17 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                     ),
-                    _buildListTile(
-                      settings.translate('keamanan'), 
-                      textColor, 
-                      subtitle: settings.translate('keamanan'),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()),
-                        );
-                      },
-                    ),
+                    // security menu removed
                   ],
                 ),
 
