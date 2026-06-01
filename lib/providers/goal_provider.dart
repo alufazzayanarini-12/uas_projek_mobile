@@ -126,19 +126,20 @@ class GoalProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addSavingsToGoal(int goalId, double amount, int accountId) async {
+  Future<void> addSavingsToGoal(int goalId, double amount, int accountId, {DateTime? date, String? description}) async {
     final goalIndex = _goals.indexWhere((g) => g.id == goalId);
     if (goalIndex != -1) {
       final goal = _goals[goalIndex];
       final updatedGoal = goal.copyWith(currentAmount: goal.currentAmount + amount);
       
-      // 1. Create a withdrawal transaction for the account
+      // 1. Create a deposit transaction for the account
       final transaction = TransactionModel(
         accountId: accountId,
         goalId: goalId,
-        type: 'withdrawal',
+        type: 'deposit',
         amount: amount,
-        description: 'Setoran ke target: ${goal.name}',
+        description: description ?? 'Setoran ke target: ${goal.name}',
+        date: date,
       );
       
       await DatabaseHelper.instance.createTransaction(transaction);

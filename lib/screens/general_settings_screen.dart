@@ -69,8 +69,30 @@ class GeneralSettingsScreen extends StatelessWidget {
                 _buildSectionHeader(settings.translate('lainnya'), isDark),
                 const SizedBox(height: 15),
                 _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(Icons.help_outline, settings.translate('pusat_bantuan'), settings.translate('faq_dan_kontak_dukung'), isDark),
-                  _buildSettingsItem(Icons.info_outline, settings.translate('tentang_aplikasi'), settings.translate('versi_aplikasi'), isDark),
+                  _buildSettingsItem(
+                    context,
+                    Icons.restaurant_outlined,
+                    settings.translate('makan_dan_minum'),
+                    settings.translate('fitur_ekspor_disiapkan'),
+                    isDark,
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(settings.translate('fitur_ekspor_disiapkan'))),
+                      );
+                    },
+                  ),
+                  _buildSettingsItem(
+                    context,
+                    Icons.local_gas_station_outlined,
+                    settings.translate('transportasi_dan_bensin'),
+                    settings.translate('fitur_ekspor_disiapkan'),
+                    isDark,
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(settings.translate('fitur_ekspor_disiapkan'))),
+                      );
+                    },
+                  ),
                 ], isDark),
                 const SizedBox(height: 40),
                 _buildLogoutButton(),

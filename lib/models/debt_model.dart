@@ -44,4 +44,26 @@ class DebtModel {
       reminderDateTime: map['reminder_date_time'] != null ? DateTime.parse(map['reminder_date_time']) : null,
     );
   }
+
+  DebtModel copyWith({
+    int? id,
+    String? contactName,
+    double? amount,
+    double? remainingAmount,
+    DateTime? dueDate,
+    String? type,
+    String? status,
+    DateTime? reminderDateTime,
+  }) {
+    return DebtModel(
+      id: id ?? this.id,
+      contactName: contactName ?? this.contactName,
+      amount: amount ?? this.amount,
+      remainingAmount: remainingAmount ?? this.remainingAmount,
+      dueDate: dueDate ?? this.dueDate,
+      type: type ?? this.type,
+      status: status ?? this.status,
+      reminderDateTime: reminderDateTime ?? this.reminderDateTime,
+    );
+  }
 }

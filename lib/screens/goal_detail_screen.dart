@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../providers/settings_provider.dart';
 import '../providers/goal_provider.dart';
 import '../models/goal.dart';
+import '../models/transaction_model.dart';
 import 'edit_goal_screen.dart';
 import 'settings_screen.dart';
 import 'automation_settings_screen.dart';
@@ -22,6 +23,20 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
+  Future<List<TransactionModel>>? _transactionsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGoalTransactions();
+  }
+
+  void _loadGoalTransactions() {
+    if (widget.goalId != null) {
+      _transactionsFuture = Provider.of<GoalProvider>(context, listen: false)
+          .getGoalTransactions(widget.goalId!);
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -34,6 +49,56 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
       setState(() {
         _selectedDate = picked;
       });
+    }
+  }
+
+  double _parseAmount(String text) {
+    final cleaned = text.replaceAll(RegExp(r'[^0-9]'), '');
+    return double.tryParse(cleaned) ?? 0;
+  }
+
+  Future<void> _saveDeposit(Goal goal) async {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final amount = _parseAmount(_amountController.text);
+    final note = _noteController.text.trim();
+
+    if (amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(settings.translate('nominal_harus_diisi')), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    if (note.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Keterangan harus diisi'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    await Provider.of<GoalProvider>(context, listen: false)
+        .addSavingsToGoal(goal.id!, amount, 1, date: _selectedDate, description: note);
+
+    _amountController.clear();
+    _noteController.clear();
+    setState(() {
+      _selectedDate = DateTime.now();
+      _loadGoalTransactions();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(settings.translate('setoran_berhasil_dicatat'), style: GoogleFonts.outfit()),
+        backgroundColor: const Color(0xFF4CAF50),
+      ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant GoalDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.goalId != oldWidget.goalId) {
+      _loadGoalTransactions();
     }
   }
 
@@ -248,20 +313,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                       
                       const SizedBox(height: 40),
                       ElevatedButton(
-                        onPressed: () {
-                          if (_amountController.text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('nominal_harus_diisi'))));
+                        onPressed: () async {
+                          if (goal == null || goal.id == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(settings.translate('contoh_setoran_tidak_disimpan'), style: GoogleFonts.outfit())),
+                            );
+                            return;
                           }
-                          
-                          if (goal != null && goal.id != null) {
-                            double amount = double.tryParse(_amountController.text) ?? 0;
-                            // Assume accountId 1 for now
-                            Provider.of<GoalProvider>(context, listen: false).addSavingsToGoal(goal.id!, amount, 1);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('setoran_berhasil_dicatat'), style: GoogleFonts.outfit()), backgroundColor: const Color(0xFF4CAF50)));
-                            Navigator.pop(context);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('contoh_setoran_tidak_disimpan'), style: GoogleFonts.outfit())));
-                          }
+                          await _saveDeposit(goal);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4CAF50), // Green button like screenshot
@@ -271,6 +330,47 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                         ),
                         child: Text(settings.translate('simpan'), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.5)),
                       ),
+                      const SizedBox(height: 30),
+                      if (goal != null)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Riwayat Setoran', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 16),
+                            FutureBuilder<List<TransactionModel>>(
+                              future: _transactionsFuture,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const Center(child: CircularProgressIndicator());
+                                }
+                                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                  return Text('Tidak ada setoran', style: GoogleFonts.outfit(color: Colors.grey[600]));
+                                }
+                                final transactions = snapshot.data!;
+                                return Column(
+                                  children: transactions.map((tx) {
+                                    return Container(
+                                      margin: const EdgeInsets.symmetric(vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF252525) : const Color(0xFFF8FAFC),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: ListTile(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        title: Text(
+                                          tx.description,
+                                          style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                                        ),
+                                        subtitle: Text(DateFormat('dd MMM yyyy').format(tx.date), style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 12)),
+                                        trailing: Text(fmt.format(tx.amount), style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.green[700])),
+                                      ),
+                                    );
+                                  }).toList(),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       const SizedBox(height: 100), // padding for scroll
                     ],
                   ),

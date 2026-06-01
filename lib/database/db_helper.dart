@@ -8,6 +8,8 @@ import '../models/account.dart';
 import '../models/transaction_model.dart';
 import '../models/goal.dart';
 import '../models/category_model.dart';
+import '../models/debt_model.dart';
+import '../models/debt_payment_model.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -42,7 +44,7 @@ class DatabaseHelper {
 
     final db = await openDatabase(
       path,
-      version: 13,
+      version: 14,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -73,6 +75,24 @@ class DatabaseHelper {
     if (!columns.contains('order_index')) {
       await db.execute('ALTER TABLE categories ADD COLUMN order_index INTEGER DEFAULT 0');
     }
+
+    columns = [];
+    result = await db.rawQuery('PRAGMA table_info(goals)');
+    for (var row in result) {
+      columns.add(row['name'] as String);
+    }
+    if (!columns.contains('reminder_date_time')) {
+      await db.execute('ALTER TABLE goals ADD COLUMN reminder_date_time TEXT');
+    }
+
+    columns = [];
+    result = await db.rawQuery('PRAGMA table_info(debts)');
+    for (var row in result) {
+      columns.add(row['name'] as String);
+    }
+    if (!columns.contains('reminder_date_time')) {
+      await db.execute('ALTER TABLE debts ADD COLUMN reminder_date_time TEXT');
+    }
   }
 
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -100,6 +120,18 @@ class DatabaseHelper {
         SELECT account_id, goal_id, category_id, target_account_id, type, amount, description, date FROM transactions_old
       ''');
       await db.execute('DROP TABLE transactions_old');
+    }
+
+    if (oldVersion < 14) {
+      await db.execute('''
+      CREATE TABLE debt_payments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        debt_id INTEGER NOT NULL,
+        amount REAL NOT NULL,
+        date TEXT NOT NULL,
+        FOREIGN KEY (debt_id) REFERENCES debts (id) ON DELETE CASCADE
+      )
+      ''');
     }
   }
 
@@ -172,7 +204,8 @@ CREATE TABLE transactions (
       image_path TEXT,
       auto_debit_amount REAL,
       auto_debit_date INTEGER,
-      category TEXT DEFAULT 'Lainnya'
+      category TEXT DEFAULT 'Lainnya',
+      reminder_date_time TEXT
     )
     ''');
 
@@ -199,7 +232,18 @@ CREATE TABLE transactions (
       remaining_amount REAL NOT NULL,
       due_date TEXT,
       type TEXT NOT NULL,
-      status TEXT NOT NULL
+      status TEXT NOT NULL,
+      reminder_date_time TEXT
+    )
+    ''');
+
+    await db.execute('''
+    CREATE TABLE debt_payments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      debt_id INTEGER NOT NULL,
+      amount REAL NOT NULL,
+      date TEXT NOT NULL,
+      FOREIGN KEY (debt_id) REFERENCES debts (id) ON DELETE CASCADE
     )
     ''');
   }
@@ -357,6 +401,55 @@ CREATE TABLE transactions (
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // Debt Operations
+  Future<DebtModel> createDebt(DebtModel debt) async {
+    final db = await instance.database;
+    final id = await db.insert('debts', debt.toMap());
+    return debt.copyWith(id: id);
+  }
+
+  Future<List<DebtModel>> readAllDebts() async {
+    final db = await instance.database;
+    final result = await db.query('debts', orderBy: 'contact_name ASC');
+    return result.map((json) => DebtModel.fromMap(json)).toList();
+  }
+
+  Future<int> updateDebt(DebtModel debt) async {
+    final db = await instance.database;
+    return await db.update(
+      'debts',
+      debt.toMap(),
+      where: 'id = ?',
+      whereArgs: [debt.id],
+    );
+  }
+
+  Future<int> deleteDebt(int id) async {
+    final db = await instance.database;
+    return await db.delete(
+      'debts',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<DebtPaymentModel> createDebtPayment(DebtPaymentModel payment) async {
+    final db = await instance.database;
+    final id = await db.insert('debt_payments', payment.toMap());
+    return payment.copyWith(id: id);
+  }
+
+  Future<List<DebtPaymentModel>> readDebtPayments(int debtId) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'debt_payments',
+      where: 'debt_id = ?',
+      whereArgs: [debtId],
+      orderBy: 'date DESC',
+    );
+    return result.map((json) => DebtPaymentModel.fromMap(json)).toList();
   }
 
   // Category Operations

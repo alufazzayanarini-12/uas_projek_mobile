@@ -19,6 +19,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   final TextEditingController _amountController = TextEditingController();
   String _selectedCategory = 'Tabungan';
   late DateTime _selectedDate;
+  DateTime? _selectedReminderDateTime;
 
   SettingsProvider get settings => Provider.of<SettingsProvider>(context, listen: false);
 
@@ -30,8 +31,10 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       _amountController.text = widget.goalToEdit!.targetAmount.toInt().toString();
       _selectedCategory = widget.goalToEdit!.category;
       _selectedDate = widget.goalToEdit!.deadline;
+      _selectedReminderDateTime = widget.goalToEdit!.reminderDateTime;
     } else {
       _selectedDate = DateTime.now().add(const Duration(days: 30));
+      _selectedReminderDateTime = null;
     }
   }
 
@@ -62,6 +65,59 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     }
   }
 
+  Future<void> _selectReminderDateTime(BuildContext context) async {
+    final now = DateTime.now();
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedReminderDateTime ?? now,
+      firstDate: now,
+      lastDate: DateTime(2101),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF002B1D),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF002B1D),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (pickedDate == null) return;
+
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: _selectedReminderDateTime != null
+          ? TimeOfDay.fromDateTime(_selectedReminderDateTime!)
+          : TimeOfDay(hour: now.hour, minute: now.minute),
+    );
+    if (pickedTime == null) return;
+
+    final selectedDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+    if (selectedDateTime.isBefore(now.add(const Duration(minutes: 1)))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(settings.translate('tanggal_pengingat_tidak_valid'), style: GoogleFonts.outfit()),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _selectedReminderDateTime = selectedDateTime;
+    });
+  }
+
   int _calculateMonths(DateTime targetDate) {
     final now = DateTime.now();
     int months = (targetDate.year - now.year) * 12 + targetDate.month - now.month;
@@ -76,8 +132,15 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       return;
     }
 
-    final double targetAmount = double.tryParse(_amountController.text) ?? 0.0;
-    if (targetAmount <= 0) return;
+    final rawAmount = _amountController.text;
+    final cleanedAmount = rawAmount.replaceAll(RegExp(r'[^0-9.]'), '');
+    final double targetAmount = double.tryParse(cleanedAmount) ?? 0.0;
+    if (targetAmount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(settings.translate('nominal_harus_diisi'), style: GoogleFonts.outfit()), backgroundColor: Colors.red),
+      );
+      return;
+    }
 
     int colorValue = const Color(0xFF002B1D).value;
     int iconCode = Icons.flag.codePoint;
@@ -95,6 +158,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       color: colorValue,
       icon: iconCode,
       category: _selectedCategory,
+      reminderDateTime: _selectedReminderDateTime,
     );
 
     if (widget.goalToEdit != null) {
@@ -230,6 +294,34 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                     ),
                   ),
                   const Icon(Icons.calendar_month_outlined, color: Color(0xFF002B1D)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(settings.translate('reminder_waktu'), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () => _selectReminderDateTime(context),
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.withOpacity(0.2)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectedReminderDateTime != null
+                          ? DateFormat('dd MMM yyyy | HH:mm').format(_selectedReminderDateTime!)
+                          : settings.translate('pilih_tanggal_pengingat'),
+                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D)),
+                    ),
+                  ),
+                  const Icon(Icons.alarm, color: Color(0xFF002B1D)),
                 ],
               ),
             ),
