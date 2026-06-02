@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../models/transaction_model.dart';
+import '../providers/account_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
@@ -75,23 +77,46 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
             .fold<double>(0, (sum, tx) => sum + tx.amount);
 
         final categoryMap = {for (var cat in categoryProvider.allCategories) cat.id: cat};
-        final breakdown = <int, double>{};
-        for (final tx in monthlyTransactions.where((tx) => tx.type == 'withdrawal')) {
-          final key = tx.categoryId ?? 0;
-          breakdown[key] = (breakdown[key] ?? 0) + tx.amount;
+        bool isFoodCategory(category) {
+          if (category == null) return false;
+          final name = (category.name as String).toLowerCase();
+          return name.contains('makan') || name.contains('food');
         }
 
-        final breakdownItems = breakdown.entries.map((entry) {
-          final category = categoryMap[entry.key];
-          return {
-            'name': category?.name ?? 'Lain-lain',
-            'amount': entry.value,
-            'color': category != null ? Color(category.colorValue) : const Color(0xFF8B5CF6),
-            'icon': category != null ? IconData(category.iconCodePoint, fontFamily: 'MaterialIcons') : Icons.more_horiz_rounded,
-            'categoryId': entry.key,
-          };
-        }).toList()
-          ..sort((a, b) => (b['amount'] as double).compareTo(a['amount'] as double));
+        bool isTransportCategory(category) {
+          if (category == null) return false;
+          final name = (category.name as String).toLowerCase();
+          return name.contains('bensin') || name.contains('fuel');
+        }
+
+        final List<TransactionModel> foodTransactions = monthlyTransactions.where((tx) {
+          final category = categoryMap[tx.categoryId];
+          final desc = (tx.description ?? '').toString().toLowerCase();
+          return tx.type == 'withdrawal' && (isFoodCategory(category) || desc.contains('makan'));
+        }).cast<TransactionModel>().toList();
+
+        final List<TransactionModel> transportTransactions = monthlyTransactions.where((tx) {
+          final category = categoryMap[tx.categoryId];
+          final desc = (tx.description ?? '').toString().toLowerCase();
+          return tx.type == 'withdrawal' && (isTransportCategory(category) || desc.contains('bensin'));
+        }).cast<TransactionModel>().toList();
+
+        final breakdownItems = [
+          {
+            'name': settings.translate('uang_makan'),
+            'amount': foodTransactions.fold<double>(0, (sum, tx) => sum + tx.amount),
+            'color': const Color(0xFFFB923C),
+            'icon': Icons.restaurant_outlined,
+            'transactions': foodTransactions,
+          },
+          {
+            'name': settings.translate('uang_bensin'),
+            'amount': transportTransactions.fold<double>(0, (sum, tx) => sum + tx.amount),
+            'color': const Color(0xFF2563EB),
+            'icon': Icons.local_gas_station_outlined,
+            'transactions': transportTransactions,
+          },
+        ];
 
         double totalSisaSaldo = categoryProvider.savingsCurrent +
             categoryProvider.emergencyCurrent +
@@ -346,7 +371,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                                 settings,
                                 item['name'] as String,
                                 item['amount'] as double,
-                                monthlyTransactions.where((tx) => tx.categoryId == item['categoryId']).toList(),
+                                List<TransactionModel>.from(item['transactions'] as List),
                               ),
                               child: _buildBreakdownItem(
                                 context,
@@ -526,7 +551,15 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
     );
   }
 
-  void _showExpenseDetail(BuildContext context, SettingsProvider settings, String categoryName, double amount, List<dynamic> transactions) {
+  void _showExpenseDetail(BuildContext context, SettingsProvider settings, String categoryName, double amount, List<TransactionModel> transactions) {
+    final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+    final txProvider = Provider.of<TransactionProvider>(context, listen: false);
+    final defaultAccount = accountProvider.accounts.isNotEmpty ? accountProvider.accounts.first : null;
+    final amountController = TextEditingController();
+    final noteController = TextEditingController();
+    String selectedType = 'withdrawal';
+    List<TransactionModel> currentTransactions = List<TransactionModel>.from(transactions);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -537,8 +570,8 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
 
         return StatefulBuilder(
           builder: (context, setModalState) {
-            final filteredTransactions = transactions.where((tx) {
-              final desc = (tx.description ?? '').toString().toLowerCase();
+            final filteredTransactions = currentTransactions.where((tx) {
+              final desc = tx.description.toLowerCase();
               return desc.contains(searchQuery.toLowerCase());
             }).toList();
 
@@ -557,143 +590,218 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                 ? filteredTransactions.fold<double>(0, (prev, tx) => prev + tx.amount) / transactionCount
                 : 0.0;
 
-            return Container(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-                top: 25,
-                left: 20,
-                right: 20,
-              ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 50,
-                      height: 5,
-                      decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    categoryName,
-                    style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${settings.translate('total_label')}: ${settings.formatCurrency(amount)}',
-                    style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '$transactionCount ${settings.translate('transaksi')}',
-                        style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey[700]),
-                      ),
-                      Text(
-                        '${settings.translate('rata_rata')}: ${settings.formatCurrency(averageAmount)}',
-                        style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey[700]),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      hintText: settings.translate('cari_transaksi'),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey[300]!)),
-                      suffixIcon: const Icon(Icons.search),
-                    ),
-                    onChanged: (value) => setModalState(() {
-                      searchQuery = value;
-                    }),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Text(
-                        '${settings.translate('urutkan')}:',
-                        style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey[700], fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
+            return SafeArea(
+              top: false,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.only(top: 12, bottom: 8),
+                      child: Center(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF3F4F6),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: DropdownButton<String>(
-                            value: sortOption,
-                            isExpanded: true,
-                            underline: const SizedBox.shrink(),
-                            icon: const Icon(Icons.keyboard_arrow_down),
-                            items: [
-                              DropdownMenuItem(value: 'date_desc', child: Text(settings.translate('terbaru_terlebih_dulu'))),
-                              DropdownMenuItem(value: 'date_asc', child: Text(settings.translate('terlama_terlebih_dulu'))),
-                              DropdownMenuItem(value: 'amount_desc', child: Text(settings.translate('nominal_terbesar'))),
-                              DropdownMenuItem(value: 'amount_asc', child: Text(settings.translate('nominal_terkecil'))),
+                          width: 50,
+                          height: 5,
+                          decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                categoryName,
+                                style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '${settings.translate('total_label')}: ${settings.formatCurrency(amount)}',
+                                style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey[600]),
+                              ),
+                              const SizedBox(height: 14),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '$transactionCount ${settings.translate('transaksi')}',
+                                    style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey[700]),
+                                  ),
+                                  Text(
+                                    '${settings.translate('rata_rata')}: ${settings.formatCurrency(averageAmount)}',
+                                    style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey[700]),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () => setModalState(() => selectedType = 'withdrawal'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: selectedType == 'withdrawal' ? const Color(0xFFEF4444) : const Color(0xFFF3F4F6),
+                                        foregroundColor: selectedType == 'withdrawal' ? Colors.white : Colors.black,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                      child: const Text('Uang Keluar'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () => setModalState(() => selectedType = 'deposit'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: selectedType == 'deposit' ? const Color(0xFF10B981) : const Color(0xFFF3F4F6),
+                                        foregroundColor: selectedType == 'deposit' ? Colors.white : Colors.black,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                      child: const Text('Uang Masuk'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+                              TextField(
+                                controller: amountController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  labelText: settings.translate('nominal'),
+                                  prefixText: 'Rp ',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextField(
+                                controller: noteController,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  hintText: 'Catatan (opsional)',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              const Divider(height: 30),
+                              if (filteredTransactions.isEmpty)
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 24),
+                                    child: Text(settings.translate('tidak_ada_transaksi'), style: GoogleFonts.outfit(color: Colors.grey[500])),
+                                  ),
+                                )
+                              else
+                                ...filteredTransactions.map((tx) {
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF8FAFC),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          tx.description,
+                                          style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          '${tx.type == 'withdrawal' ? '- ' : '+ '}${settings.formatCurrency(tx.amount)}',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 14,
+                                            color: tx.type == 'withdrawal' ? const Color(0xFFEF4444) : const Color(0xFF16A34A),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          DateFormat('dd MMM yyyy', settings.locale.toString()).format(tx.date),
+                                          style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey[500]),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              const SizedBox(height: 20),
                             ],
-                            onChanged: (value) {
-                              if (value != null) {
-                                setModalState(() {
-                                  sortOption = value;
-                                });
-                              }
-                            },
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  if (filteredTransactions.isEmpty)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        child: Text(settings.translate('tidak_ada_transaksi'), style: GoogleFonts.outfit(color: Colors.grey[500])),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                        left: 20,
+                        right: 20,
+                        top: 8,
                       ),
-                    )
-                  else
-                    ...filteredTransactions.map((tx) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 55,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final raw = amountController.text.replaceAll(RegExp(r'[^0-9.]'), '');
+                            final parsedAmount = double.tryParse(raw) ?? 0.0;
+                            if (parsedAmount <= 0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Masukkan nominal yang valid'), backgroundColor: Colors.red.shade700),
+                              );
+                              return;
+                            }
+
+                            if (defaultAccount == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Tidak ada akun yang tersedia'), backgroundColor: Colors.red.shade700),
+                              );
+                              return;
+                            }
+
+                            final description = noteController.text.trim().isEmpty ? categoryName : noteController.text.trim();
+                            final newTransaction = TransactionModel(
+                              accountId: defaultAccount.id!,
+                              type: selectedType,
+                              amount: parsedAmount,
+                              description: description,
+                            );
+
+                            await txProvider.addTransaction(newTransaction);
+                            setModalState(() {
+                              currentTransactions.insert(0, newTransaction);
+                              amountController.clear();
+                              noteController.clear();
+                            });
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(selectedType == 'withdrawal'
+                                    ? 'Uang keluar berhasil ditambahkan'
+                                    : 'Uang masuk berhasil ditambahkan'),
+                                backgroundColor: selectedType == 'withdrawal' ? Colors.red.shade700 : Colors.green.shade700,
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.save, size: 20),
+                          label: Text(settings.translate('simpan_transaksi')),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              tx.description,
-                              style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              settings.formatCurrency(tx.amount),
-                              style: GoogleFonts.outfit(fontSize: 14, color: const Color(0xFFEF4444)),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              DateFormat('dd MMM yyyy', settings.locale.toString()).format(tx.date),
-                              style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey[500]),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  const SizedBox(height: 20),
-                ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
