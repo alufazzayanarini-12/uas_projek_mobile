@@ -554,7 +554,6 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
   void _showExpenseDetail(BuildContext context, SettingsProvider settings, String categoryName, double amount, List<TransactionModel> transactions) {
     final accountProvider = Provider.of<AccountProvider>(context, listen: false);
     final txProvider = Provider.of<TransactionProvider>(context, listen: false);
-    final defaultAccount = accountProvider.accounts.isNotEmpty ? accountProvider.accounts.first : null;
     final amountController = TextEditingController();
     final noteController = TextEditingController();
     String selectedType = 'withdrawal';
@@ -749,7 +748,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                         width: double.infinity,
                         height: 55,
                         child: ElevatedButton.icon(
-                          onPressed: () async {
+                           onPressed: () async {
                             final raw = amountController.text.replaceAll(RegExp(r'[^0-9.]'), '');
                             final parsedAmount = double.tryParse(raw) ?? 0.0;
                             if (parsedAmount <= 0) {
@@ -759,22 +758,75 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                               return;
                             }
 
-                            if (defaultAccount == null) {
+                            final activeAccounts = accountProvider.accounts;
+                            if (activeAccounts.isEmpty) {
+                              await accountProvider.loadAccounts();
+                            }
+                            final currentAccount = accountProvider.accounts.isNotEmpty
+                                ? accountProvider.accounts.first
+                                : null;
+
+                            if (currentAccount == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Tidak ada akun yang tersedia'), backgroundColor: Colors.red.shade700),
                               );
                               return;
                             }
 
-                            final description = noteController.text.trim().isEmpty ? categoryName : noteController.text.trim();
+                            // Match Category ID
+                            int? matchedCategoryId;
+                            final lowerName = categoryName.toLowerCase();
+                            final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+                            for (var cat in categoryProvider.allCategories) {
+                              final catName = cat.name.toLowerCase();
+                              if ((lowerName.contains('makan') || lowerName.contains('food')) && 
+                                  (catName.contains('makan') || catName.contains('food'))) {
+                                matchedCategoryId = cat.id;
+                                break;
+                              }
+                              if ((lowerName.contains('bensin') || lowerName.contains('fuel') || lowerName.contains('gas')) && 
+                                  (catName.contains('bensin') || catName.contains('fuel') || catName.contains('transport'))) {
+                                matchedCategoryId = cat.id;
+                                break;
+                              }
+                            }
+                            // Fallback to Uang Bulanan category if available
+                            if (matchedCategoryId == null) {
+                              for (var cat in categoryProvider.allCategories) {
+                                if (cat.name.toLowerCase().contains('bulanan')) {
+                                  matchedCategoryId = cat.id;
+                                  break;
+                                }
+                              }
+                            }
+
+                            String finalDescription = noteController.text.trim();
+                            if (finalDescription.isEmpty) {
+                              finalDescription = categoryName;
+                            } else {
+                              final lowerDesc = finalDescription.toLowerCase();
+                              if (lowerName.contains('makan') || lowerName.contains('food')) {
+                                if (!lowerDesc.contains('makan') && !lowerDesc.contains('food')) {
+                                  finalDescription += ' ($categoryName)';
+                                }
+                              } else if (lowerName.contains('bensin') || lowerName.contains('fuel') || lowerName.contains('gas')) {
+                                if (!lowerDesc.contains('bensin') && !lowerDesc.contains('fuel') && !lowerDesc.contains('gas')) {
+                                  finalDescription += ' ($categoryName)';
+                                }
+                              }
+                            }
+
                             final newTransaction = TransactionModel(
-                              accountId: defaultAccount.id!,
+                              accountId: currentAccount.id!,
+                              categoryId: matchedCategoryId,
                               type: selectedType,
                               amount: parsedAmount,
-                              description: description,
+                              description: finalDescription,
                             );
 
                             await txProvider.addTransaction(newTransaction);
+                            categoryProvider.processTransaction(categoryName, selectedType, parsedAmount);
+
                             setModalState(() {
                               currentTransactions.insert(0, newTransaction);
                               amountController.clear();

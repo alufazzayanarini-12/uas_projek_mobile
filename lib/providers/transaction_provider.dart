@@ -6,6 +6,10 @@ class TransactionProvider with ChangeNotifier {
   List<TransactionModel> _transactions = [];
   bool _isLoading = false;
 
+  TransactionProvider() {
+    loadTransactions();
+  }
+
   List<TransactionModel> get transactions => _transactions;
   bool get isLoading => _isLoading;
 

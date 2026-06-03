@@ -7,6 +7,10 @@ class AccountProvider with ChangeNotifier {
   List<Account> _accounts = [];
   bool _isLoading = false;
 
+  AccountProvider() {
+    loadAccounts();
+  }
+
   List<Account> get accounts => _accounts;
   bool get isLoading => _isLoading;
 
@@ -19,6 +23,17 @@ class AccountProvider with ChangeNotifier {
     notifyListeners();
 
     _accounts = await DatabaseHelper.instance.readAllAccounts();
+    if (_accounts.isEmpty) {
+      final defaultAcc = Account(
+        name: 'Main Balance',
+        balance: 12500000.0,
+        colorValue: Colors.teal.value,
+        iconCodePoint: Icons.account_balance_wallet.codePoint,
+        createdAt: DateTime.now(),
+      );
+      await DatabaseHelper.instance.createAccount(defaultAcc);
+      _accounts = await DatabaseHelper.instance.readAllAccounts();
+    }
 
     _isLoading = false;
     notifyListeners();

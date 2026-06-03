@@ -131,7 +131,7 @@ class CategoryProvider with ChangeNotifier {
     } else if (name.contains('darurat') || name.contains('emergency')) {
       if (type == 'deposit') emergencyCurrent += amount;
       if (type == 'withdrawal') emergencyCurrent -= amount;
-    } else if (name.contains('bulanan')) {
+    } else if (name.contains('bulanan') || name.contains('makan') || name.contains('bensin') || name.contains('food') || name.contains('fuel') || name.contains('transport')) {
       if (type == 'withdrawal') monthlySpent += amount;
       if (type == 'deposit') monthlySpent -= amount;
     }

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/account_provider.dart';
+import '../providers/category_provider.dart';
+import '../providers/transaction_provider.dart';
+import '../models/transaction_model.dart';
 import 'sub_category_screen.dart';
 
 class AddTransactionScreen extends StatefulWidget {
@@ -234,7 +238,91 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: ElevatedButton.icon(
-        onPressed: () => Navigator.pop(context),
+        onPressed: () async {
+          final raw = _amountController.text.replaceAll(RegExp(r'[^0-9.]'), '');
+          final parsedAmount = double.tryParse(raw) ?? 0.0;
+          if (parsedAmount <= 0) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Masukkan nominal yang valid' : 'Please enter a valid amount'), backgroundColor: Colors.red.shade700),
+            );
+            return;
+          }
+
+          final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+          final txProvider = Provider.of<TransactionProvider>(context, listen: false);
+          final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+
+          if (accountProvider.accounts.isEmpty) {
+            await accountProvider.loadAccounts();
+          }
+
+          final currentAccount = accountProvider.accounts.isNotEmpty ? accountProvider.accounts.first : null;
+          if (currentAccount == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: const Text('Tidak ada akun yang tersedia'), backgroundColor: Colors.red.shade700),
+            );
+            return;
+          }
+
+          // Match category from categories list or fallback
+          int? matchedCategoryId;
+          String categoryName = _selectedCategory; // 'Food', 'Transport', 'Bills', 'Shopping'
+          String localizedCatName = categoryName;
+          if (categoryName == 'Food') {
+            localizedCatName = 'Makan & Minum';
+          } else if (categoryName == 'Transport') {
+            localizedCatName = 'Transportasi';
+          } else if (categoryName == 'Bills') {
+            localizedCatName = 'Tagihan';
+          } else if (categoryName == 'Shopping') {
+            localizedCatName = 'Belanja';
+          }
+
+          final lowerCat = localizedCatName.toLowerCase();
+          for (var cat in categoryProvider.allCategories) {
+            final catName = cat.name.toLowerCase();
+            if ((lowerCat.contains('makan') || lowerCat.contains('food')) && 
+                (catName.contains('makan') || catName.contains('food'))) {
+              matchedCategoryId = cat.id;
+              break;
+            }
+            if ((lowerCat.contains('transport') || lowerCat.contains('bensin')) && 
+                (catName.contains('transport') || catName.contains('bensin') || catName.contains('fuel'))) {
+              matchedCategoryId = cat.id;
+              break;
+            }
+            if (lowerCat.contains('tagihan') && catName.contains('bulanan')) {
+              matchedCategoryId = cat.id;
+              break;
+            }
+            if (lowerCat.contains('belanja') && catName.contains('saku')) {
+              matchedCategoryId = cat.id;
+              break;
+            }
+          }
+
+          if (matchedCategoryId == null && categoryProvider.allCategories.isNotEmpty) {
+            matchedCategoryId = categoryProvider.allCategories.first.id;
+          }
+
+          final description = _noteController.text.trim().isEmpty ? localizedCatName : _noteController.text.trim();
+          final newTransaction = TransactionModel(
+            accountId: currentAccount.id!,
+            categoryId: matchedCategoryId,
+            type: 'withdrawal',
+            amount: parsedAmount,
+            description: description,
+          );
+
+          await txProvider.addTransaction(newTransaction);
+          categoryProvider.processTransaction(localizedCatName, 'withdrawal', parsedAmount);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Transaksi berhasil disimpan' : 'Transaction saved successfully'), backgroundColor: Colors.green.shade700),
+          );
+
+          Navigator.pop(context);
+        },
         icon: const Icon(Icons.check_circle_outline, size: 20),
         label: Text(settings.translate('simpan_transaksi'), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
         style: ElevatedButton.styleFrom(
