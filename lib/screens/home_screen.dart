@@ -173,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                settings.translate('sisa_saldo').toUpperCase(), 
+                settings.translate('sisa_uang_tabungan').toUpperCase(), 
                 style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
               ),
               const Icon(Icons.info_outline, color: Colors.white54, size: 20),

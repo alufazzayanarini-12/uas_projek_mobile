@@ -195,6 +195,7 @@ class SettingsProvider with ChangeNotifier {
   static const Map<String, Map<String, String>> _localizedValues = {
     'Bahasa Indonesia': {
       'sisa_saldo': 'Sisa Saldo',
+      'sisa_uang_tabungan': 'Sisa Uang Tabungan',
       'pemasukan': 'Pemasukan',
       'pengeluaran': 'Pengeluaran',
       'tabungan': 'Tabungan',
@@ -445,6 +446,7 @@ class SettingsProvider with ChangeNotifier {
     },
     'English': {
       'sisa_saldo': 'Remaining Balance',
+      'sisa_uang_tabungan': 'Savings Balance',
       'pemasukan': 'Income',
       'pengeluaran': 'Expense',
       'tabungan': 'Savings',
@@ -695,6 +697,7 @@ class SettingsProvider with ChangeNotifier {
     },
     '日本語': {
       'sisa_saldo': '残高',
+      'sisa_uang_tabungan': '貯蓄残高',
       'pemasukan': '収入',
       'pengeluaran': '支出',
       'tabungan': '貯金',
@@ -945,6 +948,7 @@ class SettingsProvider with ChangeNotifier {
     },
     'العربية': {
       'sisa_saldo': 'الرصيد المتبقي',
+      'sisa_uang_tabungan': 'رصيد المدخرات',
       'pemasukan': 'الدخل',
       'pengeluaran': 'المصاريف',
       'tabungan': 'المدخرات',

@@ -433,32 +433,6 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                   ),
                 ),
                 const SizedBox(height: 35),
-
-                // 5. Download Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(settings.translate('laporan_berhasil_unduh').replaceAll('{month}', currentMonthLabel)),
-                          backgroundColor: const Color(0xFF0F5132),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.download_rounded, color: Colors.white),
-                    label: Text(
-                      settings.translate('unduh_laporan_pdf'),
-                      style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF002B1D),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 50),
               ],
             ),
           ),
