@@ -464,49 +464,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-              
-              const SizedBox(height: 15),
-              
-              GestureDetector(
-                onTap: () => _triggerExportAnimation(context, 'PDF'),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F4F9),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.picture_as_pdf, color: Colors.red, size: 24),
-                      ),
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Format PDF (Dokumen Cetak)',
-                              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
-                            ),
-                            Text(
-                              'Laporan rapi siap cetak dan mudah dibagikan',
-                              style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.chevron_right, color: Colors.grey),
-                    ],
-                  ),
-                ),
-              ),
               const SizedBox(height: 20),
             ],
           ),
