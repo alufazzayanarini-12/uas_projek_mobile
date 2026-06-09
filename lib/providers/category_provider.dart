@@ -15,7 +15,7 @@ class CategoryProvider with ChangeNotifier {
   double educationCurrent = 45000000;
   double educationTarget = 150000000;
 
-  double emergencyCurrent = 45000000;
+  double emergencyCurrent = 0.0;
   double emergencyTarget = 50000000;
   
   double monthlyBudget = 3000000;
@@ -47,7 +47,11 @@ class CategoryProvider with ChangeNotifier {
         ];
       }
       savingsCurrent = prefs.getDouble('savings_current') ?? 1500000.0;
-      emergencyCurrent = prefs.getDouble('emergency_current') ?? 45000000.0;
+      emergencyCurrent = prefs.getDouble('emergency_current') ?? 0.0;
+      if (emergencyCurrent == 45000000.0) {
+        emergencyCurrent = 0.0;
+        await prefs.setDouble('emergency_current', 0.0);
+      }
       educationCurrent = prefs.getDouble('education_current') ?? 45000000.0;
       notifyListeners();
     } catch (e) {

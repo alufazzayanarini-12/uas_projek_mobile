@@ -26,12 +26,20 @@ class AccountProvider with ChangeNotifier {
     if (_accounts.isEmpty) {
       final defaultAcc = Account(
         name: 'Main Balance',
-        balance: 12500000.0,
+        balance: 0.0,
         colorValue: Colors.teal.value,
         iconCodePoint: Icons.account_balance_wallet.codePoint,
         createdAt: DateTime.now(),
       );
       await DatabaseHelper.instance.createAccount(defaultAcc);
+      _accounts = await DatabaseHelper.instance.readAllAccounts();
+    } else {
+      for (var acc in _accounts) {
+        if (acc.name == 'Main Balance' && acc.balance == 12500000.0) {
+          final updatedAcc = acc.copyWith(balance: 0.0);
+          await DatabaseHelper.instance.updateAccount(updatedAcc);
+        }
+      }
       _accounts = await DatabaseHelper.instance.readAllAccounts();
     }
 

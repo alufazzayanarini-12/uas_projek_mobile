@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/category_provider.dart';
+import '../providers/account_provider.dart';
+import '../models/transaction_model.dart';
 import 'package:intl/intl.dart';
 
 class EmergencyFundScreen extends StatefulWidget {
@@ -40,15 +42,15 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF002B1D)),
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Dana Darurat',
-          style: GoogleFonts.outfit(color: const Color(0xFF002B1D), fontWeight: FontWeight.bold),
+          settings.translate('dana_darurat'),
+          style: GoogleFonts.outfit(color: textColor, fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
@@ -98,22 +100,23 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Tambah Tabungan Darurat', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
-                  const SizedBox(height: 10),
-                  Text('Alokasikan dana tambahan untuk memperkuat jaring pengaman finansial Anda.', style: GoogleFonts.outfit(fontSize: 13, color: Colors.grey[600], height: 1.5)),
+                  Text(
+                    settings.translate('dana_darurat'), 
+                    style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                  ),
                   const SizedBox(height: 25),
                   TextField(
                     controller: _amountController,
                     keyboardType: TextInputType.number,
-                    style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D)),
+                    style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
                     decoration: InputDecoration(
                       prefixText: 'Rp ',
-                      prefixStyle: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF002B1D)),
+                      prefixStyle: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
                       hintText: '0',
                       labelText: 'Nominal Top Up',
                       labelStyle: GoogleFonts.outfit(color: Colors.grey),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: Colors.grey.shade300)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: const BorderSide(color: Color(0xFF002B1D), width: 2)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: isDark ? Colors.white70 : const Color(0xFF002B1D), width: 2)),
                     ),
                   ),
                   const SizedBox(height: 25),
@@ -125,11 +128,33 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
                         if (_amountController.text.isNotEmpty) {
                           double amount = double.tryParse(_amountController.text) ?? 0.0;
                           if (amount > 0) {
+                            // 1. Update CategoryProvider balance
                             catProvider.topUpEmergency(amount);
+                            
+                            // 2. Add deposit transaction to AccountProvider
+                            final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+                            if (accountProvider.accounts.isNotEmpty) {
+                              final defaultAccount = accountProvider.accounts.first;
+                              final newTx = TransactionModel(
+                                accountId: defaultAccount.id ?? 1,
+                                categoryId: 5, // Dana Darurat
+                                amount: amount,
+                                type: 'deposit',
+                                description: 'Top Up Mulai Menabung',
+                                date: DateTime.now(),
+                              );
+                              accountProvider.addTransaction(newTx);
+                            }
+
                             _amountController.clear();
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Berhasil menambah dana darurat!', style: GoogleFonts.outfit()),
+                                content: Text(
+                                  settings.translate('bahasa') == 'Bahasa Indonesia' 
+                                      ? 'Berhasil menambah tabungan!' 
+                                      : 'Successfully added savings!', 
+                                  style: GoogleFonts.outfit(),
+                                ),
                                 backgroundColor: const Color(0xFF0D4D3B),
                               )
                             );
@@ -141,7 +166,7 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                       ),
-                      child: Text('Simpan Dana', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text('Simpan Tabungan', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

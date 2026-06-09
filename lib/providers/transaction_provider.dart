@@ -13,6 +13,18 @@ class TransactionProvider with ChangeNotifier {
   List<TransactionModel> get transactions => _transactions;
   bool get isLoading => _isLoading;
 
+  double get totalIncome {
+    return _transactions
+        .where((tx) => tx.type == 'deposit')
+        .fold(0.0, (sum, tx) => sum + tx.amount);
+  }
+
+  double get totalExpenses {
+    return _transactions
+        .where((tx) => tx.type == 'withdrawal')
+        .fold(0.0, (sum, tx) => sum + tx.amount);
+  }
+
   Future<void> loadTransactions() async {
     _isLoading = true;
     notifyListeners();

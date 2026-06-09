@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/goal_provider.dart';
+import '../providers/account_provider.dart';
+import '../providers/transaction_provider.dart';
 import 'goal_detail_screen.dart';
 import 'add_goal_screen.dart';
 import 'settings_screen.dart';
@@ -21,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<SettingsProvider>(
       builder: (context, settings, child) {
         final goalProvider = Provider.of<GoalProvider>(context);
+        final txProvider = Provider.of<TransactionProvider>(context);
         final goals = goalProvider.goals;
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
@@ -65,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 25),
-                _buildTotalBalanceCard(settings, isDark),
+                _buildTotalBalanceCard(settings, isDark, txProvider.totalIncome, txProvider.totalExpenses),
                 const SizedBox(height: 30),
                 Text(
                   settings.translate('target_anda'),
@@ -157,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTotalBalanceCard(SettingsProvider settings, bool isDark) {
+  Widget _buildTotalBalanceCard(SettingsProvider settings, bool isDark, double totalIncome, double totalExpenses) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(28),
@@ -167,34 +170,34 @@ class _HomeScreenState extends State<HomeScreen> {
         boxShadow: [BoxShadow(color: const Color(0xFF002B1D).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                settings.translate('sisa_uang_tabungan').toUpperCase(), 
-                style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-              ),
-              const Icon(Icons.info_outline, color: Colors.white54, size: 20),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            settings.formatCurrency(12500000), 
-            style: GoogleFonts.outfit(color: Colors.white, fontSize: 38, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 30),
-          Row(
-            children: [
-              _buildBalanceSubItem(settings.translate('pemasukan'), '+ ' + settings.formatCurrency(18000000)),
-              Container(width: 1, height: 40, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 25)),
-              _buildBalanceSubItem(settings.translate('dialokasikan'), '- ' + settings.formatCurrency(5500000)),
-            ],
-          ),
-        ],
-      ),
-    );
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  settings.translate('sisa_uang_tabungan').toUpperCase(), 
+                  style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                ),
+                const Icon(Icons.info_outline, color: Colors.white54, size: 20),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              settings.formatCurrency(Provider.of<AccountProvider>(context).totalBalance), 
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 38, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 30),
+            Row(
+              children: [
+                _buildBalanceSubItem(settings.translate('pemasukan'), '+ ' + settings.formatCurrency(totalIncome)),
+                Container(width: 1, height: 40, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 25)),
+                _buildBalanceSubItem(settings.translate('pengeluaran'), '- ' + settings.formatCurrency(totalExpenses)),
+              ],
+            ),
+          ],
+        ),
+      );
   }
 
   Widget _buildBalanceSubItem(String label, String amount) {
@@ -292,18 +295,9 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start, 
-                children: [
-                  Text(
-                    settings.translate('dana_darurat'), 
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 20, color: isDark ? Colors.white : const Color(0xFF002B1D)),
-                  ), 
-                  Text(
-                    settings.translate('jaring_pengaman'), 
-                    style: GoogleFonts.outfit(color: isDark ? Colors.white70 : Colors.grey[600], fontSize: 14),
-                  ),
-                ],
+              Text(
+                settings.translate('dana_darurat'), 
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 20, color: isDark ? Colors.white : const Color(0xFF002B1D)),
               ),
               Text('${(progress * 100).toInt()}%', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 28, color: isDark ? Colors.white : const Color(0xFF002B1D))),
             ],
