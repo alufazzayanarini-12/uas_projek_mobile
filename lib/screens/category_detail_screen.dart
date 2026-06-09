@@ -28,16 +28,16 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     },
     {
       'name': 'Wulan (Piutang)', 
-      'total': 1500000, 
-      'paid': 500000, 
+      'total': 0, 
+      'paid': 0, 
       'date': '20 Juni', 
       'type': 'piutang',
-      'history': <Map<String, dynamic>>[{'date': '15 Apr', 'amount': 500000}]
+      'history': <Map<String, dynamic>>[]
     },
   ];
 
   final List<Map<String, dynamic>> _eduItems = [
-    {'name': 'Uang Kuliah Sem. 5', 'target': 4500000, 'saved': 1500000, 'deadline': '15 Aug'},
+    {'name': 'Uang Kuliah Sem. 5', 'target': 0, 'saved': 0, 'deadline': '15 Aug'},
   ];
 
   final TextEditingController _inputController = TextEditingController();

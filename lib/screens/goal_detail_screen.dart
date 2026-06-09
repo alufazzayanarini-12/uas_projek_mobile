@@ -127,8 +127,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         }
 
         final title = goal?.name ?? (widget.goalId == 1 ? 'Laptop Baru' : 'Books NW');
-        final currentAmount = goal?.currentAmount ?? (widget.goalId == 1 ? 11250000.0 : 3600000.0);
-        final targetAmount = goal?.targetAmount ?? (widget.goalId == 1 ? 15000000.0 : 8000000.0);
+        final currentAmount = goal?.currentAmount ?? 0.0;
+        final targetAmount = goal?.targetAmount ?? 0.0;
         double progress = targetAmount > 0 ? currentAmount / targetAmount : 0;
         if (progress > 1.0) progress = 1.0;
         

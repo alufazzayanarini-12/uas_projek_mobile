@@ -9,14 +9,14 @@ class CategoryProvider with ChangeNotifier {
   List<CategoryModel> _categories = [];
   
   // ── DATA DETAIL KATEGORI (SENTRALISASI) ──
-  double savingsCurrent = 1500000;
-  double savingsTarget = 5000000;
+  double savingsCurrent = 0.0;
+  double savingsTarget = 0.0;
   
   double educationCurrent = 45000000;
   double educationTarget = 150000000;
 
   double emergencyCurrent = 0.0;
-  double emergencyTarget = 50000000;
+  double emergencyTarget = 0.0;
   
   double monthlyBudget = 3000000;
   double monthlySpent = 1200000;
@@ -37,21 +37,12 @@ class CategoryProvider with ChangeNotifier {
         final List<dynamic> decoded = json.decode(historyStr);
         _savingsHistory = decoded.map((item) => Map<String, dynamic>.from(item)).toList();
       } else {
-        _savingsHistory = [
-          {
-            'title': 'Saldo Awal Tabungan',
-            'amount': 1500000.0,
-            'date': DateTime.now().toIso8601String(),
-            'status': 'Berhasil',
-          }
-        ];
+        _savingsHistory = [];
       }
-      savingsCurrent = prefs.getDouble('savings_current') ?? 1500000.0;
-      emergencyCurrent = prefs.getDouble('emergency_current') ?? 0.0;
-      if (emergencyCurrent == 45000000.0) {
-        emergencyCurrent = 0.0;
-        await prefs.setDouble('emergency_current', 0.0);
-      }
+      savingsCurrent = 0.0;
+      emergencyCurrent = 0.0;
+      await prefs.setDouble('savings_current', 0.0);
+      await prefs.setDouble('emergency_current', 0.0);
       educationCurrent = prefs.getDouble('education_current') ?? 45000000.0;
       notifyListeners();
     } catch (e) {

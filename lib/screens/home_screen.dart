@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/goal_provider.dart';
 import '../providers/account_provider.dart';
+import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
 import 'goal_detail_screen.dart';
 import 'add_goal_screen.dart';
@@ -18,15 +19,23 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _showSampleGoal1 = true;
+  bool _showSampleGoal2 = true;
   @override
   Widget build(BuildContext context) {
     return Consumer<SettingsProvider>(
       builder: (context, settings, child) {
         final goalProvider = Provider.of<GoalProvider>(context);
         final txProvider = Provider.of<TransactionProvider>(context);
+        final categoryProvider = Provider.of<CategoryProvider>(context);
         final goals = goalProvider.goals;
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
+
+        double emergencyProgress = categoryProvider.emergencyTarget > 0
+            ? categoryProvider.emergencyCurrent / categoryProvider.emergencyTarget
+            : 0.0;
+        if (emergencyProgress > 1.0) emergencyProgress = 1.0;
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE),
@@ -68,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 25),
-                _buildTotalBalanceCard(settings, isDark, txProvider.totalIncome, txProvider.totalExpenses),
+                _buildTotalBalanceCard(settings, isDark, categoryProvider.savingsCurrent, txProvider.totalIncome, txProvider.totalExpenses),
                 const SizedBox(height: 30),
                 Text(
                   settings.translate('target_anda'),
@@ -78,32 +87,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 Wrap(
                   spacing: 20,
                   runSpacing: 20,
-                  children: goals.isEmpty 
-                    ? [
-                        SizedBox(
-                          width: (MediaQuery.of(context).size.width - 60) / 2, // 40 padding + 20 spacing
-                          child: GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(goalId: 1))),
-                            child: _buildGoalProgressCard(
-                              settings.translate('laptop_baru'), 0.75, settings.formatCurrency(11250000), isDark, settings,
-                              onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
-                              onDelete: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
+                  children: goals.isEmpty
+                      ? [
+                          if (_showSampleGoal1)
+                            SizedBox(
+                              width: (MediaQuery.of(context).size.width - 60) / 2, // 40 padding + 20 spacing
+                              child: GestureDetector(
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(goalId: 1))),
+                                child: _buildGoalProgressCard(
+                                  settings.translate('laptop_baru'), 0.75, settings.formatCurrency(0), isDark, settings,
+                                  onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
+                                  onDelete: () {
+                                    setState(() {
+                                      _showSampleGoal1 = false;
+                                    });
+                                  },
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: (MediaQuery.of(context).size.width - 60) / 2,
-                          child: GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(goalId: 2))),
-                            child: _buildGoalProgressCard(
-                              settings.translate('buku_nw'), 0.45, settings.formatCurrency(3600000), isDark, settings,
-                              onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
-                              onDelete: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
+                          if (_showSampleGoal2)
+                            SizedBox(
+                              width: (MediaQuery.of(context).size.width - 60) / 2,
+                              child: GestureDetector(
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(goalId: 2))),
+                                child: _buildGoalProgressCard(
+                                  settings.translate('buku_nw'), 0.45, settings.formatCurrency(0), isDark, settings,
+                                  onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
+                                  onDelete: () {
+                                    setState(() {
+                                      _showSampleGoal2 = false;
+                                    });
+                                  },
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ]
-                    : goals.map((goal) {
+                        ]
+                      : goals.map((goal) {
                         double progress = goal.targetAmount > 0 ? goal.currentAmount / goal.targetAmount : 0;
                         if (progress > 1.0) progress = 1.0;
                         return SizedBox(
@@ -137,7 +156,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       MaterialPageRoute(builder: (context) => const EmergencyFundScreen()),
                     );
                   },
-                  child: _buildEmergencyFundCard(45000000, 50000000, 0.92, settings, isDark),
+                  child: _buildEmergencyFundCard(
+                  categoryProvider.emergencyCurrent,
+                  categoryProvider.emergencyTarget,
+                  emergencyProgress,
+                  settings,
+                  isDark,
+                ),
                 ),
                 const SizedBox(height: 120),
               ],
@@ -160,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTotalBalanceCard(SettingsProvider settings, bool isDark, double totalIncome, double totalExpenses) {
+  Widget _buildTotalBalanceCard(SettingsProvider settings, bool isDark, double savingsBalance, double totalIncome, double totalExpenses) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(28),
@@ -184,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              settings.formatCurrency(Provider.of<AccountProvider>(context).totalBalance), 
+              settings.formatCurrency(savingsBalance), 
               style: GoogleFonts.outfit(color: Colors.white, fontSize: 38, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
