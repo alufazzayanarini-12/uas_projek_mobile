@@ -5,6 +5,7 @@ import '../providers/settings_provider.dart';
 import '../providers/category_provider.dart';
 import '../providers/account_provider.dart';
 import '../models/transaction_model.dart';
+import '../providers/transaction_provider.dart';
 import 'package:intl/intl.dart';
 
 class EmergencyFundScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class EmergencyFundScreen extends StatefulWidget {
 
 class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
   final TextEditingController _amountController = TextEditingController();
+  bool _isWithdrawMode = false;
 
   @override
   void dispose() {
@@ -80,7 +82,7 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('${(progress * 100).toInt()}% Tercapai', style: GoogleFonts.outfit(color: const Color(0xFF98D8B6), fontWeight: FontWeight.bold)),
+                      const SizedBox(),
                       Text('Target: ${fmt.format(targetAmount)}', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
                     ],
                   ),
@@ -89,7 +91,7 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
             ),
             const SizedBox(height: 30),
             
-            // Top up Card
+            // Top up / Withdrawal Card
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -100,9 +102,55 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    settings.translate('dana_darurat'), 
-                    style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                  // Tab Selector
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _isWithdrawMode = false),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: !_isWithdrawMode ? const Color(0xFF002B1D) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(color: !_isWithdrawMode ? const Color(0xFF002B1D) : Colors.grey.shade300),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Tabung',
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  color: !_isWithdrawMode ? Colors.white : Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _isWithdrawMode = true),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: _isWithdrawMode ? const Color(0xFFC62828) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(color: _isWithdrawMode ? const Color(0xFFC62828) : Colors.grey.shade300),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Tarik',
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  color: _isWithdrawMode ? Colors.white : Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 25),
                   TextField(
@@ -113,10 +161,10 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
                       prefixText: 'Rp ',
                       prefixStyle: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
                       hintText: '0',
-                      labelText: 'Nominal Top Up',
+                      labelText: _isWithdrawMode ? 'Nominal Pengeluaran / Tarik' : 'Nominal Top Up / Tabung',
                       labelStyle: GoogleFonts.outfit(color: Colors.grey),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: Colors.grey.shade300)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: isDark ? Colors.white70 : const Color(0xFF002B1D), width: 2)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: _isWithdrawMode ? const Color(0xFFC62828) : (isDark ? Colors.white70 : const Color(0xFF002B1D)), width: 2)),
                     ),
                   ),
                   const SizedBox(height: 25),
@@ -124,49 +172,104 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (_amountController.text.isNotEmpty) {
-                          double amount = double.tryParse(_amountController.text) ?? 0.0;
+                      onPressed: () async {
+                          String cleanText = _amountController.text.replaceAll('.', '').replaceAll(',', '.');
+                          double amount = double.tryParse(cleanText) ?? 0.0;
                           if (amount > 0) {
-                            // 1. Update CategoryProvider balance
-                            catProvider.topUpEmergency(amount);
-                            
-                            // 2. Add deposit transaction to AccountProvider
-                            final accountProvider = Provider.of<AccountProvider>(context, listen: false);
-                            if (accountProvider.accounts.isNotEmpty) {
-                              final defaultAccount = accountProvider.accounts.first;
-                              final newTx = TransactionModel(
-                                accountId: defaultAccount.id ?? 1,
-                                categoryId: 5, // Dana Darurat
-                                amount: amount,
-                                type: 'deposit',
-                                description: 'Top Up Mulai Menabung',
-                                date: DateTime.now(),
-                              );
-                              accountProvider.addTransaction(newTx);
-                            }
+                            if (_isWithdrawMode) {
+                              // Tarik Mode
+                              if (catProvider.emergencyCurrent < amount) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      settings.translate('bahasa') == 'Bahasa Indonesia' 
+                                          ? 'Saldo tabungan tidak mencukupi!' 
+                                          : 'Insufficient savings balance!', 
+                                      style: GoogleFonts.outfit(),
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  )
+                                );
+                                return;
+                              }
+                              
+                              // 1. Update CategoryProvider balance (withdraw)
+                              catProvider.withdrawEmergency(amount);
+                              
+                              // 2. Add withdrawal transaction to AccountProvider
+                              final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+                              if (accountProvider.accounts.isNotEmpty) {
+                                final defaultAccount = accountProvider.accounts.first;
+                                final newTx = TransactionModel(
+                                  accountId: defaultAccount.id ?? 1,
+                                  categoryId: 5, // Dana Darurat
+                                  amount: amount,
+                                  type: 'withdrawal',
+                                  description: 'Tarik Mulai Menabung',
+                                  date: DateTime.now(),
+                                );
+                                await accountProvider.addTransaction(newTx);
+                                if (mounted) {
+                                  await Provider.of<TransactionProvider>(context, listen: false).loadTransactions();
+                                }
+                              }
 
-                            _amountController.clear();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  settings.translate('bahasa') == 'Bahasa Indonesia' 
-                                      ? 'Berhasil menambah tabungan!' 
-                                      : 'Successfully added savings!', 
-                                  style: GoogleFonts.outfit(),
-                                ),
-                                backgroundColor: const Color(0xFF0D4D3B),
-                              )
-                            );
+                              _amountController.clear();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    settings.translate('bahasa') == 'Bahasa Indonesia' 
+                                        ? 'Berhasil menarik uang tabungan!' 
+                                        : 'Successfully withdrew savings!', 
+                                    style: GoogleFonts.outfit(),
+                                  ),
+                                  backgroundColor: const Color(0xFFC62828),
+                                )
+                              );
+                            } else {
+                              // Tabung Mode
+                              // 1. Update CategoryProvider balance
+                              catProvider.topUpEmergency(amount);
+                              
+                              // 2. Add deposit transaction to AccountProvider
+                              final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+                              if (accountProvider.accounts.isNotEmpty) {
+                                final defaultAccount = accountProvider.accounts.first;
+                                final newTx = TransactionModel(
+                                  accountId: defaultAccount.id ?? 1,
+                                  categoryId: 5, // Dana Darurat
+                                  amount: amount,
+                                  type: 'deposit',
+                                  description: 'Top Up Mulai Menabung',
+                                  date: DateTime.now(),
+                                );
+                                await accountProvider.addTransaction(newTx);
+                                if (mounted) {
+                                  await Provider.of<TransactionProvider>(context, listen: false).loadTransactions();
+                                }
+                              }
+
+                              _amountController.clear();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    settings.translate('bahasa') == 'Bahasa Indonesia' 
+                                        ? 'Berhasil menambah tabungan!' 
+                                        : 'Successfully added savings!', 
+                                    style: GoogleFonts.outfit(),
+                                  ),
+                                  backgroundColor: const Color(0xFF0D4D3B),
+                                )
+                              );
+                            }
                           }
-                        }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF002B1D),
+                        backgroundColor: _isWithdrawMode ? const Color(0xFFC62828) : const Color(0xFF002B1D),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                       ),
-                      child: Text('Simpan Tabungan', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text(_isWithdrawMode ? 'Tarik Tabungan' : 'Simpan Tabungan', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

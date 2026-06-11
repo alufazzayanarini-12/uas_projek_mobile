@@ -212,8 +212,6 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             const SizedBox(height: 25),
             _buildMainFormCard(cardColor, textColor),
             const SizedBox(height: 20),
-            _buildProjectionCard(cardColor, textColor),
-            const SizedBox(height: 20),
             _buildEstimationCard(cardColor, textColor),
             const SizedBox(height: 120),
           ],
@@ -267,7 +265,6 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             runSpacing: 12,
             children: [
               _buildCategoryChip('Tabungan', Icons.account_balance_wallet_outlined, settings.translate('kategori_tabungan')),
-              _buildCategoryChip('Investasi', Icons.trending_up, settings.translate('kategori_investasi')),
               _buildCategoryChip('Pembelian', Icons.shopping_cart_outlined, settings.translate('kategori_pembelian')),
               _buildCategoryChip('Darurat', Icons.ac_unit, settings.translate('kategori_darurat')),
             ],

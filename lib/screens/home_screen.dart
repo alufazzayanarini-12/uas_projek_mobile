@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final goalProvider = Provider.of<GoalProvider>(context);
         final txProvider = Provider.of<TransactionProvider>(context);
         final categoryProvider = Provider.of<CategoryProvider>(context);
+        final accountProvider = Provider.of<AccountProvider>(context);
         final goals = goalProvider.goals;
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
@@ -77,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 25),
-                _buildTotalBalanceCard(settings, isDark, categoryProvider.savingsCurrent, txProvider.totalIncome, txProvider.totalExpenses),
+                _buildTotalBalanceCard(settings, isDark, accountProvider.totalBalance, txProvider.totalIncome, txProvider.totalExpenses),
                 const SizedBox(height: 30),
                 Text(
                   settings.translate('target_anda'),
@@ -186,41 +187,49 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTotalBalanceCard(SettingsProvider settings, bool isDark, double savingsBalance, double totalIncome, double totalExpenses) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: const Color(0xFF002B1D),
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [BoxShadow(color: const Color(0xFF002B1D).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
-      ),
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  settings.translate('sisa_uang_tabungan').toUpperCase(), 
-                  style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                ),
-                const Icon(Icons.info_outline, color: Colors.white54, size: 20),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              settings.formatCurrency(savingsBalance), 
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 38, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 30),
-            Row(
-              children: [
-                _buildBalanceSubItem(settings.translate('pemasukan'), '+ ' + settings.formatCurrency(totalIncome)),
-                Container(width: 1, height: 40, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 25)),
-                _buildBalanceSubItem(settings.translate('pengeluaran'), '- ' + settings.formatCurrency(totalExpenses)),
-              ],
-            ),
-          ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const EmergencyFundScreen()),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          color: const Color(0xFF002B1D),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [BoxShadow(color: const Color(0xFF002B1D).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
+        ),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    settings.translate('sisa_uang_tabungan').toUpperCase(), 
+                    style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                  ),
+                  const Icon(Icons.info_outline, color: Colors.white54, size: 20),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                settings.formatCurrency(savingsBalance), 
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 38, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 30),
+              Row(
+                children: [
+                  _buildBalanceSubItem(settings.translate('pemasukan'), '+ ' + settings.formatCurrency(totalIncome)),
+                  Container(width: 1, height: 40, color: Colors.white24, margin: const EdgeInsets.symmetric(horizontal: 25)),
+                  _buildBalanceSubItem(settings.translate('pengeluaran'), '- ' + settings.formatCurrency(totalExpenses)),
+                ],
+              ),
+            ],
+          ),
         ),
       );
   }

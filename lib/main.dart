@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'database/db_helper.dart';
 import 'providers/account_provider.dart';
 import 'providers/goal_provider.dart';
 import 'providers/settings_provider.dart';
@@ -16,6 +19,25 @@ void main() async {
   final settingsProvider = SettingsProvider();
   final categoryProvider = CategoryProvider();
   await categoryProvider.loadCategories(); 
+
+  // Reset/migration to set initial balance and saving figures to 0
+  final prefs = await SharedPreferences.getInstance();
+  final hasReset = prefs.getBool('has_reset_balances_v5') ?? false;
+  if (!hasReset) {
+    await prefs.setDouble('savings_current', 0.0);
+    await prefs.setDouble('emergency_current', 0.0);
+    await prefs.setString('savings_history', json.encode([]));
+    
+    try {
+      final db = await DatabaseHelper.instance.database;
+      await db.update('accounts', {'balance': 0.0});
+      await db.delete('transactions');
+    } catch (e) {
+      print("Error resetting database: $e");
+    }
+    
+    await prefs.setBool('has_reset_balances_v5', true);
+  }
 
   runApp(
     MultiProvider(

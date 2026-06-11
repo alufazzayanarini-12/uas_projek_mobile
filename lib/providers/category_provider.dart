@@ -39,10 +39,8 @@ class CategoryProvider with ChangeNotifier {
       } else {
         _savingsHistory = [];
       }
-      savingsCurrent = 0.0;
-      emergencyCurrent = 0.0;
-      await prefs.setDouble('savings_current', 0.0);
-      await prefs.setDouble('emergency_current', 0.0);
+      savingsCurrent = prefs.getDouble('savings_current') ?? 0.0;
+      emergencyCurrent = prefs.getDouble('emergency_current') ?? 0.0;
       educationCurrent = prefs.getDouble('education_current') ?? 45000000.0;
       notifyListeners();
     } catch (e) {
@@ -88,6 +86,16 @@ class CategoryProvider with ChangeNotifier {
 
   void topUpEmergency(double amount) {
     emergencyCurrent += amount;
+    _saveSavingsHistory();
+    notifyListeners();
+  }
+
+  void withdrawEmergency(double amount) {
+    if (emergencyCurrent >= amount) {
+      emergencyCurrent -= amount;
+    } else {
+      emergencyCurrent = 0.0;
+    }
     _saveSavingsHistory();
     notifyListeners();
   }
