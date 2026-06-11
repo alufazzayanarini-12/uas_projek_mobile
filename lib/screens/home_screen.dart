@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/goal_provider.dart';
-import '../providers/account_provider.dart';
 import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
 import 'goal_detail_screen.dart';
@@ -23,12 +22,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _showSampleGoal2 = true;
   @override
   Widget build(BuildContext context) {
-    return Consumer<SettingsProvider>(
-      builder: (context, settings, child) {
+    return Consumer3<SettingsProvider, CategoryProvider, TransactionProvider>(
+      builder: (context, settings, categoryProvider, txProvider, child) {
         final goalProvider = Provider.of<GoalProvider>(context);
-        final txProvider = Provider.of<TransactionProvider>(context);
-        final categoryProvider = Provider.of<CategoryProvider>(context);
-        final accountProvider = Provider.of<AccountProvider>(context);
         final goals = goalProvider.goals;
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
@@ -78,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 25),
-                _buildTotalBalanceCard(settings, isDark, accountProvider.totalBalance, txProvider.totalIncome, txProvider.totalExpenses),
+                _buildTotalBalanceCard(settings, isDark, categoryProvider.savingsCurrent, txProvider.totalIncome, txProvider.totalExpenses),
                 const SizedBox(height: 30),
                 Text(
                   settings.translate('target_anda'),

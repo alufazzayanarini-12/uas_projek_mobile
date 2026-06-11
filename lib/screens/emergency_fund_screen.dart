@@ -35,8 +35,12 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
     final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
     final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-    double currentAmount = catProvider.emergencyCurrent;
-    double targetAmount = catProvider.emergencyTarget;
+    double currentAmount = catProvider.emergencyCurrent > 0
+        ? catProvider.emergencyCurrent
+        : catProvider.savingsCurrent;
+    double targetAmount = catProvider.emergencyTarget > 0
+        ? catProvider.emergencyTarget
+        : catProvider.savingsTarget;
 
     double progress = targetAmount > 0 ? (currentAmount / targetAmount) : 0.0;
     if (progress > 1.0) progress = 1.0;

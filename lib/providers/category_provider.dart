@@ -86,6 +86,13 @@ class CategoryProvider with ChangeNotifier {
 
   void topUpEmergency(double amount) {
     emergencyCurrent += amount;
+    savingsCurrent += amount;
+    _savingsHistory.insert(0, {
+      'title': 'Top Up Dana Darurat',
+      'amount': amount,
+      'date': DateTime.now().toIso8601String(),
+      'status': 'Berhasil',
+    });
     _saveSavingsHistory();
     notifyListeners();
   }
@@ -96,6 +103,17 @@ class CategoryProvider with ChangeNotifier {
     } else {
       emergencyCurrent = 0.0;
     }
+    if (savingsCurrent >= amount) {
+      savingsCurrent -= amount;
+    } else {
+      savingsCurrent = 0.0;
+    }
+    _savingsHistory.insert(0, {
+      'title': 'Tarik Dana Darurat',
+      'amount': amount,
+      'date': DateTime.now().toIso8601String(),
+      'status': 'Berhasil',
+    });
     _saveSavingsHistory();
     notifyListeners();
   }
