@@ -152,28 +152,56 @@ class _ChartsScreenState extends State<ChartsScreen> {
   }
 
   Widget _buildDailyExpenseCard(SettingsProvider settings, bool isDark, Color textColor, Color cardColor, List<TransactionModel> txs) {
+    // 1. Calculate threshold based on selected period
+    final now = DateTime.now();
+    DateTime threshold;
+    if (_selectedPeriod == 0) {
+      // Mingguan (7 days)
+      threshold = now.subtract(const Duration(days: 7));
+    } else if (_selectedPeriod == 1) {
+      // Bulanan (30 days)
+      threshold = now.subtract(const Duration(days: 30));
+    } else {
+      // Tahunan (365 days)
+      threshold = now.subtract(const Duration(days: 365));
+    }
+
+    // 2. Filter transactions for total expenses calculation within period
     final double totalExpenses = txs
-        .where((t) => t.type == 'withdrawal')
+        .where((t) => t.type == 'withdrawal' && !t.date.isBefore(threshold))
         .fold(0.0, (sum, t) => sum + t.amount);
 
     final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-    List<double> points = [];
-    double current = 100000.0;
-    points.add(current);
-
-    List<TransactionModel> sortedTxs = List.from(txs)..sort((a, b) => a.date.compareTo(b.date));
-    for (var tx in sortedTxs) {
-      if (tx.type == 'deposit') {
-        current += tx.amount;
-      } else {
-        current -= tx.amount;
+    // 3. Compute running balance points historically
+    List<TransactionModel> allSortedTxs = List.from(txs)..sort((a, b) => a.date.compareTo(b.date));
+    
+    double balanceBeforeThreshold = 0.0;
+    for (var tx in allSortedTxs) {
+      if (tx.date.isBefore(threshold)) {
+        if (tx.type == 'deposit') {
+          balanceBeforeThreshold += tx.amount;
+        } else if (tx.type == 'withdrawal' || tx.type == 'transfer') {
+          balanceBeforeThreshold -= tx.amount;
+        }
       }
-      points.add(current);
     }
 
-    if (points.length < 3) {
-      points = [100000.0, 150000.0, 120000.0, 200000.0, 180000.0, 250000.0, 220000.0, 300000.0];
+    List<double> points = [balanceBeforeThreshold];
+    double runningBalance = balanceBeforeThreshold;
+    for (var tx in allSortedTxs) {
+      if (!tx.date.isBefore(threshold)) {
+        if (tx.type == 'deposit') {
+          runningBalance += tx.amount;
+        } else if (tx.type == 'withdrawal' || tx.type == 'transfer') {
+          runningBalance -= tx.amount;
+        }
+        points.add(runningBalance);
+      }
+    }
+
+    if (points.length < 2) {
+      points = [runningBalance, runningBalance];
     }
 
     return Container(
@@ -189,12 +217,26 @@ class _ChartsScreenState extends State<ChartsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(settings.translate('pengeluaran_harian'), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+              Text(
+                _selectedPeriod == 0
+                    ? (settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Pengeluaran Mingguan' : 'Weekly Expense')
+                    : _selectedPeriod == 1
+                        ? (settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Pengeluaran Bulanan' : 'Monthly Expense')
+                        : (settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Pengeluaran Tahunan' : 'Yearly Expense'),
+                style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+              ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(fmt.format(totalExpenses), style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor)),
-                  Text(settings.translate('total_aliran_logika'), style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey[600])),
+                  Text(
+                    _selectedPeriod == 0
+                        ? (settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Total 7 Hari Terakhir' : 'Total Last 7 Days')
+                        : _selectedPeriod == 1
+                            ? (settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Total 30 Hari Terakhir' : 'Total Last 30 Days')
+                            : (settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Total 1 Tahun Terakhir' : 'Total Last 1 Year'),
+                    style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey[600]),
+                  ),
                 ],
               ),
             ],

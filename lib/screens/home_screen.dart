@@ -5,6 +5,7 @@ import '../providers/settings_provider.dart';
 import '../providers/goal_provider.dart';
 import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/account_provider.dart';
 import 'goal_detail_screen.dart';
 import 'add_goal_screen.dart';
 import 'settings_screen.dart';
@@ -18,13 +19,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _showSampleGoal1 = true;
-  bool _showSampleGoal2 = true;
   @override
   Widget build(BuildContext context) {
     return Consumer3<SettingsProvider, CategoryProvider, TransactionProvider>(
       builder: (context, settings, categoryProvider, txProvider, child) {
         final goalProvider = Provider.of<GoalProvider>(context);
+        final accountProvider = Provider.of<AccountProvider>(context);
         final goals = goalProvider.goals;
         final isDark = settings.isDarkMode;
         final textColor = isDark ? Colors.white : const Color(0xFF002B1D);
@@ -74,77 +74,90 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 25),
-                _buildTotalBalanceCard(settings, isDark, categoryProvider.savingsCurrent, txProvider.totalIncome, txProvider.totalExpenses),
+                _buildTotalBalanceCard(settings, isDark, accountProvider.totalBalance, txProvider.totalIncome, txProvider.totalExpenses),
                 const SizedBox(height: 30),
                 Text(
                   settings.translate('target_anda'),
                   style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: textColor),
                 ),
                 const SizedBox(height: 15),
-                Wrap(
-                  spacing: 20,
-                  runSpacing: 20,
-                  children: goals.isEmpty
-                      ? [
-                          if (_showSampleGoal1)
-                            SizedBox(
-                              width: (MediaQuery.of(context).size.width - 60) / 2, // 40 padding + 20 spacing
-                              child: GestureDetector(
-                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(goalId: 1))),
-                                child: _buildGoalProgressCard(
-                                  settings.translate('laptop_baru'), 0.75, settings.formatCurrency(0), isDark, settings,
-                                  onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
-                                  onDelete: () {
-                                    setState(() {
-                                      _showSampleGoal1 = false;
-                                    });
-                                  },
-                                ),
+                goals.isEmpty
+                    ? Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.flag_outlined, size: 40, color: isDark ? Colors.white54 : const Color(0xFF002B1D).withOpacity(0.5)),
+                            const SizedBox(height: 12),
+                            Text(
+                              settings.translate('bahasa') == 'Bahasa Indonesia' 
+                                  ? 'Belum ada target' 
+                                  : 'No goals set yet',
+                              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              settings.translate('bahasa') == 'Bahasa Indonesia'
+                                  ? 'Mulai buat target Anda hari ini!'
+                                  : 'Start making your goals today!',
+                              style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddGoalScreen())),
+                              icon: const Icon(Icons.add, size: 18),
+                              label: Text(
+                                settings.translate('bahasa') == 'Bahasa Indonesia' 
+                                    ? 'Buat Target' 
+                                    : 'Create Goal',
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFBDCECA),
+                                foregroundColor: const Color(0xFF002B1D),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: 0,
                               ),
                             ),
-                          if (_showSampleGoal2)
-                            SizedBox(
-                              width: (MediaQuery.of(context).size.width - 60) / 2,
-                              child: GestureDetector(
-                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalDetailScreen(goalId: 2))),
-                                child: _buildGoalProgressCard(
-                                  settings.translate('buku_nw'), 0.45, settings.formatCurrency(0), isDark, settings,
-                                  onEdit: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(settings.translate('bahasa') == 'Bahasa Indonesia' ? 'Ini hanya contoh. Tambahkan target asli Anda.' : 'This is just an example. Add your real goals.', style: GoogleFonts.outfit()))),
-                                  onDelete: () {
-                                    setState(() {
-                                      _showSampleGoal2 = false;
-                                    });
-                                  },
-                                ),
+                          ],
+                        ),
+                      )
+                    : Wrap(
+                        spacing: 20,
+                        runSpacing: 20,
+                        children: goals.map((goal) {
+                          double progress = goal.targetAmount > 0 ? goal.currentAmount / goal.targetAmount : 0;
+                          if (progress > 1.0) progress = 1.0;
+                          return SizedBox(
+                            width: (MediaQuery.of(context).size.width - 60) / 2,
+                            child: GestureDetector(
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => GoalDetailScreen(goalId: goal.id ?? 1))),
+                              child: _buildGoalProgressCard(
+                                goal.name, 
+                                progress, 
+                                settings.formatCurrency(goal.targetAmount), 
+                                isDark,
+                                settings,
+                                onEdit: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AddGoalScreen(goalToEdit: goal)));
+                                },
+                                onDelete: () {
+                                  if (goal.id != null) {
+                                    Provider.of<GoalProvider>(context, listen: false).deleteGoal(goal.id!);
+                                  }
+                                },
                               ),
                             ),
-                        ]
-                      : goals.map((goal) {
-                        double progress = goal.targetAmount > 0 ? goal.currentAmount / goal.targetAmount : 0;
-                        if (progress > 1.0) progress = 1.0;
-                        return SizedBox(
-                          width: (MediaQuery.of(context).size.width - 60) / 2,
-                          child: GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => GoalDetailScreen(goalId: goal.id ?? 1))),
-                            child: _buildGoalProgressCard(
-                              goal.name, 
-                              progress, 
-                              settings.formatCurrency(goal.targetAmount), 
-                              isDark,
-                              settings,
-                              onEdit: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => AddGoalScreen(goalToEdit: goal)));
-                              },
-                              onDelete: () {
-                                if (goal.id != null) {
-                                  Provider.of<GoalProvider>(context, listen: false).deleteGoal(goal.id!);
-                                }
-                              },
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                ),
+                          );
+                        }).toList(),
+                      ),
                 const SizedBox(height: 25),
                 GestureDetector(
                   onTap: () {

@@ -16,13 +16,9 @@ import 'screens/main_navigation_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final settingsProvider = SettingsProvider();
-  final categoryProvider = CategoryProvider();
-  await categoryProvider.loadCategories(); 
-
   // Reset/migration to set initial balance and saving figures to 0
   final prefs = await SharedPreferences.getInstance();
-  final hasReset = prefs.getBool('has_reset_balances_v5') ?? false;
+  final hasReset = prefs.getBool('has_reset_balances_v6') ?? false;
   if (!hasReset) {
     await prefs.setDouble('savings_current', 0.0);
     await prefs.setDouble('emergency_current', 0.0);
@@ -36,8 +32,12 @@ void main() async {
       print("Error resetting database: $e");
     }
     
-    await prefs.setBool('has_reset_balances_v5', true);
+    await prefs.setBool('has_reset_balances_v6', true);
   }
+
+  final settingsProvider = SettingsProvider();
+  final categoryProvider = CategoryProvider();
+  await categoryProvider.loadCategories();
 
   runApp(
     MultiProvider(
