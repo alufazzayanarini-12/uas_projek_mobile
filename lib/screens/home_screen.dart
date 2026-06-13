@@ -34,6 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
             : 0.0;
         if (emergencyProgress > 1.0) emergencyProgress = 1.0;
 
+        final today = DateTime.now();
+        final double todayExpenses = txProvider.transactions
+            .where((t) => t.type == 'withdrawal' &&
+                          t.date.year == today.year &&
+                          t.date.month == today.month &&
+                          t.date.day == today.day)
+            .fold(0.0, (sum, t) => sum + t.amount);
+        final double remainingPocketMoney = settings.dailyPocketMoney - todayExpenses;
+
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FE),
           appBar: AppBar(
@@ -74,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 25),
-                _buildTotalBalanceCard(settings, isDark, accountProvider.totalBalance, txProvider.totalIncome, txProvider.totalExpenses),
+                _buildTotalBalanceCard(settings, isDark, accountProvider.totalBalance, txProvider.totalIncome, txProvider.totalExpenses, remainingPocketMoney),
                 const SizedBox(height: 30),
                 Text(
                   settings.translate('target_anda'),
@@ -195,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTotalBalanceCard(SettingsProvider settings, bool isDark, double savingsBalance, double totalIncome, double totalExpenses) {
+  Widget _buildTotalBalanceCard(SettingsProvider settings, bool isDark, double savingsBalance, double totalIncome, double totalExpenses, double remainingPocketMoney) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -229,7 +238,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 settings.formatCurrency(savingsBalance), 
                 style: GoogleFonts.outfit(color: Colors.white, fontSize: 38, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 15),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.wallet_outlined, color: Color(0xFFBDCECA), size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          settings.selectedLanguage == 'Bahasa Indonesia' ? 'Sisa Uang Saku Harian' : 'Daily Pocket Money Remaining',
+                          style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.8), fontSize: 13, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      settings.formatCurrency(remainingPocketMoney),
+                      style: GoogleFonts.outfit(color: const Color(0xFFBDCECA), fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   _buildBalanceSubItem(settings.translate('pemasukan'), '+ ' + settings.formatCurrency(totalIncome)),

@@ -147,10 +147,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'Arini Alufazzayan',
             style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
           ),
-          Text(
-            'alufazzayanayin@gmail.com',
-            style: GoogleFonts.outfit(fontSize: 14, color: isDark ? Colors.white70 : Colors.grey[600]),
-          ),
           const SizedBox(height: 15),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
