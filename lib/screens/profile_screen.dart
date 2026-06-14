@@ -9,7 +9,6 @@ import 'account_settings_screen.dart';
 // security settings removed
 import 'language_settings_screen.dart';
 import 'about_app_screen.dart';
-import 'monthly_report_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -323,19 +322,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 20),
                         _buildPrivacySection(
-                          '2. Keamanan PIN & Biometrik',
-                          'Kami menyediakan perlindungan berlapis dengan menggunakan kode PIN lokal dan otentikasi biometrik (jika diaktifkan) yang terintegrasi langsung dengan sistem keamanan bawaan perangkat Anda.',
-                          isDark,
-                        ),
-                        const SizedBox(height: 20),
-                        _buildPrivacySection(
-                          '3. Hak Pengguna',
+                          '2. Hak Pengguna',
                           'Anda memiliki hak penuh untuk mengekspor data transaksi keuangan Anda kapan saja dalam format PDF atau CSV melalui menu ekspor, serta menghapus seluruh data aplikasi secara permanen dengan membersihkan data aplikasi di pengaturan perangkat Anda.',
                           isDark,
                         ),
                         const SizedBox(height: 20),
                         _buildPrivacySection(
-                          '4. Perubahan Kebijakan',
+                          '3. Perubahan Kebijakan',
                           'Kebijakan privasi ini dapat diperbarui sewaktu-waktu seiring dengan pembaruan fitur aplikasi untuk senantiasa memastikan keamanan data keuangan Anda tetap terjaga di level tertinggi.',
                           isDark,
                         ),

@@ -9,6 +9,7 @@ class SettingsProvider with ChangeNotifier {
   bool _isBiometricEnabled = false;
   bool _isDarkMode = false;
   String _userName = 'Arini'; 
+  String _phoneNumber = '+62 812 3456 7890';
   String? _profileImagePath;
   double _dailyPocketMoney = 50000.0; // Uang saku harian default
   double _foodLimit = 500000.0; // Limit Makan dan Minum
@@ -23,6 +24,7 @@ class SettingsProvider with ChangeNotifier {
   bool get isBiometricEnabled => _isBiometricEnabled;
   bool get isDarkMode => _isDarkMode;
   String get userName => _userName;
+  String get phoneNumber => _phoneNumber;
   String? get profileImagePath => _profileImagePath;
   double get dailyPocketMoney => _dailyPocketMoney;
   double get foodLimit => _foodLimit;
@@ -45,6 +47,7 @@ class SettingsProvider with ChangeNotifier {
     _isBiometricEnabled = prefs.getBool('biometric_enabled') ?? false;
     _isDarkMode = prefs.getBool('dark_mode') ?? false;
     _userName = prefs.getString('user_name') ?? 'Arini';
+    _phoneNumber = prefs.getString('user_phone') ?? '+62 812 3456 7890';
     _profileImagePath = prefs.getString('profile_image_path');
     _dailyPocketMoney = prefs.getDouble('daily_pocket_money') ?? 50000.0;
     _foodLimit = prefs.getDouble('food_limit') ?? 500000.0;
@@ -66,6 +69,13 @@ class SettingsProvider with ChangeNotifier {
     _userName = name;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', name);
+    notifyListeners();
+  }
+
+  Future<void> setPhoneNumber(String phone) async {
+    _phoneNumber = phone;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_phone', phone);
     notifyListeners();
   }
 

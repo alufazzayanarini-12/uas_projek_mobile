@@ -5,7 +5,6 @@ import '../providers/settings_provider.dart';
 import 'home_screen.dart';
 import 'charts_screen.dart';
 import 'profile_screen.dart';
-import 'monthly_report_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -17,10 +16,11 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
+  late final List<Widget> _screens = [
+    HomeScreen(onNavigateToCharts: () {
+      setState(() => _currentIndex = 1);
+    }),
     const ChartsScreen(), // Insights
-    const MonthlyReportScreen(), // Report
     const ProfileScreen(), // Profile
   ];
 
@@ -41,8 +41,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           children: [
             _buildNavItem(0, Icons.home_outlined, settings.translate('beranda')),
             _buildNavItem(1, Icons.analytics_outlined, settings.translate('statistik')),
-            _buildNavItem(2, Icons.description_rounded, settings.translate('laporan')),
-            _buildNavItem(3, Icons.person_outline_rounded, settings.translate('profil')),
+            _buildNavItem(2, Icons.person_outline_rounded, settings.translate('profil')),
           ],
         ),
       ),

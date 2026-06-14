@@ -104,7 +104,7 @@ class AboutAppScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Tabunganku adalah asisten manajemen keuangan pribadi cerdas Anda yang dirancang untuk membantu melacak pengeluaran harian, menabung secara disiplin, dan menganalisis kesehatan anggaran (Financial Audit) dengan antarmuka yang sangat indah dan intuitif.',
+                        'Tabunganku adalah asisten manajemen keuangan pribadi cerdas Anda yang dirancang untuk membantu mengatur jatah uang saku harian secara presisi, memantau tabungan melalui grafik perbandingan interaktif, serta menganalisis kesehatan finansial (Financial Audit) dengan antarmuka yang modern dan elegan.',
                         style: GoogleFonts.outfit(
                           fontSize: 14,
                           color: isDark ? Colors.white70 : Colors.grey[700],
@@ -133,25 +133,33 @@ class AboutAppScreen extends StatelessWidget {
                 const SizedBox(height: 15),
                 
                 _buildFeatureTile(
+                  Icons.wallet_outlined,
+                  'Kelola Jatah Uang Saku',
+                  'Atur limit harian dan pantau sisa jatah uang saku secara dinamis.',
+                  isDark,
+                  cardColor,
+                ),
+                const SizedBox(height: 12),
+                _buildFeatureTile(
+                  Icons.analytics_outlined,
+                  'Grafik Analisis Ganda',
+                  'Visualisasikan perbandingan grafik uang tabungan dan uang saku Anda.',
+                  isDark,
+                  cardColor,
+                ),
+                const SizedBox(height: 12),
+                _buildFeatureTile(
                   Icons.auto_awesome,
                   'Audit Kesehatan Keuangan',
-                  'Saran cerdas kalkulasi skor kesehatan tabungan Anda.',
+                  'Kalkulasi skor kesehatan tabungan dan evaluasi pola pengeluaran.',
                   isDark,
                   cardColor,
                 ),
                 const SizedBox(height: 12),
                 _buildFeatureTile(
                   Icons.savings_outlined,
-                  'Alokasi Tabungan Kustom',
-                  'Simpan dana pendidikan, dana darurat, dan target bulanan.',
-                  isDark,
-                  cardColor,
-                ),
-                const SizedBox(height: 12),
-                _buildFeatureTile(
-                  Icons.security_outlined,
-                  'Privasi & Proteksi PIN',
-                  'Keamanan berlapis menjaga kerahasiaan keuangan Anda.',
+                  'Target Tabungan Kustom',
+                  'Tetapkan target keuangan pribadi dan pantau progres pencapaiannya.',
                   isDark,
                   cardColor,
                 ),

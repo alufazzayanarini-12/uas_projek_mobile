@@ -12,7 +12,8 @@ import 'settings_screen.dart';
 import 'emergency_fund_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onNavigateToCharts;
+  const HomeScreen({super.key, this.onNavigateToCharts});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -239,30 +240,33 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: GoogleFonts.outfit(color: Colors.white, fontSize: 38, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 15),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.wallet_outlined, color: Color(0xFFBDCECA), size: 18),
-                        const SizedBox(width: 8),
-                        Text(
-                          settings.selectedLanguage == 'Bahasa Indonesia' ? 'Sisa Uang Saku Harian' : 'Daily Pocket Money Remaining',
-                          style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.8), fontSize: 13, fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      settings.formatCurrency(remainingPocketMoney),
-                      style: GoogleFonts.outfit(color: const Color(0xFFBDCECA), fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+              GestureDetector(
+                onTap: widget.onNavigateToCharts,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.wallet_outlined, color: Color(0xFFBDCECA), size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            settings.selectedLanguage == 'Bahasa Indonesia' ? 'Sisa Uang Saku Harian' : 'Daily Pocket Money Remaining',
+                            style: GoogleFonts.outfit(color: Colors.white.withOpacity(0.8), fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        settings.formatCurrency(remainingPocketMoney),
+                        style: GoogleFonts.outfit(color: const Color(0xFFBDCECA), fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
