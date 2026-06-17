@@ -84,7 +84,14 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 25),
-                _buildTotalBalanceCard(settings, isDark, accountProvider.totalBalance, txProvider.totalIncome, txProvider.totalExpenses, remainingPocketMoney),
+                _buildTotalBalanceCard(
+                  settings, 
+                  isDark, 
+                  categoryProvider.emergencyCurrent > 0 ? categoryProvider.emergencyCurrent : categoryProvider.savingsCurrent, 
+                  txProvider.totalIncome, 
+                  txProvider.totalExpenses, 
+                  remainingPocketMoney,
+                ),
                 const SizedBox(height: 30),
                 Text(
                   settings.translate('target_anda'),

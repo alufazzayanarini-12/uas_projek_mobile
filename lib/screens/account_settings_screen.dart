@@ -132,7 +132,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     required bool isDark,
     required Color textColor,
     required Color cardColor,
-    TextInputType keyboardType = TextInputType.phone,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Container(
       width: double.infinity,

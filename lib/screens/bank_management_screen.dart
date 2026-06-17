@@ -50,7 +50,7 @@ class BankManagementScreen extends StatelessWidget {
                     child: _buildBankCard(
                       context,
                       acc.name, 
-                      'Arini - ${acc.id}0000', 
+                      '${settings.userName} - ${acc.id}0000', 
                       'Rp ${acc.balance.toInt()}', 
                       isDark, 
                       cardColor,
@@ -62,7 +62,7 @@ class BankManagementScreen extends StatelessWidget {
                   _buildBankCard(
                     context,
                     'Bank Central Asia (BCA)', 
-                    'Arini - 1234567890', 
+                    '${settings.userName} - 1234567890', 
                     'Rp 8.500.000', 
                     isDark, 
                     cardColor,
@@ -72,7 +72,7 @@ class BankManagementScreen extends StatelessWidget {
                   _buildBankCard(
                     context,
                     'Bank Mandiri', 
-                    'Arini - 0987654321', 
+                    '${settings.userName} - 0987654321', 
                     'Rp 4.000.000', 
                     isDark, 
                     cardColor,
@@ -91,7 +91,7 @@ class BankManagementScreen extends StatelessWidget {
                 _buildOtherMethodCard(
                   context,
                   'E-Wallet (GoPay)', 
-                  '081234567890', 
+                  settings.phoneNumber, 
                   isDark, 
                   cardColor,
                   onTap: () => _showEWalletInfo(context, isDark),

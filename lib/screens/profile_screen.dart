@@ -143,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 15),
           Text(
-            'Arini Alufazzayan',
+            settings.userName,
             style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 15),

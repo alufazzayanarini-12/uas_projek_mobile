@@ -173,7 +173,7 @@ class AboutAppScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  'Arini Alufazzayan',
+                  settings.userName,
                   style: GoogleFonts.outfit(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

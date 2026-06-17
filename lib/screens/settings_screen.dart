@@ -65,21 +65,6 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   _buildThemeSwitch(settings, isDark),
                 ], isDark),
-                const SizedBox(height: 30),
-                _buildSectionHeader(settings.translate('lainnya'), isDark),
-                const SizedBox(height: 15),
-                _buildSettingsCard(cardColor, [
-                  _buildSettingsItem(
-                    context, 
-                    Icons.info_outline, 
-                    settings.translate('tentang_aplikasi'), 
-                    settings.translate('versi_aplikasi'), 
-                    isDark,
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutAppScreen()));
-                    },
-                  ),
-                ], isDark),
                 const SizedBox(height: 50),
               ],
             ),

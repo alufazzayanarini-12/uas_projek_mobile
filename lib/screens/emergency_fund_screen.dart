@@ -182,7 +182,7 @@ class _EmergencyFundScreenState extends State<EmergencyFundScreen> {
                           if (amount > 0) {
                             if (_isWithdrawMode) {
                               // Tarik Mode
-                              if (catProvider.emergencyCurrent < amount) {
+                              if (currentAmount < amount) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
