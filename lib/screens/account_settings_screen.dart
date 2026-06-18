@@ -79,6 +79,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   isDark: isDark,
                   textColor: textColor,
                   cardColor: cardColor,
+                  keyboardType: TextInputType.text,
                 ),
                 const SizedBox(height: 20),
                 _buildEditField(

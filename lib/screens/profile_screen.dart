@@ -146,13 +146,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             settings.userName,
             style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
           ),
-          const SizedBox(height: 15),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildBadge(settings.translate('anggota_premium'), const Color(0xFFBDCECA), const Color(0xFF002B1D)),
-            ],
-          ),
         ],
       ),
     );

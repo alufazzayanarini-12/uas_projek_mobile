@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/goal_provider.dart';
 import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../models/category_model.dart';
 import '../providers/account_provider.dart';
 import 'goal_detail_screen.dart';
 import 'add_goal_screen.dart';
@@ -83,12 +85,38 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Builder(
+                  builder: (context) {
+                    try {
+                      final txs = txProvider.transactions;
+                      final sb = StringBuffer();
+                      sb.writeln('Total transactions: ${txs.length}');
+                      for (var t in txs) {
+                        sb.writeln('Tx: id=${t.id}, type=${t.type}, amount=${t.amount}, desc="${t.description}", catId=${t.categoryId}');
+                      }
+                      File('c:\\Users\\Sipul\\uas_projek_mobile\\db_debug.txt').writeAsStringSync(sb.toString());
+                    } catch (e) {
+                      // ignore
+                    }
+                    return const SizedBox.shrink();
+                  }
+                ),
                 const SizedBox(height: 25),
                 _buildTotalBalanceCard(
                   settings, 
                   isDark, 
                   categoryProvider.emergencyCurrent > 0 ? categoryProvider.emergencyCurrent : categoryProvider.savingsCurrent, 
-                  txProvider.totalIncome, 
+                  txProvider.totalIncome - txProvider.transactions.where((t) {
+                    if (t.type != 'withdrawal') return false;
+                    if (t.categoryId == 5) return true;
+                    if (t.description.contains('Mulai Menabung') || t.description.contains('Dana Darurat')) return true;
+                    final cat = categoryProvider.allCategories.firstWhere(
+                      (c) => c.id == t.categoryId,
+                      orElse: () => CategoryModel(id: -1, name: '', iconCodePoint: 0, colorValue: 0),
+                    );
+                    final catName = cat.name.toLowerCase();
+                    return catName.contains('darurat') || catName.contains('menabung') || catName.contains('emergency');
+                  }).fold(0.0, (sum, t) => sum + t.amount), 
                   txProvider.totalExpenses, 
                   remainingPocketMoney,
                 ),
