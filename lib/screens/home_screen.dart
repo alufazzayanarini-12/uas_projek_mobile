@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
@@ -85,22 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Builder(
-                  builder: (context) {
-                    try {
-                      final txs = txProvider.transactions;
-                      final sb = StringBuffer();
-                      sb.writeln('Total transactions: ${txs.length}');
-                      for (var t in txs) {
-                        sb.writeln('Tx: id=${t.id}, type=${t.type}, amount=${t.amount}, desc="${t.description}", catId=${t.categoryId}');
-                      }
-                      File('c:\\Users\\Sipul\\uas_projek_mobile\\db_debug.txt').writeAsStringSync(sb.toString());
-                    } catch (e) {
-                      // ignore
-                    }
-                    return const SizedBox.shrink();
-                  }
-                ),
+
                 const SizedBox(height: 25),
                 _buildTotalBalanceCard(
                   settings, 

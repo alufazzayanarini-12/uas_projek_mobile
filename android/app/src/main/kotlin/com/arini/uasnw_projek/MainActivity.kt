@@ -1,4 +1,4 @@
-package com.example.uasnw_projek
+package com.arini.uasnw_projek
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
