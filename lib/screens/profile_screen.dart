@@ -310,7 +310,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         _buildPrivacySection(
                           '1. Pengumpulan Data',
-                          'Aplikasi Tabunganku menyimpan semua data transaksi, target keuangan, dan preferensi akun Anda secara lokal di dalam perangkat Anda sendiri menggunakan penyimpanan terenkripsi aman. Kami tidak mengunggah data keuangan pribadi Anda ke server pihak ketiga mana pun.',
+                          'Aplikasi Catatanku menyimpan semua data transaksi, target keuangan, dan preferensi akun Anda secara lokal di dalam perangkat Anda sendiri menggunakan penyimpanan terenkripsi aman. Kami tidak mengunggah data keuangan pribadi Anda ke server pihak ketiga mana pun.',
                           isDark,
                         ),
                         const SizedBox(height: 20),

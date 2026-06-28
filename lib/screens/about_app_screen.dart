@@ -104,7 +104,7 @@ class AboutAppScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Tabunganku adalah asisten manajemen keuangan pribadi cerdas Anda yang dirancang untuk membantu mengatur jatah uang saku harian secara presisi, memantau tabungan melalui grafik perbandingan interaktif, serta menganalisis kesehatan finansial (Financial Audit) dengan antarmuka yang modern dan elegan.',
+                        'Catatanku adalah asisten manajemen keuangan pribadi cerdas Anda yang dirancang untuk membantu mengatur jatah uang saku harian secara presisi, memantau tabungan melalui grafik perbandingan interaktif, serta menganalisis kesehatan finansial (Financial Audit) dengan antarmuka yang modern dan elegan.',
                         style: GoogleFonts.outfit(
                           fontSize: 14,
                           color: isDark ? Colors.white70 : Colors.grey[700],
@@ -184,7 +184,7 @@ class AboutAppScreen extends StatelessWidget {
                 
                 // Footer Copyright
                 Text(
-                  'Hak Cipta © 2026 Tabunganku.\nSemua Hak Dilindungi.',
+                  'Hak Cipta © 2026 Catatanku.\nSemua Hak Dilindungi.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey[500]),
                 ),
